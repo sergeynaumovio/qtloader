@@ -1,0 +1,124 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 Sergey Naumov
+**
+** Permission to use, copy, modify, and/or distribute this
+** software for any purpose with or without fee is hereby granted.
+**
+** THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+** WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+** WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+** THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR
+** CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+** LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+** NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+** CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+**
+****************************************************************************/
+
+#include <QApplication>
+#include <QCommandLineParser>
+#include <QFileDialog>
+#include <QLoaderTree>
+#include <QMessageBox>
+#include <QDebug>
+
+namespace {
+
+QCoreApplication* createApplication(int &argc, char *argv[])
+{
+    for (int i = 1; i < argc; ++i)
+    {
+        if (!qstrcmp(argv[i], "--no-gui"))
+        {
+            return new QCoreApplication(argc, argv);
+        }
+    }
+    return new QApplication(argc, argv);
+}
+
+}
+
+int main(int argc, char *argv[])
+{
+    setlocale(LC_ALL, "");
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    QCoreApplication::setApplicationName("Qt Loader");
+
+    QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
+
+#ifdef Q_OS_LINUX
+    app->addLibraryPath("/usr/lib");
+    app->addLibraryPath("/usr/local/lib");
+    const QStringList ld = qEnvironmentVariable("LD_LIBRARY_PATH").split(':');
+    for (const QString &path : ld)
+        app->addLibraryPath(path);
+#endif
+
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOption(QCommandLineOption({"s", "section"},
+                                        "Root section."));
+    parser.addOption(QCommandLineOption("no-gui",
+                                         "Start console application."));
+
+    parser.addPositionalArgument("file", "Set .qt file");
+    parser.process(*app);
+    QString fileName;
+
+    bool noGui = !qobject_cast<QApplication*>(app.data());
+    QStringList arguments = parser.positionalArguments();
+    if (!arguments.size() || !arguments.first().size())
+    {
+        if (noGui)
+        {
+            qInfo() << "Argument <file> is empty.";
+            return -1;
+         }
+        else
+        {
+            QString qtFile = "Qt File (*.qt" + QString::number(QT_VERSION_MAJOR) +")";
+            fileName = QFileDialog::getOpenFileName(nullptr,
+                                                    "Open Qt File",
+                                                    "",
+                                                    qtFile);
+
+            if (!fileName.size())
+                return -1;
+        }
+    }
+    else
+        fileName = arguments.first();
+
+    QLoaderTree loaderTree(fileName);
+    if (loaderTree.status() != QLoaderTree::NoError || !loaderTree.load())
+    {
+        if (loaderTree.status() == QLoaderTree::AccessError)
+        {
+            if (noGui)
+            {
+                qInfo() << "File not found" << fileName;
+            }
+            else
+            {
+                QString msg = "File not found \""+ fileName + "\"";
+                QMessageBox::warning(nullptr, "Qt Loader",
+                                              QDir::toNativeSeparators(msg),
+                                              QMessageBox::Close);
+            }
+        }
+        QString msg = fileName + (loaderTree.fileLineNumber() > 0 ?
+                                  ':' + QString::number(loaderTree.fileLineNumber()) :
+                                  "") +
+                      ": error: " +
+                      QVariant::fromValue(loaderTree.status()).
+                      toString().toLower().remove("error");
+
+        return QMessageBox::critical(nullptr, "Qt Loader",
+                                     QDir::toNativeSeparators(msg),
+                                     QMessageBox::Close);;
+    }
+
+    return app->exec();
+}
