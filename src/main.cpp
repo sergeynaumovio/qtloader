@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         fileName = arguments.first();
 
     QLoaderTree loaderTree(fileName);
-    if (loaderTree.status() != QLoaderTree::NoError || !loaderTree.load())
+    if (loaderTree.status() || !loaderTree.load())
     {
         if (loaderTree.status() == QLoaderTree::AccessError)
         {
