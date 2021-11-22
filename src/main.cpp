@@ -25,7 +25,7 @@
 
 namespace {
 
-QCoreApplication* createApplication(int &argc, char *argv[])
+QCoreApplication *createApplication(int &argc, char *argv[])
 {
     for (int i = 1; i < argc; ++i)
     {
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
          }
         else
         {
-            QString qtFile = "Qt File (*.qt" + QString::number(QT_VERSION_MAJOR) +")";
+            QString qtFile = "Qt File (*.qt" + QString::number(QT_VERSION_MAJOR) + ")";
             fileName = QFileDialog::getOpenFileName(nullptr,
                                                     "Open Qt File",
                                                     "",
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                QString msg = "File not found \""+ fileName + "\"";
+                QString msg = "File not found \"" + fileName + "\"";
                 QMessageBox::warning(nullptr, "Qt Loader",
                                               QDir::toNativeSeparators(msg),
                                               QMessageBox::Close);
