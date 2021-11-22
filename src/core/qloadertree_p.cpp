@@ -41,10 +41,11 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
     }
 
     QLoaderSettings *objectSettings{};
+    errorLine = 0;
     while (!file->atEnd())
     {
         QByteArray line = file->readLine();
-        ++fileLineNumber;
+        ++errorLine;
 
         QRegularExpression comment("^#.*");
         if (comment.match(line).hasMatch())
@@ -83,6 +84,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             }
         }
     }
+    errorLine = -1;
 }
 
 QLoaderTreePrivate::~QLoaderTreePrivate()

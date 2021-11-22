@@ -28,7 +28,7 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
-int QLoaderTree::fileLineNumber() const { return d_ptr->fileLineNumber; }
+int QLoaderTree::errorLine() const { return d_ptr->errorLine; }
 
 QString QLoaderTree::fileName() const { return d_ptr->file->fileName(); }
 

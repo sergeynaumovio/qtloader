@@ -108,8 +108,8 @@ int main(int argc, char *argv[])
                                               QMessageBox::Close);
             }
         }
-        QString msg = fileName + (loaderTree.fileLineNumber() > 0 ?
-                                  ':' + QString::number(loaderTree.fileLineNumber()) :
+        QString msg = fileName + (loaderTree.errorLine() ?
+                                  ':' + QString::number(loaderTree.errorLine()) :
                                   "") +
                       ": error: " +
                       QVariant::fromValue(loaderTree.status()).

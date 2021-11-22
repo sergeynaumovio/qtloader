@@ -42,7 +42,7 @@ struct QLoaderTreePrivate
     QLoaderTree *q_ptr;
     QLoaderTree::Status status{};
     QFile *file;
-    int fileLineNumber{};
+    int errorLine{-1};
     bool isLoaded{};
     QHash<QLoaderSettings*, QLoaderSettingsData> hash;
 

@@ -43,7 +43,7 @@ public:
     QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
-    int fileLineNumber() const;
+    int errorLine() const;
     QString fileName() const;
     bool load() const;
     Status status() const;
