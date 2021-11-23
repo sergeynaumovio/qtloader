@@ -28,7 +28,7 @@
 #    define Q_LOADER_EXPORT Q_DECL_IMPORT
 #  endif
 #else
-#  define Q_WIDGETS_EXPORT
+#  define Q_LOADER_EXPORT
 #endif
 
 #endif // QTLOADERGLOBAL_H
