@@ -23,6 +23,7 @@
 #include <QObject>
 
 class QLoaderTreePrivate;
+
 class Q_LOADER_EXPORT QLoaderTree : public QObject
 {
     Q_OBJECT
