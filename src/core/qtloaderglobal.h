@@ -16,10 +16,19 @@
 **
 ****************************************************************************/
 
+#ifndef QTLOADERGLOBAL_H
+#define QTLOADERGLOBAL_H
+
 #include <QtCore/qcompilerdetection.h>
 
-#if defined(QT_LOADER_LIBRARY)
-#  define Q_LOADER_EXPORT Q_DECL_EXPORT
+#ifndef QT_STATIC
+#  if defined(QT_LOADER_LIBRARY)
+#    define Q_LOADER_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_LOADER_EXPORT Q_DECL_IMPORT
+#  endif
 #else
-#  define Q_LOADER_EXPORT Q_DECL_IMPORT
+#  define Q_WIDGETS_EXPORT
 #endif
+
+#endif // QTLOADERGLOBAL_H

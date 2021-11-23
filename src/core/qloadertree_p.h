@@ -19,10 +19,10 @@
 #ifndef QLOADERTREE_P_H
 #define QLOADERTREE_P_H
 
+#include "qloadertree.h"
 #include <QStringList>
 #include <QHash>
 #include <QVariant>
-#include <QLoaderTree>
 
 class QLoaderSettings;
 class QLoaderTree;
@@ -37,9 +37,10 @@ struct QLoaderSettingsData
     std::vector<QLoaderSettings*> children;
 };
 
-struct QLoaderTreePrivate
+class QLoaderTreePrivate
 {
-    QLoaderTree *q_ptr;
+public:
+    QLoaderTree *const q_ptr;
     QLoaderTree::Status status{};
     QFile *file;
     int errorLine{-1};
@@ -47,7 +48,7 @@ struct QLoaderTreePrivate
     QHash<QLoaderSettings*, QLoaderSettingsData> hash;
 
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
-    ~QLoaderTreePrivate();
+    virtual ~QLoaderTreePrivate();
 
     QObject *builtin(QLoaderSettings *objectSettings, QObject *parent);
     QObject *external(QLoaderSettings *objectSettings, QObject *parent);

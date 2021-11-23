@@ -19,19 +19,21 @@
 #ifndef QLOADERSETTINGS_H
 #define QLOADERSETTINGS_H
 
-#include "qtloader_library.h"
+#include "qtloaderglobal.h"
 #include <QObject>
 
-struct QLoaderSettingsPrivate;
-struct QLoaderTreePrivate;
+class QLoaderSettingsPrivate;
+class QLoaderTreePrivate;
 class QLoaderTree;
 
 class Q_LOADER_EXPORT QLoaderSettings
 {
-    QScopedPointer<QLoaderSettingsPrivate> d_ptr;
+    Q_DISABLE_COPY_MOVE(QLoaderSettings)
 
 protected:
-    QLoaderSettings(QLoaderSettings *settings);
+    const QScopedPointer<QLoaderSettingsPrivate> d_ptr;
+
+    explicit QLoaderSettings(QLoaderSettings *settings);
 
     bool contains(const QString &key) const;
     QStringList section() const;
@@ -40,7 +42,7 @@ protected:
     QVariant value(const QString &key) const;
 
 public:
-    QLoaderSettings(QLoaderTreePrivate *objectTreePrivate);
+    explicit QLoaderSettings(QLoaderTreePrivate *objectTreePrivate);
     virtual ~QLoaderSettings();
 
     const char *className() const;

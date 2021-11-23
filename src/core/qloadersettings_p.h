@@ -23,22 +23,23 @@
 #include <QVariant>
 
 class QLoaderSettings;
-struct QLoaderTreePrivate;
+class QLoaderTreePrivate;
 class QLoaderTree;
 
-struct QLoaderSettingsPrivate
+class QLoaderSettingsPrivate
 {
-    QLoaderSettings *q_ptr;
+public:
+    QLoaderSettings *const q_ptr;
     QLoaderTreePrivate *d_tree_ptr;
 
     QLoaderSettingsPrivate(QLoaderSettings *q, QLoaderTreePrivate *d_tree);
-    ~QLoaderSettingsPrivate();
+    virtual ~QLoaderSettingsPrivate();
 
-    QStringList section();
-    bool contains(const QString &key);
-    QVariant value(const QString &key);
+    QStringList section() const;
+    bool contains(const QString &key) const;
+    QVariant value(const QString &key) const;
     void setValue(const QString &key, const QVariant &value);
-    const char *className();
+    const char *className() const;
 };
 
 #endif // QLOADERSETTINGS_P_H

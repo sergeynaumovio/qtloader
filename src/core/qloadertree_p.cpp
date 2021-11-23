@@ -17,11 +17,11 @@
 ****************************************************************************/
 
 #include "qloadertree_p.h"
+#include "qloadertree.h"
+#include "qloadersettings.h"
+#include "qloaderinterface.h"
 #include <QFile>
 #include <QPluginLoader>
-#include <QLoaderTree>
-#include <QLoaderSettings>
-#include <QLoaderInterface>
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 :   q_ptr(q)

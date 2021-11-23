@@ -32,7 +32,7 @@ set(QT_LOADER_LIBRARY Qt${QT_VERSION_MAJOR}Loader)
 add_library(${QT_LOADER_LIBRARY} SHARED)
 
 target_sources(${QT_LOADER_LIBRARY}
-    PRIVATE src/core/qtloader_library.h
+    PRIVATE src/core/qtloaderglobal.h
             src/core/qloaderinterface.h
             src/core/qloadersettings.h
             src/core/qloadersettings.cpp
@@ -49,7 +49,7 @@ target_include_directories(${QT_LOADER_LIBRARY}
 )
 
 set(QT_LOADER_PUBLIC_HEADERS
-    src/core/qtloader_library.h
+    src/core/qtloaderglobal.h
     src/core/QLoaderInterface
     src/core/qloaderinterface.h
     src/core/QLoaderSettings

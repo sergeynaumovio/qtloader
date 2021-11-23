@@ -18,7 +18,6 @@
 
 #include "qloadersettings.h"
 #include "qloadersettings_p.h"
-#include "qloadertree.h"
 #include "qloadertree_p.h"
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *objectTreePrivate)

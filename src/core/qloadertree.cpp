@@ -28,10 +28,22 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
-int QLoaderTree::errorLine() const { return d_ptr->errorLine; }
+int QLoaderTree::errorLine() const
+{
+    return d_ptr->errorLine;
+}
 
-QString QLoaderTree::fileName() const { return d_ptr->file->fileName(); }
+QString QLoaderTree::fileName() const
+{
+    return d_ptr->file->fileName();
+}
 
-bool QLoaderTree::load() const { return d_ptr->load(); }
+bool QLoaderTree::load()
+{
+    return d_ptr->load();
+}
 
-QLoaderTree::Status QLoaderTree::status() const { return d_ptr->status; }
+QLoaderTree::Status QLoaderTree::status() const
+{
+    return d_ptr->status;
+}

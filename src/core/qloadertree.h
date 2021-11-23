@@ -19,15 +19,17 @@
 #ifndef QLOADERTREE_H
 #define QLOADERTREE_H
 
-#include "qtloader_library.h"
+#include "qtloaderglobal.h"
 #include <QObject>
 
-struct QLoaderTreePrivate;
+class QLoaderTreePrivate;
 class Q_LOADER_EXPORT QLoaderTree : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(QLoaderTree)
 
-    QScopedPointer<QLoaderTreePrivate> d_ptr;
+protected:
+    const QScopedPointer<QLoaderTreePrivate> d_ptr;
 
 public:
     enum Status
@@ -40,12 +42,12 @@ public:
     };
     Q_ENUM(Status)
 
-    QLoaderTree(const QString &fileName, QObject *parent = nullptr);
+    explicit QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
     int errorLine() const;
     QString fileName() const;
-    bool load() const;
+    bool load();
     Status status() const;
 };
 
