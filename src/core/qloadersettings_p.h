@@ -30,7 +30,7 @@ class QLoaderSettingsPrivate
 {
 public:
     QLoaderSettings *const q_ptr;
-    QLoaderTreePrivate *d_tree_ptr;
+    QLoaderTreePrivate *const d_tree_ptr;
 
     QLoaderSettingsPrivate(QLoaderSettings *q, QLoaderTreePrivate *d_tree);
     virtual ~QLoaderSettingsPrivate();
