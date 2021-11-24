@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
         return QMessageBox::critical(nullptr, "Qt Loader",
                                      QDir::toNativeSeparators(msg),
-                                     QMessageBox::Close);;
+                                     QMessageBox::Close);
     }
 
     return app->exec();
