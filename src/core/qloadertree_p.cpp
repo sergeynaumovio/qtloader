@@ -55,10 +55,21 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         QRegularExpressionMatch sectionMatch = section.match(line);
         if (sectionMatch.hasMatch())
         {
+            QStringList path = sectionMatch.captured("path").split('/');
             objectSettings = new QLoaderSettings(this);
 
             if (!root)
-                root = objectSettings;
+            {
+                if (path.size() == 1 && path.front().size())
+                    root = objectSettings;
+                else
+                {
+                    status = QLoaderTree::DesignError;
+                    delete objectSettings;
+
+                    return;
+                }
+            }
 
             QLoaderSettingsData data;
             data.section = sectionMatch.captured("path").split('/');
