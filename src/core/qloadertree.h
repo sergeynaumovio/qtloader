@@ -39,7 +39,8 @@ public:
         AccessError,
         FormatError,
         PluginError,
-        ObjectError
+        ObjectError,
+        DesignError
     };
     Q_ENUM(Status)
 
