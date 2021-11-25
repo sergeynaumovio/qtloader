@@ -51,14 +51,17 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (comment.match(line).hasMatch())
             continue;
 
-        QRegularExpression section("^\\[[^\\[\\]]*\\]$");
-        if (section.match(line).hasMatch())
+        QRegularExpression section("^\\[(?<path>[^\\[\\]]*)\\]$");
+        QRegularExpressionMatch sectionMatch = section.match(line);
+        if (sectionMatch.hasMatch())
         {
             objectSettings = new QLoaderSettings(this);
 
-            QRegularExpression sectionGroups("^[\\/\\[\\]]+");
+            if (!root)
+                root = objectSettings;
+
             QLoaderSettingsData data;
-            data.section = sectionGroups.match(line).capturedTexts();
+            data.section = sectionMatch.captured("path").split('/');
             hash[objectSettings] = data;
 
             continue;

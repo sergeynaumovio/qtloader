@@ -45,6 +45,7 @@ public:
     QFile *file;
     int errorLine{-1};
     bool isLoaded{};
+    QLoaderSettings *root{};
     QHash<QLoaderSettings*, QLoaderSettingsData> hash;
 
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
