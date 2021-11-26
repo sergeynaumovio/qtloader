@@ -33,7 +33,7 @@ struct QLoaderSettingsData
     QLoaderSettings *parent;
     QStringList section;
     std::string className;
-    QHash<QString, QVariant> properties;
+    QMap<QString, QVariant> properties;
     std::vector<QLoaderSettings*> children;
 };
 
