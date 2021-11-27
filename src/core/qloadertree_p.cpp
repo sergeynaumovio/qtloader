@@ -98,7 +98,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (keyValueMatch.hasMatch())
         {
             QString key = keyValueMatch.captured("key");
-            QString value = keyValueMatch.captured("value");
+            QVariant value = keyValueMatch.captured("value");
 
             if (key == "class")
             {
@@ -108,8 +108,12 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
                     return;
                 }
 
-                hash.data[settings].className = value.toLatin1();
+                hash.data[settings].className = value.toByteArray();
                 hash.data[settings].classLine = errorLine;
+            }
+            else
+            {
+                hash.data[settings].properties[key] = value;
             }
         }
     }
