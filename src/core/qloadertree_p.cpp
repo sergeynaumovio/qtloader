@@ -40,8 +40,10 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         return;
     }
 
-    QLoaderSettings *objectSettings{};
+    QStringList section;
+    QLoaderSettings *settings{};
     errorLine = 0;
+
     while (!file->atEnd())
     {
         QByteArray line = file->readLine();
@@ -51,30 +53,43 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (comment.match(line).hasMatch())
             continue;
 
-        QRegularExpression section("^\\[(?<path>[^\\[\\]]*)\\]$");
-        QRegularExpressionMatch sectionMatch = section.match(line);
-        if (sectionMatch.hasMatch())
+        QRegularExpression sectionName("^\\[(?<section>[^\\[\\]]*)\\]$");
+        QRegularExpressionMatch sectionNameMatch = sectionName.match(line);
+        if (sectionNameMatch.hasMatch())
         {
-            QStringList path = sectionMatch.captured("path").split('/');
-            objectSettings = new QLoaderSettings(this);
+            section = sectionNameMatch.captured("section").split('/');
+            settings = new QLoaderSettings(this);
+            bool isValid{};
+            QLoaderSettingsData item;
+            item.section = section;
 
-            if (!root)
+            if (!root && section.size() == 1 && section.back().size())
             {
-                if (path.size() == 1 && path.front().size())
-                    root = objectSettings;
-                else
-                {
-                    status = QLoaderTree::DesignError;
-                    delete objectSettings;
+                root = settings;
+                isValid = true;
+            }
+            else if (root && section.size() > 1 && section.back().size() && !hash.settings.contains(section))
+            {
+                QStringList parent = section;
+                parent.removeLast();
 
-                    return;
+                if (hash.settings.contains(parent))
+                {
+                    isValid = true;
+                    item.parent = hash.settings[parent];
+                    hash.data[item.parent].children.push_back(settings);
                 }
             }
 
-            QLoaderSettingsData data;
-            data.section = sectionMatch.captured("path").split('/');
-            hash[objectSettings] = data;
+            if (!isValid)
+            {
+                status = QLoaderTree::DesignError;
+                delete settings;
+                return;
+            }
 
+            hash.settings[section] = settings;
+            hash.data[settings] = item;
             continue;
         }
 
@@ -87,44 +102,39 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 
             if (key == "class")
             {
-                if (!objectSettings)
+                if (!settings)
                 {
                     status = QLoaderTree::FormatError;
                     return;
                 }
 
-                hash[objectSettings].className = value.toStdString();
-                break;
+                hash.data[settings].className = value.toLatin1();
+                hash.data[settings].classLine = errorLine;
             }
         }
     }
+
     errorLine = -1;
 }
 
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
-    QHashIterator<QLoaderSettings*, QLoaderSettingsData> i(hash);
+    QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
     while (i.hasNext())
     {
         i.next();
-        delete i.key();
+        delete i.value();
     }
-
-    hash.clear();
 }
 
-QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject */*parent*/)
+QObject *QLoaderTreePrivate::builtin(QLoaderSettings* /*settings*/, QObject* /*parent*/)
 {
-    QString className = settings->className();
-
-    if (className.startsWith("Loader")) { }
-
     return nullptr;
 }
 
-QObject *QLoaderTreePrivate::external(QLoaderSettings *objectSettings, QObject */*parent*/)
+QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent)
 {
-    const char *className = objectSettings->className();
+    const char *className = settings->className();
     QString libraryName("Qt" + QString::number(QT_VERSION_MAJOR));
 
     QRegularExpression starts("^[A-Z]+[a-z,0-9]*");
@@ -146,10 +156,39 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *objectSettings, QObject *
             return nullptr;
         }
 
-        return plugin->object(objectSettings, nullptr);
+        return plugin->object(settings, parent);
     }
 
     return nullptr;
+}
+
+void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
+{
+    QObject *object;
+    if (!qstrncmp(settings->className(), "Loader", 6))
+        object = builtin(settings, parent);
+    else
+        object = external(settings, parent);
+
+    if (!object)
+    {
+        status = QLoaderTree::ObjectError;
+        errorLine = hash.data[settings].classLine;
+        return;
+    }
+
+    if (object == parent)
+    {
+        status = QLoaderTree::ParentError;
+        errorLine = hash.data[settings].classLine;
+        return;
+    }
+
+    for (QLoaderSettings *child : hash.data[settings].children)
+    {
+        if (!status)
+            load(child, object);
+    }
 }
 
 bool QLoaderTreePrivate::load()
@@ -157,20 +196,9 @@ bool QLoaderTreePrivate::load()
     if (isLoaded)
         return false;
 
-    QHashIterator<QLoaderSettings*, QLoaderSettingsData> i(hash);
-    while (i.hasNext())
-    {
-        i.next();
-        QObject *object = external(i.key(), nullptr);
-
-        if (!object && status != QLoaderTree::PluginError)
-            status = QLoaderTree::ObjectError;
-
-        if (!i.value().parent)
-            break;
-    }
-
     isLoaded = true;
 
-    return !static_cast<unsigned char>(status);
+    load(root, nullptr);
+
+    return (status == QLoaderTree::NoError);
 }

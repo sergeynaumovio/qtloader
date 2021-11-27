@@ -30,15 +30,18 @@ class QFile;
 
 struct QLoaderSettingsData
 {
-    QLoaderSettings *parent;
+    QLoaderSettings *parent{};
     QStringList section;
-    std::string className;
+    QByteArray className;
+    int classLine;
     QMap<QString, QVariant> properties;
     std::vector<QLoaderSettings*> children;
 };
 
 class QLoaderTreePrivate
 {
+    void load(QLoaderSettings *settings, QObject *parent);
+
 public:
     QLoaderTree *const q_ptr;
     QLoaderTree::Status status{};
@@ -46,13 +49,19 @@ public:
     int errorLine{-1};
     bool isLoaded{};
     QLoaderSettings *root{};
-    QHash<QLoaderSettings*, QLoaderSettingsData> hash;
+
+    struct
+    {
+        QHash<QStringList, QLoaderSettings*> settings;
+        QHash<QLoaderSettings*, QLoaderSettingsData> data;
+
+    } hash;
 
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
 
-    QObject *builtin(QLoaderSettings *objectSettings, QObject *parent);
-    QObject *external(QLoaderSettings *objectSettings, QObject *parent);
+    QObject *builtin(QLoaderSettings *settings, QObject *parent);
+    QObject *external(QLoaderSettings *settings, QObject *parent);
     bool load();
 };
 
