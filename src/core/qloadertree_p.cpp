@@ -169,7 +169,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
 void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
 {
     QObject *object;
-    if (!qstrncmp(settings->className(), "Loader", 6))
+    if (!qstrncmp(hash.data[settings].className, "Loader", 6))
         object = builtin(settings, parent);
     else
         object = external(settings, parent);
