@@ -40,6 +40,7 @@ struct QLoaderSettingsData
 
 class QLoaderTreePrivate
 {
+    void setProperties(QLoaderSettings *settings, QObject *object);
     void load(QLoaderSettings *settings, QObject *parent);
 
 public:

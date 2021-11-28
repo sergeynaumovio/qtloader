@@ -20,8 +20,8 @@
 #include "qloadersettings_p.h"
 #include "qloadertree_p.h"
 
-QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *objectTreePrivate)
-:   d_ptr(new QLoaderSettingsPrivate(this, objectTreePrivate))
+QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *d_tree)
+:   d_ptr(new QLoaderSettingsPrivate(this, d_tree))
 { }
 
 QLoaderSettings::~QLoaderSettings()

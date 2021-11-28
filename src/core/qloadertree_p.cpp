@@ -22,6 +22,7 @@
 #include "qloaderinterface.h"
 #include <QFile>
 #include <QPluginLoader>
+#include <QMainWindow>
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 :   q_ptr(q)
@@ -159,6 +160,24 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     return nullptr;
 }
 
+void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *object)
+{
+    object->setObjectName(hash.data[settings].section.last());
+
+    settings = qobject_cast<QLoaderSettings*>(object);
+
+    if (settings)
+    {
+        QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
+        if (mainwindow)
+        {
+            if (settings->contains("windowTitle"))
+                mainwindow->setWindowTitle(settings->value("windowTitle").toString());
+        }
+
+    }
+}
+
 void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
 {
     QObject *object;
@@ -181,7 +200,7 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
         return;
     }
 
-    object->setObjectName(hash.data[settings].section.last());
+    setProperties(settings, object);
 
     for (QLoaderSettings *child : hash.data[settings].children)
     {

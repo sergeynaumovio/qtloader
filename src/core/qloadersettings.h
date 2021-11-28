@@ -30,6 +30,9 @@ class Q_LOADER_EXPORT QLoaderSettings
 {
     Q_DISABLE_COPY_MOVE(QLoaderSettings)
 
+    friend class QLoaderTreePrivate;
+    explicit QLoaderSettings(QLoaderTreePrivate *d_tree);
+
 protected:
     const QScopedPointer<QLoaderSettingsPrivate> d_ptr;
 
@@ -42,7 +45,6 @@ protected:
     QVariant value(const QString &key) const;
 
 public:
-    explicit QLoaderSettings(QLoaderTreePrivate *objectTreePrivate);
     virtual ~QLoaderSettings();
 
     const char *className() const;
