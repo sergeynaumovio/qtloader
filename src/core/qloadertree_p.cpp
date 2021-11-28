@@ -217,7 +217,7 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
 
     if (!object || object == parent)
     {
-        if (!object)
+        if (!object && !status)
             status = QLoaderTree::ObjectError;
         else if (object == parent)
             status = QLoaderTree::ParentError;
