@@ -23,6 +23,8 @@
 #include <QFile>
 #include <QPluginLoader>
 #include <QMainWindow>
+#include <QMenu>
+#include <QAction>
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 :   q_ptr(q)
@@ -173,8 +175,27 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         {
             if (settings->contains("windowTitle"))
                 mainwindow->setWindowTitle(settings->value("windowTitle").toString());
+
+            return;
         }
 
+        QMenu *menu = qobject_cast<QMenu*>(object);
+        if (menu)
+        {
+            if (settings->contains("title"))
+                menu->setTitle(settings->value("title").toString());
+
+            return;
+        }
+
+        QAction *action = qobject_cast<QAction*>(object);
+        if (action)
+        {
+            if (settings->contains("text"))
+                action->setText(settings->value("text").toString());
+
+            return;
+        }
     }
 }
 
