@@ -25,11 +25,21 @@ QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *objectTreePrivate)
 { }
 
 QLoaderSettings::~QLoaderSettings()
-{ }
+{
+    if (d_ptr->q_ptr != this)
+    {
+        QStringList section = d_ptr->d_tree_ptr->hash.data[d_ptr->q_ptr].section;
+        QLoaderSettings *settings = d_ptr->d_tree_ptr->hash.settings[section];
+        d_ptr->d_tree_ptr->hash.settings.remove(section);
+        d_ptr->d_tree_ptr->hash.data.remove(settings);
+    }
+}
 
 QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
 :   d_ptr(new QLoaderSettingsPrivate(settings->d_ptr->q_ptr, settings->d_ptr->d_tree_ptr))
-{ }
+{
+    delete settings;
+}
 
 QLoaderTree *QLoaderSettings::tree() const
 {

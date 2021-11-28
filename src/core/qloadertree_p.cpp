@@ -122,14 +122,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 }
 
 QLoaderTreePrivate::~QLoaderTreePrivate()
-{
-    QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
-    while (i.hasNext())
-    {
-        i.next();
-        delete i.value();
-    }
-}
+{ }
 
 QObject *QLoaderTreePrivate::builtin(QLoaderSettings* /*settings*/, QObject* /*parent*/)
 {

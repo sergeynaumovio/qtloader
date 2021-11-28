@@ -26,9 +26,7 @@ QLoaderSettingsPrivate::QLoaderSettingsPrivate(QLoaderSettings *q,
 { }
 
 QLoaderSettingsPrivate::~QLoaderSettingsPrivate()
-{
-    d_tree_ptr->hash.data.remove(q_ptr);
-}
+{ }
 
 QStringList QLoaderSettingsPrivate::section() const
 {
