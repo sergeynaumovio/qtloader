@@ -66,12 +66,13 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             QLoaderSettingsData item;
             item.section = section;
 
-            if (!root && section.size() == 1 && section.back().size())
+            if (!root.settings && section.size() == 1 && section.back().size())
             {
-                root = settings;
+                root.settings = settings;
                 isValid = true;
             }
-            else if (root && section.size() > 1 && section.back().size() && !hash.settings.contains(section))
+            else if (root.settings && section.size() > 1 && section.back().size() &&
+                     !hash.settings.contains(section))
             {
                 QStringList parent = section;
                 parent.removeLast();
@@ -125,7 +126,14 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 }
 
 QLoaderTreePrivate::~QLoaderTreePrivate()
-{ }
+{
+    QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
+    while (i.hasNext())
+    {
+        i.next();
+        delete i.value();
+    }
+}
 
 QObject *QLoaderTreePrivate::builtin(QLoaderSettings* /*settings*/, QObject* /*parent*/)
 {
@@ -207,19 +215,19 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
     else
         object = external(settings, parent);
 
-    if (!object)
+    if (!object || object == parent)
     {
-        status = QLoaderTree::ObjectError;
+        if (!object)
+            status = QLoaderTree::ObjectError;
+        else if (object == parent)
+            status = QLoaderTree::ParentError;
+
         errorLine = hash.data[settings].classLine;
         return;
     }
 
-    if (object == parent)
-    {
-        status = QLoaderTree::ParentError;
-        errorLine = hash.data[settings].classLine;
-        return;
-    }
+    if (!parent)
+        root.object = object;
 
     setProperties(settings, object);
 
@@ -237,7 +245,10 @@ bool QLoaderTreePrivate::load()
 
     isLoaded = true;
 
-    load(root, nullptr);
+    load(root.settings, nullptr);
+
+    if (status && root.object)
+        root.object->deleteLater();
 
     return (status == QLoaderTree::NoError);
 }
