@@ -22,17 +22,14 @@
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *objectTreePrivate)
 :   d_ptr(new QLoaderSettingsPrivate(this, objectTreePrivate))
-{
-
-}
+{ }
 
 QLoaderSettings::~QLoaderSettings()
 { }
 
-QLoaderSettings::QLoaderSettings(QLoaderSettings */*settings*/)
-{
-
-}
+QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
+:   d_ptr(new QLoaderSettingsPrivate(settings->d_ptr->q_ptr, settings->d_ptr->d_tree_ptr))
+{ }
 
 QLoaderTree *QLoaderSettings::tree() const
 {
