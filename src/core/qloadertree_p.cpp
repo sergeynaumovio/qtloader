@@ -188,6 +188,8 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
         return;
     }
 
+    object->setObjectName(hash.data[settings].section.last());
+
     for (QLoaderSettings *child : hash.data[settings].children)
     {
         if (!status)
