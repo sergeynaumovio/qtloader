@@ -28,11 +28,6 @@ QLoaderSettingsPrivate::QLoaderSettingsPrivate(QLoaderSettings *q,
 QLoaderSettingsPrivate::~QLoaderSettingsPrivate()
 { }
 
-QStringList QLoaderSettingsPrivate::section() const
-{
-    return d_tree_ptr->hash.data[q_ptr].section;
-}
-
 const char *QLoaderSettingsPrivate::className() const
 {
     return d_tree_ptr->hash.data[q_ptr].className.data();
@@ -43,12 +38,17 @@ bool QLoaderSettingsPrivate::contains(const QString &key) const
     return d_tree_ptr->hash.data[q_ptr].properties.contains(key);
 }
 
-QVariant QLoaderSettingsPrivate::value(const QString &key) const
+QStringList QLoaderSettingsPrivate::section() const
 {
-    return d_tree_ptr->hash.data[q_ptr].properties[key];
+    return d_tree_ptr->hash.data[q_ptr].section;
 }
 
 void QLoaderSettingsPrivate::setValue(const QString &key, const QVariant &value)
 {
     d_tree_ptr->hash.data[q_ptr].properties[key] = value;
+}
+
+QVariant QLoaderSettingsPrivate::value(const QString &key) const
+{
+    return d_tree_ptr->hash.data[q_ptr].properties[key];
 }

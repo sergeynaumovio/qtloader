@@ -35,11 +35,11 @@ public:
     QLoaderSettingsPrivate(QLoaderSettings *q, QLoaderTreePrivate *d_tree);
     virtual ~QLoaderSettingsPrivate();
 
-    QStringList section() const;
-    bool contains(const QString &key) const;
-    QVariant value(const QString &key) const;
-    void setValue(const QString &key, const QVariant &value);
     const char *className() const;
+    bool contains(const QString &key) const;
+    QStringList section() const;
+    void setValue(const QString &key, const QVariant &value);
+    QVariant value(const QString &key) const;
 };
 
 #endif // QLOADERSETTINGS_P_H

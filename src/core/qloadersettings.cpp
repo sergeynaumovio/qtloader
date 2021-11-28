@@ -24,6 +24,12 @@ QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *d_tree)
 :   d_ptr(new QLoaderSettingsPrivate(this, d_tree))
 { }
 
+QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
+:   d_ptr(new QLoaderSettingsPrivate(settings->d_ptr->q_ptr, settings->d_ptr->d_tree_ptr))
+{
+    delete settings;
+}
+
 QLoaderSettings::~QLoaderSettings()
 {
     if (d_ptr->q_ptr != this)
@@ -35,15 +41,9 @@ QLoaderSettings::~QLoaderSettings()
     }
 }
 
-QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
-:   d_ptr(new QLoaderSettingsPrivate(settings->d_ptr->q_ptr, settings->d_ptr->d_tree_ptr))
+bool QLoaderSettings::contains(const QString &key) const
 {
-    delete settings;
-}
-
-QLoaderTree *QLoaderSettings::tree() const
-{
-    return d_ptr->d_tree_ptr->q_ptr;
+    return d_ptr->contains(key);
 }
 
 QStringList QLoaderSettings::section() const
@@ -51,14 +51,14 @@ QStringList QLoaderSettings::section() const
     return d_ptr->section();
 }
 
-const char *QLoaderSettings::className() const
+void QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
-    return d_ptr->className();
+    d_ptr->setValue(key, value);
 }
 
-bool QLoaderSettings::contains(const QString &key) const
+QLoaderTree *QLoaderSettings::tree() const
 {
-    return d_ptr->contains(key);
+    return d_ptr->d_tree_ptr->q_ptr;
 }
 
 QVariant QLoaderSettings::value(const QString &key) const
@@ -66,8 +66,7 @@ QVariant QLoaderSettings::value(const QString &key) const
     return d_ptr->value(key);
 }
 
-void QLoaderSettings::setValue(const QString &key, const QVariant &value)
+const char *QLoaderSettings::className() const
 {
-    d_ptr->setValue(key, value);
+    return d_ptr->className();
 }
-
