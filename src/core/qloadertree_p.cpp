@@ -181,6 +181,18 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         QAction *action = qobject_cast<QAction*>(object);
         if (action)
         {
+            if (settings->contains("autoRepeat"))
+                action->setAutoRepeat(settings->value("autoRepeat").toBool());
+
+            if (settings->contains("checkable"))
+                action->setCheckable(settings->value("checkable").toBool());
+
+            if (settings->contains("checked"))
+                action->setChecked(settings->value("checked").toBool());
+
+            if (settings->contains("enabled"))
+                action->setEnabled(settings->value("enabled").toBool());
+
             if (settings->contains("text"))
                 action->setText(settings->value("text").toString());
 
