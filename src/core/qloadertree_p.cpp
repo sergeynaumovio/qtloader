@@ -178,6 +178,25 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
 
     if (settings)
     {
+        QAction *action = qobject_cast<QAction*>(object);
+        if (action)
+        {
+            if (settings->contains("text"))
+                action->setText(settings->value("text").toString());
+
+            return;
+        }
+
+        QWidget *widget = qobject_cast<QWidget*>(object);
+        if (widget)
+        {
+            if (settings->contains("minimumWidth"))
+                widget->setMinimumWidth(settings->value("minimumWidth").toInt());
+
+            if (settings->contains("minimumHeight"))
+                widget->setMinimumHeight(settings->value("minimumHeight").toInt());
+        }
+
         QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
         if (mainwindow)
         {
@@ -196,14 +215,6 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
             return;
         }
 
-        QAction *action = qobject_cast<QAction*>(object);
-        if (action)
-        {
-            if (settings->contains("text"))
-                action->setText(settings->value("text").toString());
-
-            return;
-        }
     }
 }
 
