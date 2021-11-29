@@ -202,11 +202,20 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         QWidget *widget = qobject_cast<QWidget*>(object);
         if (widget)
         {
+            if (settings->contains("enabled"))
+                widget->setEnabled(settings->value("enabled").toBool());
+
             if (settings->contains("minimumWidth"))
                 widget->setMinimumWidth(settings->value("minimumWidth").toInt());
 
             if (settings->contains("minimumHeight"))
                 widget->setMinimumHeight(settings->value("minimumHeight").toInt());
+
+            if (settings->contains("styleSheet"))
+                widget->setStyleSheet(settings->value("styleSheet").toString());
+
+            if (settings->contains("visible"))
+                widget->setVisible(settings->value("visible").toBool());
         }
 
         QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
