@@ -41,7 +41,8 @@ public:
         DesignError,
         PluginError,
         ObjectError,
-        ParentError
+        ParentError,
+        SignalError
     };
     Q_ENUM(Status)
 
