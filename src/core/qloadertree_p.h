@@ -49,6 +49,7 @@ public:
     QFile *file;
     int errorLine{-1};
     bool isLoaded{};
+    bool modified{};
 
     struct
     {

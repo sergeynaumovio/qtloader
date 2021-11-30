@@ -287,5 +287,6 @@ bool QLoaderTreePrivate::load()
 
 bool QLoaderTreePrivate::save()
 {
+    modified = false;
     return false;
 }

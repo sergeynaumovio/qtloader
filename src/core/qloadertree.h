@@ -51,6 +51,7 @@ public:
 
     int errorLine() const;
     QString fileName() const;
+    bool isModified() const;
     bool load();
     bool save();
     Status status() const;

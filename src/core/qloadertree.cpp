@@ -38,6 +38,11 @@ QString QLoaderTree::fileName() const
     return d_ptr->file->fileName();
 }
 
+bool QLoaderTree::isModified() const
+{
+    return d_ptr->modified;
+}
+
 bool QLoaderTree::load()
 {
     return d_ptr->load();
