@@ -183,23 +183,24 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
 
     if (settings)
     {
+        QVariant value;
         QAction *action = qobject_cast<QAction*>(object);
         if (action)
         {
-            if (settings->contains("autoRepeat"))
-                action->setAutoRepeat(settings->value("autoRepeat").toBool());
+            if (!(value = settings->value("autoRepeat")).isNull())
+                action->setAutoRepeat(value.toBool());
 
-            if (settings->contains("checkable"))
-                action->setCheckable(settings->value("checkable").toBool());
+            if (!(value = settings->value("checkable")).isNull())
+                action->setCheckable(value.toBool());
 
-            if (settings->contains("checked"))
-                action->setChecked(settings->value("checked").toBool());
+            if (!(value = settings->value("checked")).isNull())
+                action->setChecked(value.toBool());
 
-            if (settings->contains("enabled"))
-                action->setEnabled(settings->value("enabled").toBool());
+            if (!(value = settings->value("enabled")).isNull())
+                action->setEnabled(value.toBool());
 
-            if (settings->contains("text"))
-                action->setText(settings->value("text").toString());
+            if (!(value = settings->value("text")).isNull())
+                action->setText(value.toString());
 
             return;
         }
@@ -207,27 +208,27 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         QWidget *widget = qobject_cast<QWidget*>(object);
         if (widget)
         {
-            if (settings->contains("enabled"))
-                widget->setEnabled(settings->value("enabled").toBool());
+            if (!(value = settings->value("enabled")).isNull())
+                widget->setEnabled(value.toBool());
 
-            if (settings->contains("minimumWidth"))
-                widget->setMinimumWidth(settings->value("minimumWidth").toInt());
+            if (!(value = settings->value("minimumWidth")).isNull())
+                widget->setMinimumWidth(value.toInt());
 
-            if (settings->contains("minimumHeight"))
-                widget->setMinimumHeight(settings->value("minimumHeight").toInt());
+            if (!(value = settings->value("minimumHeight")).isNull())
+                widget->setMinimumHeight(value.toInt());
 
-            if (settings->contains("styleSheet"))
-                widget->setStyleSheet(settings->value("styleSheet").toString());
+            if (!(value = settings->contains("styleSheet")).isNull())
+                widget->setStyleSheet(value.toString());
 
-            if (settings->contains("visible"))
-                widget->setVisible(settings->value("visible").toBool());
+            if (!(value = settings->value("visible")).isNull())
+                widget->setVisible(value.toBool());
         }
 
         QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
         if (mainwindow)
         {
-            if (settings->contains("windowTitle"))
-                mainwindow->setWindowTitle(settings->value("windowTitle").toString());
+            if (!(value = settings->value("windowTitle")).isNull())
+                mainwindow->setWindowTitle(value.toString());
 
             return;
         }
@@ -235,12 +236,11 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         QMenu *menu = qobject_cast<QMenu*>(object);
         if (menu)
         {
-            if (settings->contains("title"))
-                menu->setTitle(settings->value("title").toString());
+            if (!(value = settings->value("title")).isNull())
+                menu->setTitle(value.toString());
 
             return;
         }
-
     }
 }
 

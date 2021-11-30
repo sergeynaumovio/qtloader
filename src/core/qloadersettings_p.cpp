@@ -50,7 +50,11 @@ void QLoaderSettingsPrivate::setValue(const QString &key, const QVariant &value)
     emit d_tree_ptr->q_ptr->settingsChanged();
 }
 
-QVariant QLoaderSettingsPrivate::value(const QString &key) const
+QVariant QLoaderSettingsPrivate::value(const QString &key, const QVariant &defaultValue) const
 {
-    return d_tree_ptr->hash.data[q_ptr].properties[key];
+    const QMap<QString, QVariant> &properties = d_tree_ptr->hash.data[q_ptr].properties;
+    if (properties.contains(key))
+        return properties[key];
+
+    return defaultValue;
 }

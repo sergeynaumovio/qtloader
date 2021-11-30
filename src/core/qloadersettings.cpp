@@ -63,9 +63,9 @@ QLoaderTree *QLoaderSettings::tree() const
     return d_ptr->d_tree_ptr->q_ptr;
 }
 
-QVariant QLoaderSettings::value(const QString &key) const
+QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue) const
 {
-    return d_ptr->value(key);
+    return d_ptr->value(key, defaultValue);
 }
 
 const char *QLoaderSettings::className() const

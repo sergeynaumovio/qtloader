@@ -39,7 +39,7 @@ public:
     bool contains(const QString &key) const;
     QStringList section() const;
     void setValue(const QString &key, const QVariant &value);
-    QVariant value(const QString &key) const;
+    QVariant value(const QString &key, const QVariant &defaultValue) const;
 };
 
 #endif // QLOADERSETTINGS_P_H

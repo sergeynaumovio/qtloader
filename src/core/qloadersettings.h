@@ -20,7 +20,7 @@
 #define QLOADERSETTINGS_H
 
 #include "qtloaderglobal.h"
-#include <QObject>
+#include <QVariant>
 
 class QLoaderSettingsPrivate;
 class QLoaderTreePrivate;
@@ -42,7 +42,7 @@ protected:
     QStringList section() const;
     void setValue(const QString &key, const QVariant &value);
     QLoaderTree *tree() const;
-    QVariant value(const QString &key) const;
+    QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
 public:
     virtual ~QLoaderSettings();
