@@ -170,6 +170,11 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     return nullptr;
 }
 
+bool QLoaderTreePrivate::copy(const QStringList& /*from*/, const QStringList& /*to*/)
+{
+    return false;
+}
+
 void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *object)
 {
     object->setObjectName(hash.data[settings].section.last());

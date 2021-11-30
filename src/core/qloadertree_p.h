@@ -70,6 +70,7 @@ public:
 
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QObject *external(QLoaderSettings *settings, QObject *parent);
+    bool copy(const QStringList &from, const QStringList &to);
     bool load();
     bool save();
 };

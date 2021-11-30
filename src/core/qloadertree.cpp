@@ -28,6 +28,11 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
+bool QLoaderTree::copy(const QStringList &from, const QStringList &to)
+{
+    return d_ptr->copy(from, to);
+}
+
 int QLoaderTree::errorLine() const
 {
     return d_ptr->errorLine;
