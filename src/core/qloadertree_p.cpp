@@ -217,7 +217,7 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
             if (!(value = settings->value("minimumHeight")).isNull())
                 widget->setMinimumHeight(value.toInt());
 
-            if (!(value = settings->contains("styleSheet")).isNull())
+            if (!(value = settings->value("styleSheet")).isNull())
                 widget->setStyleSheet(value.toString());
 
             if (!(value = settings->value("visible")).isNull())
