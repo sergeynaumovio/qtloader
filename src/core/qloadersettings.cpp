@@ -38,6 +38,8 @@ QLoaderSettings::~QLoaderSettings()
         QLoaderSettings *settings = d_ptr->d_tree_ptr->hash.settings[section];
         d_ptr->d_tree_ptr->hash.settings.remove(section);
         d_ptr->d_tree_ptr->hash.data.remove(settings);
+        d_ptr->d_tree_ptr->modified = true;
+        emit d_ptr->d_tree_ptr->q_ptr->settingsChanged();
     }
 }
 
