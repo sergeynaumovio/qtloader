@@ -70,6 +70,7 @@ public:
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QObject *external(QLoaderSettings *settings, QObject *parent);
     bool load();
+    bool save();
 };
 
 #endif // QLOADERTREE_P_H

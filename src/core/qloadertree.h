@@ -52,6 +52,7 @@ public:
     int errorLine() const;
     QString fileName() const;
     bool load();
+    bool save();
     Status status() const;
 };
 

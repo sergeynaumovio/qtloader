@@ -284,3 +284,8 @@ bool QLoaderTreePrivate::load()
 
     return (status == QLoaderTree::NoError);
 }
+
+bool QLoaderTreePrivate::save()
+{
+    return false;
+}

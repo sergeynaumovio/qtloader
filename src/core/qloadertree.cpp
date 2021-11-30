@@ -43,6 +43,11 @@ bool QLoaderTree::load()
     return d_ptr->load();
 }
 
+bool QLoaderTree::save()
+{
+    return d_ptr->save();
+}
+
 QLoaderTree::Status QLoaderTree::status() const
 {
     return d_ptr->status;
