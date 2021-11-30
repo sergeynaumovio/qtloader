@@ -172,6 +172,12 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
 
 bool QLoaderTreePrivate::copy(const QStringList& /*from*/, const QStringList& /*to*/)
 {
+    if (loaded)
+    {
+        modified = true;
+        emit q_ptr->settingsChanged();
+    }
+
     return false;
 }
 
@@ -292,6 +298,12 @@ bool QLoaderTreePrivate::load()
 
 bool QLoaderTreePrivate::save()
 {
-    modified = false;
+    if (loaded && modified)
+    {
+        modified = false;
+
+        return false;
+    }
+
     return false;
 }
