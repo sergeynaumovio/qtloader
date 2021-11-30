@@ -45,8 +45,9 @@ QStringList QLoaderSettingsPrivate::section() const
 
 void QLoaderSettingsPrivate::setValue(const QString &key, const QVariant &value)
 {
-    d_tree_ptr->modified = true;
     d_tree_ptr->hash.data[q_ptr].properties[key] = value;
+    d_tree_ptr->modified = true;
+    emit d_tree_ptr->q_ptr->settingsChanged();
 }
 
 QVariant QLoaderSettingsPrivate::value(const QString &key) const
