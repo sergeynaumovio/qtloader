@@ -170,7 +170,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     return nullptr;
 }
 
-bool QLoaderTreePrivate::copy(const QStringList& /*from*/, const QStringList& /*to*/)
+bool QLoaderTreePrivate::copy(const QStringList& /*fromSection*/, const QStringList& /*toSection*/)
 {
     if (loaded)
     {

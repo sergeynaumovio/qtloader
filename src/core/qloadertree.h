@@ -52,7 +52,7 @@ public:
     explicit QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
-    bool copy(const QStringList &from, const QStringList &to);
+    bool copy(const QStringList &fromSection, const QStringList &toSection);
     int errorLine() const;
     QString fileName() const;
     bool isModified() const;

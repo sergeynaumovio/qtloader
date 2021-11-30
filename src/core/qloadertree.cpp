@@ -28,9 +28,9 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
-bool QLoaderTree::copy(const QStringList &from, const QStringList &to)
+bool QLoaderTree::copy(const QStringList &fromSection, const QStringList &toSection)
 {
-    return d_ptr->copy(from, to);
+    return d_ptr->copy(fromSection, toSection);
 }
 
 int QLoaderTree::errorLine() const
