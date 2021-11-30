@@ -48,7 +48,7 @@ public:
     QLoaderTree::Status status{};
     QFile *file;
     int errorLine{-1};
-    bool isLoaded{};
+    bool loaded{};
     bool modified{};
 
     struct

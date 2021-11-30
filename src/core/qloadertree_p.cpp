@@ -272,10 +272,10 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
 
 bool QLoaderTreePrivate::load()
 {
-    if (isLoaded)
+    if (loaded)
         return false;
 
-    isLoaded = true;
+    loaded = true;
 
     load(root.settings, nullptr);
 
