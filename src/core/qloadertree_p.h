@@ -45,8 +45,8 @@ class QLoaderTreePrivate
 
 public:
     QLoaderTree *const q_ptr;
-    QLoaderTree::Status status{};
     QFile *file;
+    QLoaderTree::Status status{};
     int errorLine{-1};
     bool loaded{};
     bool modified{};

@@ -27,16 +27,9 @@
 #include <QAction>
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
-:   q_ptr(q)
+:   q_ptr(q),
+    file(new QFile(fileName, q))
 {
-    if (!QFile::exists(fileName))
-    {
-        status = QLoaderTree::AccessError;
-        return;
-    }
-
-    file = new QFile(fileName, q);
-
     if (!file->open(QIODevice::ReadWrite | QIODevice::Text))
     {
         status = QLoaderTree::AccessError;
