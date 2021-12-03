@@ -22,7 +22,6 @@
 #include "qtloaderglobal.h"
 #include <QVariant>
 
-class QLoaderSettingsPrivate;
 class QLoaderTreePrivate;
 class QLoaderTree;
 
@@ -30,12 +29,10 @@ class Q_LOADER_EXPORT QLoaderSettings
 {
     Q_DISABLE_COPY_MOVE(QLoaderSettings)
 
-    friend class QLoaderTreePrivate;
-    explicit QLoaderSettings(QLoaderTreePrivate *d_tree);
+    QLoaderSettings *q_ptr;
+    QLoaderTreePrivate *d_ptr;
 
 protected:
-    const QScopedPointer<QLoaderSettingsPrivate> d_ptr;
-
     explicit QLoaderSettings(QLoaderSettings *settings);
 
     bool contains(const QString &key) const;
@@ -45,10 +42,10 @@ protected:
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
 public:
+    explicit QLoaderSettings(QLoaderTreePrivate *d);
     virtual ~QLoaderSettings();
 
     const char *className() const;
 };
-Q_DECLARE_INTERFACE(QLoaderSettings, "QLoaderSettings")
 
 #endif // QLOADERSETTINGS_H

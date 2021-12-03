@@ -17,58 +17,65 @@
 ****************************************************************************/
 
 #include "qloadersettings.h"
-#include "qloadersettings_p.h"
 #include "qloadertree_p.h"
 
-QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *d_tree)
-:   d_ptr(new QLoaderSettingsPrivate(this, d_tree))
-{ }
-
 QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
-:   d_ptr(new QLoaderSettingsPrivate(settings->d_ptr->q_ptr, settings->d_ptr->d_tree_ptr))
+:   q_ptr(settings->q_ptr),
+    d_ptr(settings->d_ptr)
 {
     delete settings;
 }
 
+QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *d)
+:   q_ptr(this),
+    d_ptr(d)
+{ }
+
 QLoaderSettings::~QLoaderSettings()
 {
-    if (d_ptr->q_ptr != this)
+    if (q_ptr != this)
     {
-        QStringList section = d_ptr->d_tree_ptr->hash.data[d_ptr->q_ptr].section;
-        QLoaderSettings *settings = d_ptr->d_tree_ptr->hash.settings[section];
-        d_ptr->d_tree_ptr->hash.settings.remove(section);
-        d_ptr->d_tree_ptr->hash.data.remove(settings);
-        d_ptr->d_tree_ptr->modified = true;
-        emit d_ptr->d_tree_ptr->q_ptr->settingsChanged();
+        QStringList section = d_ptr->hash.data[q_ptr].section;
+        QLoaderSettings *settings = d_ptr->hash.settings[section];
+        d_ptr->hash.settings.remove(section);
+        d_ptr->hash.data.remove(settings);
+        d_ptr->modified = true;
+        emit d_ptr->q_ptr->settingsChanged();
     }
 }
 
 bool QLoaderSettings::contains(const QString &key) const
 {
-    return d_ptr->contains(key);
+    return d_ptr->hash.data[q_ptr].properties.contains(key);;
 }
 
 QStringList QLoaderSettings::section() const
 {
-    return d_ptr->section();
+    return d_ptr->hash.data[q_ptr].section;
 }
 
 void QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
-    d_ptr->setValue(key, value);
+    d_ptr->hash.data[q_ptr].properties[key] = value;
+    d_ptr->modified = true;
+    emit d_ptr->q_ptr->settingsChanged();
 }
 
 QLoaderTree *QLoaderSettings::tree() const
 {
-    return d_ptr->d_tree_ptr->q_ptr;
+    return d_ptr->q_ptr;
 }
 
 QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue) const
 {
-    return d_ptr->value(key, defaultValue);
+    const QMap<QString, QVariant> &properties = d_ptr->hash.data[q_ptr].properties;
+    if (properties.contains(key))
+        return properties[key];
+
+    return defaultValue;
 }
 
 const char *QLoaderSettings::className() const
 {
-    return d_ptr->className();
+    return d_ptr->hash.data[q_ptr].className.data();
 }

@@ -36,8 +36,6 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloaderinterface.h
             src/core/qloadersettings.h
             src/core/qloadersettings.cpp
-            src/core/qloadersettings_p.h
-            src/core/qloadersettings_p.cpp
             src/core/qloadertree.h
             src/core/qloadertree.cpp
             src/core/qloadertree_p.h
