@@ -178,75 +178,72 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
 {
     object->setObjectName(hash.data[settings].section.last());
 
-    if (settings)
+    const QMap<QString, QVariant> &properties = hash.data[settings].properties;
+    auto value = [&properties](const QString &key, const QVariant defaultValue = QVariant())
     {
-        const QMap<QString, QVariant> &properties = hash.data[settings].properties;
-        auto value = [&properties](const QString &key, const QVariant defaultValue = QVariant())
-        {
-            if (properties.contains(key))
-                return properties[key];
+        if (properties.contains(key))
+            return properties[key];
 
-            return defaultValue;
-        };
+        return defaultValue;
+    };
 
-        QVariant v;
-        QAction *action = qobject_cast<QAction*>(object);
-        if (action)
-        {
-            if (!(v = value("autoRepeat")).isNull())
-                action->setAutoRepeat(v.toBool());
+    QVariant v;
+    QAction *action = qobject_cast<QAction*>(object);
+    if (action)
+    {
+        if (!(v = value("autoRepeat")).isNull())
+            action->setAutoRepeat(v.toBool());
 
-            if (!(v = value("checkable")).isNull())
-                action->setCheckable(v.toBool());
+        if (!(v = value("checkable")).isNull())
+            action->setCheckable(v.toBool());
 
-            if (!(v = value("checked")).isNull())
-                action->setChecked(v.toBool());
+        if (!(v = value("checked")).isNull())
+            action->setChecked(v.toBool());
 
-            if (!(v = value("enabled")).isNull())
-                action->setEnabled(v.toBool());
+        if (!(v = value("enabled")).isNull())
+            action->setEnabled(v.toBool());
 
-            if (!(v = value("text")).isNull())
-                action->setText(v.toString());
+        if (!(v = value("text")).isNull())
+            action->setText(v.toString());
 
-            return;
-        }
+        return;
+    }
 
-        QWidget *widget = qobject_cast<QWidget*>(object);
-        if (widget)
-        {
-            if (!(v = value("enabled")).isNull())
-                widget->setEnabled(v.toBool());
+    QWidget *widget = qobject_cast<QWidget*>(object);
+    if (widget)
+    {
+        if (!(v = value("enabled")).isNull())
+            widget->setEnabled(v.toBool());
 
-            if (!(v = value("minimumWidth")).isNull())
-                widget->setMinimumWidth(v.toInt());
+        if (!(v = value("minimumWidth")).isNull())
+            widget->setMinimumWidth(v.toInt());
 
-            if (!(v = value("minimumHeight")).isNull())
-                widget->setMinimumHeight(v.toInt());
+        if (!(v = value("minimumHeight")).isNull())
+            widget->setMinimumHeight(v.toInt());
 
-            if (!(v = value("styleSheet")).isNull())
-                widget->setStyleSheet(v.toString());
+        if (!(v = value("styleSheet")).isNull())
+            widget->setStyleSheet(v.toString());
 
-            if (!(v = value("visible")).isNull())
-                widget->setVisible(v.toBool());
-        }
+        if (!(v = value("visible")).isNull())
+            widget->setVisible(v.toBool());
+    }
 
-        QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
-        if (mainwindow)
-        {
-            if (!(v = value("windowTitle")).isNull())
-                mainwindow->setWindowTitle(v.toString());
+    QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
+    if (mainwindow)
+    {
+        if (!(v = value("windowTitle")).isNull())
+            mainwindow->setWindowTitle(v.toString());
 
-            return;
-        }
+        return;
+    }
 
-        QMenu *menu = qobject_cast<QMenu*>(object);
-        if (menu)
-        {
-            if (!(v = value("title")).isNull())
-                menu->setTitle(v.toString());
+    QMenu *menu = qobject_cast<QMenu*>(object);
+    if (menu)
+    {
+        if (!(v = value("title")).isNull())
+            menu->setTitle(v.toString());
 
-            return;
-        }
+        return;
     }
 }
 
