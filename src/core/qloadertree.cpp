@@ -18,7 +18,7 @@
 
 #include "qloadertree.h"
 #include "qloadertree_p.h"
-#include <QFileInfo>
+#include <QFile>
 
 QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 :   QObject(parent),
