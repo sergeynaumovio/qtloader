@@ -28,9 +28,9 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
-bool QLoaderTree::copy(const QStringList &fromSection, const QStringList &toSection)
+bool QLoaderTree::copy(const QStringList &section, const QStringList &to)
 {
-    return d_ptr->copy(fromSection, toSection);
+    return d_ptr->copy(section, to);
 }
 
 int QLoaderTree::errorLine() const
@@ -51,6 +51,11 @@ bool QLoaderTree::isModified() const
 bool QLoaderTree::load()
 {
     return d_ptr->load();
+}
+
+bool QLoaderTree::move(const QStringList &section, const QStringList &to)
+{
+    return d_ptr->move(section, to);
 }
 
 bool QLoaderTree::save()

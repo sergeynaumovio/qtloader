@@ -163,7 +163,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     return nullptr;
 }
 
-bool QLoaderTreePrivate::copy(const QStringList& /*fromSection*/, const QStringList& /*toSection*/)
+bool QLoaderTreePrivate::copy(const QStringList& /*section*/, const QStringList& /*to*/)
 {
     if (loaded)
     {
@@ -291,6 +291,17 @@ bool QLoaderTreePrivate::load()
         root.object->deleteLater();
 
     return (status == QLoaderTree::NoError);
+}
+
+bool QLoaderTreePrivate::move(const QStringList& /*section*/, const QStringList& /*to*/)
+{
+    if (loaded)
+    {
+        modified = true;
+        emit q_ptr->settingsChanged();
+    }
+
+    return false;
 }
 
 bool QLoaderTreePrivate::save()
