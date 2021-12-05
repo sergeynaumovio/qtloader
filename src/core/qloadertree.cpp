@@ -40,7 +40,10 @@ int QLoaderTree::errorLine() const
 
 QString QLoaderTree::fileName() const
 {
-    return d_ptr->file->fileName();
+    if (d_ptr->file)
+        return d_ptr->file->fileName();
+
+    return {};
 }
 
 bool QLoaderTree::isModified() const
