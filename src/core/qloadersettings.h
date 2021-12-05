@@ -36,7 +36,7 @@ protected:
     explicit QLoaderSettings(QLoaderSettings *settings);
 
     bool contains(const QString &key) const;
-    QStringList section() const;
+    const QStringList section() const;
     void setValue(const QString &key, const QVariant &value);
     QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;

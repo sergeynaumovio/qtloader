@@ -49,7 +49,7 @@ bool QLoaderSettings::contains(const QString &key) const
     return d_ptr->hash.data[q_ptr].properties.contains(key);;
 }
 
-QStringList QLoaderSettings::section() const
+const QStringList QLoaderSettings::section() const
 {
     return d_ptr->hash.data[q_ptr].section;
 }
