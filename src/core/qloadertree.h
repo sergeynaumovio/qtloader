@@ -57,7 +57,7 @@ public:
     bool isModified() const;
     bool load();
     bool move(const QStringList &section, const QStringList &to);
-    bool save();
+    virtual bool save();
     Status status() const;
 };
 
