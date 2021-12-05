@@ -22,6 +22,7 @@
 #include "qloaderinterface.h"
 #include <QFile>
 #include <QPluginLoader>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
 #include <QAction>
@@ -226,6 +227,15 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
 
         if (!(v = value("visible")).isNull())
             widget->setVisible(v.toBool());
+    }
+
+    QLabel *label = qobject_cast<QLabel*>(object);
+    if (label)
+    {
+        if (!(v = value("text")).isNull())
+            label->setText(v.toString());
+
+        return;
     }
 
     QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
