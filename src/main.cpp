@@ -78,11 +78,10 @@ int main(int argc, char *argv[])
          }
         else
         {
-            QString qtFile = "Qt File (*.qt" + QString::number(QT_VERSION_MAJOR) + ")";
             fileName = QFileDialog::getOpenFileName(nullptr,
                                                     "Open Qt File",
                                                     "",
-                                                    qtFile);
+                                                    "Qt File (*.qt)");
 
             if (!fileName.size())
                 return -1;
