@@ -216,6 +216,9 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         if (!(v = value("enabled")).isNull())
             widget->setEnabled(v.toBool());
 
+        if (!(v = value("hidden")).isNull())
+            widget->setHidden(v.toBool());
+
         if (!(v = value("minimumWidth")).isNull())
             widget->setMinimumWidth(v.toInt());
 
