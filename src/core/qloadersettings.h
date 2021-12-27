@@ -37,6 +37,7 @@ protected:
 
     bool contains(const QString &key) const;
     const QStringList section() const;
+    void setError(const QString &error);
     void setValue(const QString &key, const QVariant &value);
     QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;

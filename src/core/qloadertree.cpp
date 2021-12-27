@@ -71,12 +71,6 @@ bool QLoaderTree::save()
     return d_ptr->save();
 }
 
-void QLoaderTree::setError(const QString &error)
-{
-    d_ptr->error = error;
-    d_ptr->status = CustomError;
-}
-
 QLoaderTree::Status QLoaderTree::status() const
 {
     return d_ptr->status;

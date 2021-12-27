@@ -54,6 +54,12 @@ const QStringList QLoaderSettings::section() const
     return d_ptr->hash.data[q_ptr].section;
 }
 
+void QLoaderSettings::setError(const QString &error)
+{
+    d_ptr->error = error;
+    d_ptr->status = QLoaderTree::CustomError;
+}
+
 void QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
     d_ptr->hash.data[q_ptr].properties[key] = value;

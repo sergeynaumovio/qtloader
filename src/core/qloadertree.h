@@ -60,7 +60,6 @@ public:
     bool load();
     bool move(const QStringList &section, const QStringList &to);
     virtual bool save();
-    void setError(const QString &error);
     Status status() const;
 };
 
