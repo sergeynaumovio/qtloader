@@ -268,19 +268,19 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
     else
         object = external(settings, parent);
 
-    if (!object || object == parent)
+    if (!parent)
+        root.object = object;
+
+    if (!object || object == parent || (object && status))
     {
         if (!object && !status)
             status = QLoaderTree::ObjectError;
-        else if (object == parent)
+        else if (object && object == parent)
             status = QLoaderTree::ParentError;
 
         errorLine = hash.data[settings].classLine;
         return;
     }
-
-    if (!parent)
-        root.object = object;
 
     setProperties(settings, object);
 

@@ -108,11 +108,14 @@ int main(int argc, char *argv[])
             }
         }
         QString msg = fileName + (loaderTree.errorLine() ?
-                                  ':' + QString::number(loaderTree.errorLine()) :
-                                  "") +
-                      ": error: " +
+                                  ": " + QString::number(loaderTree.errorLine()) :
+                                  "") + ": " +
                       QVariant::fromValue(loaderTree.status()).
-                      toString().toLower().remove("error");
+                      toString().toLower();
+
+        msg.insert(msg.size() - QString("error").size(), ' ');
+
+        msg += ": " + loaderTree.error();
 
         return QMessageBox::critical(nullptr, "Qt Loader",
                                      QDir::toNativeSeparators(msg),
