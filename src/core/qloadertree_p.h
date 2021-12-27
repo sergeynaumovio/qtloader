@@ -47,6 +47,7 @@ public:
     QLoaderTree *const q_ptr;
     QFile *file{};
     QLoaderTree::Status status{};
+    QString error;
     int errorLine{-1};
     bool loaded{};
     bool modified{};

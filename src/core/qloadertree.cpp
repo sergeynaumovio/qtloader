@@ -33,6 +33,11 @@ bool QLoaderTree::copy(const QStringList &section, const QStringList &to)
     return d_ptr->copy(section, to);
 }
 
+QString QLoaderTree::error() const
+{
+    return d_ptr->error;
+}
+
 int QLoaderTree::errorLine() const
 {
     return d_ptr->errorLine;
@@ -64,6 +69,12 @@ bool QLoaderTree::move(const QStringList &section, const QStringList &to)
 bool QLoaderTree::save()
 {
     return d_ptr->save();
+}
+
+void QLoaderTree::setError(const QString &error)
+{
+    d_ptr->error = error;
+    d_ptr->status = CustomError;
 }
 
 QLoaderTree::Status QLoaderTree::status() const

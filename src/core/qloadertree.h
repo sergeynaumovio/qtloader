@@ -44,7 +44,8 @@ public:
         DesignError,
         PluginError,
         ObjectError,
-        ParentError
+        ParentError,
+        CustomError
     };
     Q_ENUM(Status)
 
@@ -52,12 +53,14 @@ public:
     ~QLoaderTree();
 
     bool copy(const QStringList &section, const QStringList &to);
+    QString error() const;
     int errorLine() const;
     QString fileName() const;
     bool isModified() const;
     bool load();
     bool move(const QStringList &section, const QStringList &to);
     virtual bool save();
+    void setError(const QString &error);
     Status status() const;
 };
 
