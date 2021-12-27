@@ -279,6 +279,7 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
             status = QLoaderTree::ParentError;
 
         errorLine = hash.data[settings].classLine;
+
         return;
     }
 
