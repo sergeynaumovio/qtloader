@@ -273,10 +273,16 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
 
     if (!object || object == parent || status)
     {
-        if (!object && !status)
+        if (!object)
+        {
             status = QLoaderTree::ObjectError;
+            error = "class not found";
+        }
         else if (object && object == parent)
-            status = QLoaderTree::ParentError;
+        {
+            status = QLoaderTree::ObjectError;
+            error = "parent object not valid";
+        }
 
         errorLine = hash.data[settings].classLine;
 
