@@ -29,6 +29,12 @@ class Q_LOADER_EXPORT QLoaderTree : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(QLoaderTree)
 
+    Q_PROPERTY(QString error READ error CONSTANT)
+    Q_PROPERTY(int errorLine READ errorLine CONSTANT)
+    Q_PROPERTY(QString fileName READ fileName CONSTANT)
+    Q_PROPERTY(bool isModified READ isModified CONSTANT)
+    Q_PROPERTY(Status status READ status CONSTANT)
+
 protected:
     const QScopedPointer<QLoaderTreePrivate> d_ptr;
 
