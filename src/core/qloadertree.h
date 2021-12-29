@@ -29,17 +29,14 @@ class Q_LOADER_EXPORT QLoaderTree : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(QLoaderTree)
 
-    Q_PROPERTY(QString error READ error CONSTANT)
-    Q_PROPERTY(int errorLine READ errorLine CONSTANT)
+    Q_PROPERTY(QString error READ error NOTIFY errorChanged)
+    Q_PROPERTY(int errorLine READ errorLine NOTIFY errorLineChanged)
     Q_PROPERTY(QString fileName READ fileName CONSTANT)
-    Q_PROPERTY(bool isModified READ isModified CONSTANT)
-    Q_PROPERTY(Status status READ status CONSTANT)
+    Q_PROPERTY(bool isModified READ isModified NOTIFY settingsChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
 
 protected:
     const QScopedPointer<QLoaderTreePrivate> d_ptr;
-
-Q_SIGNALS:
-    void settingsChanged();
 
 public:
     enum Status
@@ -53,6 +50,13 @@ public:
     };
     Q_ENUM(Status)
 
+Q_SIGNALS:
+    void errorChanged(QString);
+    void errorLineChanged(int);
+    void settingsChanged();
+    void statusChanged(QLoaderTree::Status);
+
+public:
     explicit QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
