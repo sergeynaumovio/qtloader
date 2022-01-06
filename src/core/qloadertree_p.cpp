@@ -35,6 +35,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
         status = QLoaderTree::AccessError;
+        emit q->statusChanged(status);
         return;
     }
 
@@ -89,6 +90,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             if (!isValid)
             {
                 status = QLoaderTree::DesignError;
+                emit q->statusChanged(status);
                 delete settings;
                 return;
             }
@@ -110,6 +112,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
                 if (!settings)
                 {
                     status = QLoaderTree::FormatError;
+                    emit q->statusChanged(status);
                     return;
                 }
 
@@ -156,6 +159,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         if (!loader.instance())
         {
             status = QLoaderTree::PluginError;
+            emit q_ptr->statusChanged(status);
             return nullptr;
         }
 
@@ -163,6 +167,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         if (!plugin)
         {
             status = QLoaderTree::PluginError;
+            emit q_ptr->statusChanged(status);
             return nullptr;
         }
 
@@ -311,13 +316,15 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     {
         if (!object)
         {
-            status = QLoaderTree::ObjectError;
             error = "class not found";
+            status = QLoaderTree::ObjectError;
+            emit q_ptr->statusChanged(status);
         }
         else if (object && object == parent)
         {
-            status = QLoaderTree::ObjectError;
             error = "parent object not valid";
+            status = QLoaderTree::ObjectError;
+            emit q_ptr->statusChanged(status);
         }
 
         errorLine = hash.data[settings].classLine;
@@ -386,6 +393,7 @@ bool QLoaderTreePrivate::save()
         if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
         {
             status = QLoaderTree::AccessError;
+            emit q_ptr->statusChanged(status);
             return false;
         }
 
