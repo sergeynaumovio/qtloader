@@ -372,10 +372,9 @@ void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &o
         out << i.key() << " = " << i.value().toString() << '\n';
     }
 
-    out << '\n';
-
     for (QLoaderSettings *child : hash.data[settings].children)
     {
+        out << '\n';
         saveRecursive(child, out);
     }
 }
