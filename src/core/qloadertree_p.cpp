@@ -26,12 +26,13 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QAction>
+#include <QTextStream>
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 :   q_ptr(q),
     file(new QFile(fileName, q))
 {
-    if (!file->open(QIODevice::ReadWrite | QIODevice::Text))
+    if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
         status = QLoaderTree::AccessError;
         return;
@@ -40,14 +41,20 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
     QStringList section;
     QLoaderSettings *settings{};
     errorLine = 0;
+    char comment = '#';
 
     while (!file->atEnd())
     {
         QByteArray line = file->readLine();
         ++errorLine;
 
-        QRegularExpression comment("^#.*");
-        if (comment.match(line).hasMatch())
+        if (errorLine == 1 && line.startsWith("#!"))
+        {
+            execLine = line;
+            continue;
+        }
+
+        if (line.startsWith(comment))
             continue;
 
         QRegularExpression sectionName("^\\[(?<section>[^\\[\\]]*)\\]$");
@@ -117,6 +124,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
     }
 
     errorLine = -1;
+    file->close();
 }
 
 QLoaderTreePrivate::~QLoaderTreePrivate()
@@ -260,7 +268,35 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
     }
 }
 
-void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
+void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
+{
+    qDebug().noquote().nospace() << '[' << hash.data[settings].section.join('/') << ']';
+    qDebug().noquote() << "class =" << hash.data[settings].className;
+
+    QMapIterator<QString, QVariant> i(hash.data[settings].properties);
+    while (i.hasNext())
+    {
+        i.next();
+        qDebug().noquote() << i.key() << '=' << i.value().toString();
+    }
+
+    qDebug() << "";
+
+    for (QLoaderSettings *child : hash.data[settings].children)
+    {
+        dumpRecursive(child);
+    }
+}
+
+void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
+{
+    if (execLine.size())
+        qDebug().noquote() << execLine;
+
+    dumpRecursive(settings);
+}
+
+void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
 {
     QObject *object;
     if (!qstrncmp(hash.data[settings].className, "Loader", 6))
@@ -294,7 +330,7 @@ void QLoaderTreePrivate::load(QLoaderSettings *settings, QObject *parent)
     for (QLoaderSettings *child : hash.data[settings].children)
     {
         if (!status)
-            load(child, object);
+            loadRecursive(child, object);
     }
 }
 
@@ -305,7 +341,7 @@ bool QLoaderTreePrivate::load()
 
     loaded = true;
 
-    load(root.settings, nullptr);
+    loadRecursive(root.settings, nullptr);
 
     if (status && root.object)
         root.object->deleteLater();
@@ -324,13 +360,47 @@ bool QLoaderTreePrivate::move(const QStringList& /*section*/, const QStringList&
     return false;
 }
 
+void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)
+{
+    out << '[' << hash.data[settings].section.join('/') << "]\n" ;
+    out << "class = " << hash.data[settings].className << '\n';
+
+    QMapIterator<QString, QVariant> i(hash.data[settings].properties);
+    while (i.hasNext())
+    {
+        i.next();
+        out << i.key() << " = " << i.value().toString() << '\n';
+    }
+
+    out << '\n';
+
+    for (QLoaderSettings *child : hash.data[settings].children)
+    {
+        saveRecursive(child, out);
+    }
+}
+
 bool QLoaderTreePrivate::save()
 {
     if (loaded && modified)
     {
-        modified = false;
+        if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            status = QLoaderTree::AccessError;
+            return false;
+        }
 
-        return false;
+        QTextStream out(file);
+
+        if (execLine.size())
+            out << execLine << '\n';
+
+        saveRecursive(root.settings, out);
+
+        modified = false;
+        file->close();
+
+        return true;
     }
 
     return false;

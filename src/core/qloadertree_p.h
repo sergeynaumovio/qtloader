@@ -27,6 +27,7 @@
 class QLoaderSettings;
 class QLoaderTree;
 class QFile;
+class QTextStream;
 
 struct QLoaderSettingsData
 {
@@ -40,8 +41,10 @@ struct QLoaderSettingsData
 
 class QLoaderTreePrivate
 {
+    void dumpRecursive(QLoaderSettings *settings) const;
+    void loadRecursive(QLoaderSettings *settings, QObject *parent);
+    void saveRecursive(QLoaderSettings *settings, QTextStream &out);
     void setProperties(QLoaderSettings *settings, QObject *object);
-    void load(QLoaderSettings *settings, QObject *parent);
 
 public:
     QLoaderTree *const q_ptr;
@@ -49,6 +52,7 @@ public:
     QLoaderTree::Status status{};
     QString error;
     int errorLine{-1};
+    QByteArray execLine;
     bool loaded{};
     bool modified{};
 
@@ -71,6 +75,7 @@ public:
 
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QObject *external(QLoaderSettings *settings, QObject *parent);
+    void dump(QLoaderSettings *settings) const;
     bool copy(const QStringList &section, const QStringList &to);
     bool load();
     bool move(const QStringList &section, const QStringList &to);

@@ -49,6 +49,11 @@ bool QLoaderSettings::contains(const QString &key) const
     return d_ptr->hash.data[q_ptr].properties.contains(key);;
 }
 
+void QLoaderSettings::dumpSettingsTree() const
+{
+    d_ptr->dump(q_ptr);
+}
+
 const QStringList QLoaderSettings::section() const
 {
     return d_ptr->hash.data[q_ptr].section;

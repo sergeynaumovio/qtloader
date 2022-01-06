@@ -47,6 +47,7 @@ public:
     virtual ~QLoaderSettings();
 
     const char *className() const;
+    void dumpSettingsTree() const;
 };
 
 #endif // QLOADERSETTINGS_H
