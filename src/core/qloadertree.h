@@ -68,7 +68,7 @@ public:
     bool load();
     bool move(const QStringList &section, const QStringList &to);
     virtual bool save();
-    Status status() const;
+    QLoaderTree::Status status() const;
 };
 
 #endif // QLOADERTREE_H
