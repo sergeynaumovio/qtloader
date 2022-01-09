@@ -49,16 +49,6 @@ bool QLoaderSettings::contains(const QString &key) const
     return d_ptr->hash.data[q_ptr].properties.contains(key);;
 }
 
-void QLoaderSettings::dumpSettingsTree() const
-{
-    d_ptr->dump(q_ptr);
-}
-
-const QStringList QLoaderSettings::section() const
-{
-    return d_ptr->hash.data[q_ptr].section;
-}
-
 void QLoaderSettings::setObjectError(const QString &error)
 {
     d_ptr->status = QLoaderTree::ObjectError;
@@ -70,11 +60,6 @@ void QLoaderSettings::setValue(const QString &key, const QVariant &value)
     d_ptr->hash.data[q_ptr].properties[key] = value;
     d_ptr->modified = true;
     emit d_ptr->q_ptr->settingsChanged();
-}
-
-QLoaderTree *QLoaderSettings::tree() const
-{
-    return d_ptr->q_ptr;
 }
 
 QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue) const
@@ -89,4 +74,19 @@ QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue
 const char *QLoaderSettings::className() const
 {
     return d_ptr->hash.data[q_ptr].className.data();
+}
+
+void QLoaderSettings::dumpSettingsTree() const
+{
+    d_ptr->dump(q_ptr);
+}
+
+QStringList QLoaderSettings::section() const
+{
+    return d_ptr->hash.data[q_ptr].section;
+}
+
+QLoaderTree *QLoaderSettings::tree() const
+{
+    return d_ptr->q_ptr;
 }

@@ -36,10 +36,8 @@ protected:
     explicit QLoaderSettings(QLoaderSettings *settings);
 
     bool contains(const QString &key) const;
-    const QStringList section() const;
     void setObjectError(const QString &error);
     void setValue(const QString &key, const QVariant &value);
-    QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
 public:
@@ -48,6 +46,8 @@ public:
 
     const char *className() const;
     void dumpSettingsTree() const;
+    QStringList section() const;
+    QLoaderTree *tree() const;
 };
 
 #endif // QLOADERSETTINGS_H
