@@ -409,7 +409,7 @@ void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
 
 bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Section::Instance instance)
 {
-    if (!loaded)
+    if (!loaded || instance == Section::Copy)
         return false;
 
     Section src(section, this);
@@ -439,22 +439,6 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
     status = QLoaderTree::DesignError;
     emit q_ptr->statusChanged(status);
     return false;
-}
-
-bool QLoaderTreePrivate::copy(const QStringList& /*section*/, const QStringList& /*to*/)
-{
-    if (loaded)
-    {
-        modified = true;
-        emit q_ptr->settingsChanged();
-    }
-
-    return false;
-}
-
-bool QLoaderTreePrivate::move(const QStringList &section, const QStringList &to)
-{
-    return copyOrMove(section, to, Section::Move);
 }
 
 void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)

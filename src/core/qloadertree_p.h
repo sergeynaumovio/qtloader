@@ -101,11 +101,9 @@ public:
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QObject *external(QLoaderSettings *settings, QObject *parent);
     void dump(QLoaderSettings *settings) const;
-    bool copy(const QStringList &section, const QStringList &to);
     bool copyOrMove(const QStringList &section, const QStringList &to, Section::Instance instance);
     bool load();
     bool load(const QStringList &section);
-    bool move(const QStringList &section, const QStringList &to);
     bool save();
 };
 

@@ -30,7 +30,7 @@ QLoaderTree::~QLoaderTree()
 
 bool QLoaderTree::copy(const QStringList &section, const QStringList &to)
 {
-    return d_ptr->copy(section, to);
+    return d_ptr->copyOrMove(section, to, Section::Move);
 }
 
 QString QLoaderTree::error() const
@@ -63,7 +63,7 @@ bool QLoaderTree::load()
 
 bool QLoaderTree::move(const QStringList &section, const QStringList &to)
 {
-    return d_ptr->move(section, to);
+    return d_ptr->copyOrMove(section, to, Section::Move);
 }
 
 bool QLoaderTree::save()
