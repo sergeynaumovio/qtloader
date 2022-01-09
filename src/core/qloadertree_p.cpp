@@ -177,17 +177,6 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     return nullptr;
 }
 
-bool QLoaderTreePrivate::copy(const QStringList& /*section*/, const QStringList& /*to*/)
-{
-    if (loaded)
-    {
-        modified = true;
-        emit q_ptr->settingsChanged();
-    }
-
-    return false;
-}
-
 void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *object)
 {
     object->setObjectName(hash.data[settings].section.last());
@@ -356,7 +345,103 @@ bool QLoaderTreePrivate::load()
     return (status == QLoaderTree::NoError);
 }
 
-bool QLoaderTreePrivate::move(const QStringList& /*section*/, const QStringList& /*to*/)
+bool QLoaderTreePrivate::load(const QStringList & /*section*/)
+{
+    if (loaded)
+        return false;
+
+    return false;
+}
+
+Section::Section(const QStringList &section)
+:   section(section)
+{
+    if (section.isEmpty())
+        return;
+
+    parent.section = section;
+    parent.section.removeLast();
+
+    valid = true;
+}
+
+Section::Section(const QStringList &section, QLoaderTreePrivate *d)
+:   Section(section)
+{
+    if (!valid)
+        return;
+
+    if (!d->hash.settings.contains(parent.section))
+    {
+        valid = false;
+        return;
+    }
+
+    settings = d->hash.settings.value(section);
+    parent.settings = d->hash.settings.value(parent.section);
+    valid = true;
+}
+
+void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
+                                             const Section &src, const Section &dst,
+                                             Section::Instance instance)
+{
+    QLoaderSettingsData &data = hash.data[settings];
+
+    if (instance == Section::Move)
+        hash.settings.remove(data.section);
+
+    int d = dst.section.size() - src.section.size();
+    int size = data.section.size() + d;
+    QStringList section(size);
+
+    std::copy_n(dst.section.begin(), dst.section.size(), section.begin());
+    std::copy_n(data.section.begin() + src.section.size(),
+                data.section.size() - src.section.size(),
+                section.begin() + dst.section.size());
+
+    data.section = std::move(section);
+    hash.settings.insert(data.section, settings);
+
+    for (QLoaderSettings *child : data.children)
+        copyOrMoveRecursive(child, src, dst, instance);
+}
+
+bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Section::Instance instance)
+{
+    if (!loaded)
+        return false;
+
+    Section src(section, this);
+    if (src.valid)
+    {
+        Section dst(to, this);
+        if (dst.valid)
+        {
+            std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
+            for (int i = 0; i < static_cast<int>(children.size()); ++i)
+            {
+                if (children[i] == src.settings)
+                {
+                    if (instance == Section::Move)
+                        children.erase(children.begin() + i);
+
+                    hash.data[dst.parent.settings].children.push_back(src.settings);
+                    copyOrMoveRecursive(src.settings, src, dst, instance);
+                    modified = true;
+                    emit q_ptr->settingsChanged();
+                    return true;
+                }
+            }
+        }
+    }
+
+    status = QLoaderTree::DesignError;
+    emit q_ptr->statusChanged(status);
+    return false;
+}
+
+bool QLoaderTreePrivate::copy(const QStringList& /*section*/, const QStringList& /*to*/)
 {
     if (loaded)
     {
@@ -365,6 +450,11 @@ bool QLoaderTreePrivate::move(const QStringList& /*section*/, const QStringList&
     }
 
     return false;
+}
+
+bool QLoaderTreePrivate::move(const QStringList &section, const QStringList &to)
+{
+    return copyOrMove(section, to, Section::Move);
 }
 
 void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)

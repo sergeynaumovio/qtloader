@@ -39,8 +39,33 @@ struct QLoaderSettingsData
     std::vector<QLoaderSettings*> children;
 };
 
+class Section
+{
+    Section(const QStringList &section);
+
+public:
+    bool valid{};
+
+    struct
+    {
+        QStringList section;
+        QLoaderSettings *settings{};
+
+    } parent;
+
+    const QStringList &section;
+    QLoaderSettings *settings{};
+
+    enum Instance { Copy, Move };
+
+    Section(const QStringList &section, QLoaderTreePrivate *d);
+};
+
 class QLoaderTreePrivate
 {
+    void copyOrMoveRecursive(QLoaderSettings *settings,
+                             const Section &src, const Section &dst,
+                             Section::Instance instance);
     void dumpRecursive(QLoaderSettings *settings) const;
     void loadRecursive(QLoaderSettings *settings, QObject *parent);
     void saveRecursive(QLoaderSettings *settings, QTextStream &out);
@@ -77,7 +102,9 @@ public:
     QObject *external(QLoaderSettings *settings, QObject *parent);
     void dump(QLoaderSettings *settings) const;
     bool copy(const QStringList &section, const QStringList &to);
+    bool copyOrMove(const QStringList &section, const QStringList &to, Section::Instance instance);
     bool load();
+    bool load(const QStringList &section);
     bool move(const QStringList &section, const QStringList &to);
     bool save();
 };
