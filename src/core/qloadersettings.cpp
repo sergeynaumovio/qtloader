@@ -49,10 +49,42 @@ bool QLoaderSettings::contains(const QString &key) const
     return d_ptr->hash.data[q_ptr].properties.contains(key);;
 }
 
-void QLoaderSettings::setObjectError(const QString &error)
+void QLoaderSettings::emitError(const QString &error)
 {
-    d_ptr->status = QLoaderTree::ObjectError;
-    d_ptr->error = error;
+    QLoaderTree::Status status = QLoaderTree::ObjectError;
+    d_ptr->status = status;
+    d_ptr->errorMessage = error;
+    QObject *object = d_ptr->hash.data[q_ptr].object;
+    if (object)
+    {
+        d_ptr->errorObject = object;
+        emit d_ptr->q_ptr->statusChanged(status);
+        emit d_ptr->q_ptr->errorChanged(object, error);
+    }
+}
+
+void QLoaderSettings::emitInfo(const QString &info)
+{
+    d_ptr->infoMessage = info;
+    d_ptr->infoChanged = true;
+    QObject *object = d_ptr->hash.data[q_ptr].object;
+    if (object)
+    {
+        d_ptr->infoObject = object;
+        emit d_ptr->q_ptr->infoChanged(object, info);
+    }
+}
+
+void QLoaderSettings::emitWarning(const QString &warning)
+{
+    d_ptr->warningMessage = warning;
+    d_ptr->warningChanged = true;
+    QObject *object = d_ptr->hash.data[q_ptr].object;
+    if (object)
+    {
+        d_ptr->warningObject = object;
+        emit d_ptr->q_ptr->warningChanged(object, warning);
+    }
 }
 
 void QLoaderSettings::setValue(const QString &key, const QVariant &value)

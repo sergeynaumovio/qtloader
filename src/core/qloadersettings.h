@@ -36,7 +36,9 @@ protected:
     explicit QLoaderSettings(QLoaderSettings *settings);
 
     bool contains(const QString &key) const;
-    void setObjectError(const QString &error);
+    void emitError(const QString &error);
+    void emitInfo(const QString &info);
+    void emitWarning(const QString &warning);
     void setValue(const QString &key, const QVariant &value);
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 

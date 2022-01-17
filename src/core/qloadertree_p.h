@@ -24,6 +24,7 @@
 #include <QHash>
 #include <QVariant>
 
+class StringVariantConverter;
 class QLoaderSettings;
 class QLoaderTree;
 class QFile;
@@ -35,6 +36,7 @@ struct QLoaderSettingsData
     QStringList section;
     QByteArray className;
     int classLine;
+    QObject *object{};
     QMap<QString, QVariant> properties;
     std::vector<QLoaderSettings*> children;
 };
@@ -63,6 +65,11 @@ public:
 
 class QLoaderTreePrivate
 {
+    QScopedPointer<StringVariantConverter> converter;
+
+    QVariant fromString(const QString &value);
+    QString fromVariant(const QVariant &variant);
+
     void copyOrMoveRecursive(QLoaderSettings *settings,
                              const Section &src, const Section &dst,
                              Section::Instance instance);
@@ -75,11 +82,18 @@ public:
     QLoaderTree *const q_ptr;
     QFile *file{};
     QLoaderTree::Status status{};
-    QString error;
+    QString errorMessage;
     int errorLine{-1};
+    QObject *errorObject{};
     QByteArray execLine;
     bool loaded{};
     bool modified{};
+    QString infoMessage;
+    QObject *infoObject{};
+    bool infoChanged{};
+    QString warningMessage;
+    QObject *warningObject{};
+    bool warningChanged{};
 
     struct
     {

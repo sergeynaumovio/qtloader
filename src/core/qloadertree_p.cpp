@@ -20,6 +20,7 @@
 #include "qloadertree.h"
 #include "qloadersettings.h"
 #include "qloaderinterface.h"
+#include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
 #include <QLabel>
@@ -28,9 +29,43 @@
 #include <QAction>
 #include <QTextStream>
 
+class StringVariantConverter
+{
+    const QRegularExpression size;
+
+    QRegularExpressionMatch match;
+
+public:
+    StringVariantConverter()
+    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)")
+    { }
+
+    QVariant fromString(const QString &value)
+    {
+        if ((match = size.match(value)).hasMatch())
+            return QSize(match.captured("width").toInt(), match.captured("height").toInt());
+
+        return value;
+    }
+
+    QString fromVariant(const QVariant &variant)
+    {
+        if (variant.canConvert<QSize>())
+        {
+            QSize size = variant.toSize();
+            return QString("QSize(" + QString::number(size.width()) + ", "
+                                    + QString::number(size.height()) + ')');
+        }
+
+        return variant.toString();
+    }
+};
+
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
-:   q_ptr(q),
+:   converter(new StringVariantConverter),
+    q_ptr(q),
     file(new QFile(fileName, q))
+
 {
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -105,7 +140,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (keyValueMatch.hasMatch())
         {
             QString key = keyValueMatch.captured("key");
-            QVariant value = keyValueMatch.captured("value");
+            QVariant value = fromString(keyValueMatch.captured("value"));
 
             if (key == "class")
             {
@@ -159,6 +194,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         if (!loader.instance())
         {
             status = QLoaderTree::PluginError;
+            errorMessage = "library not loaded";
             emit q_ptr->statusChanged(status);
             return nullptr;
         }
@@ -167,6 +203,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         if (!plugin)
         {
             status = QLoaderTree::PluginError;
+            errorMessage = "interface not valid";
             emit q_ptr->statusChanged(status);
             return nullptr;
         }
@@ -218,14 +255,35 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         if (!(v = value("enabled")).isNull())
             widget->setEnabled(v.toBool());
 
+        if (!(v = value("fixedHeight")).isNull())
+            widget->setFixedHeight(v.toInt());
+
+        if (!(v = value("fixedSize")).isNull())
+            widget->setFixedSize(v.toSize());
+
+        if (!(v = value("fixedWidth")).isNull())
+            widget->setFixedWidth(v.toInt());
+
         if (!(v = value("hidden")).isNull())
             widget->setHidden(v.toBool());
 
-        if (!(v = value("minimumWidth")).isNull())
-            widget->setMinimumWidth(v.toInt());
+        if (!(v = value("maximumHeight")).isNull())
+            widget->setMaximumHeight(v.toInt());
+
+        if (!(v = value("maximumSize")).isNull())
+            widget->setMaximumSize(v.toSize());
+
+        if (!(v = value("maximumWidth")).isNull())
+            widget->setMaximumWidth(v.toInt());
 
         if (!(v = value("minimumHeight")).isNull())
             widget->setMinimumHeight(v.toInt());
+
+        if (!(v = value("minimumSize")).isNull())
+            widget->setMinimumSize(v.toSize());
+
+        if (!(v = value("minimumWidth")).isNull())
+            widget->setMinimumWidth(v.toInt());
 
         if (!(v = value("styleSheet")).isNull())
             widget->setStyleSheet(v.toString());
@@ -301,19 +359,22 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     if (!parent)
         root.object = object;
 
-    if (!object || object == parent || status)
+    if (!object || object == parent || status == QLoaderTree::PluginError)
     {
-        if (!object)
+        if (!status)
         {
-            error = "class not found";
-            status = QLoaderTree::ObjectError;
-            emit q_ptr->statusChanged(status);
-        }
-        else if (object && object == parent)
-        {
-            error = "parent object not valid";
-            status = QLoaderTree::ObjectError;
-            emit q_ptr->statusChanged(status);
+            if (!object)
+            {
+                errorMessage = "class not found";
+                status = QLoaderTree::ObjectError;
+                emit q_ptr->statusChanged(status);
+            }
+            else if (object && object == parent)
+            {
+                errorMessage = "parent object not valid";
+                status = QLoaderTree::ObjectError;
+                emit q_ptr->statusChanged(status);
+            }
         }
 
         errorLine = hash.data[settings].classLine;
@@ -321,6 +382,28 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         return;
     }
 
+    if (status == QLoaderTree::ObjectError)
+    {
+        emit q_ptr->statusChanged(status);
+        emit q_ptr->errorChanged(object, errorMessage);
+        return;
+    }
+
+    if (infoChanged)
+    {
+        infoObject = object;
+        infoChanged = false;
+        emit q_ptr->infoChanged(object, infoMessage);
+    }
+
+    if (warningChanged)
+    {
+        warningObject = object;
+        warningChanged = false;
+        emit q_ptr->warningChanged(object, warningMessage);
+    }
+
+    hash.data[settings].object = object;
     setProperties(settings, object);
 
     for (QLoaderSettings *child : hash.data[settings].children)
@@ -380,6 +463,16 @@ Section::Section(const QStringList &section, QLoaderTreePrivate *d)
     settings = d->hash.settings.value(section);
     parent.settings = d->hash.settings.value(parent.section);
     valid = true;
+}
+
+QVariant QLoaderTreePrivate::fromString(const QString &value)
+{
+    return converter->fromString(value);
+}
+
+QString QLoaderTreePrivate::fromVariant(const QVariant &variant)
+{
+    return converter->fromVariant(variant);
 }
 
 void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
@@ -460,7 +553,7 @@ void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &o
     while (i.hasNext())
     {
         i.next();
-        out << i.key() << " = " << i.value().toString() << '\n';
+        out << i.key() << " = " << fromVariant(i.value()) << '\n';
     }
 
     for (QLoaderSettings *child : hash.data[settings].children)

@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
+
     parser.addOption(QCommandLineOption({"s", "section"},
                                         "Root section."));
     parser.addOption(QCommandLineOption("no-gui",
@@ -115,7 +116,7 @@ int main(int argc, char *argv[])
 
         msg.insert(msg.size() - QString("error").size(), ' ');
 
-        msg += ": " + loaderTree.error();
+        msg += ": " + loaderTree.errorMessage();
 
         return QMessageBox::critical(nullptr, "Qt Loader",
                                      QDir::toNativeSeparators(msg),

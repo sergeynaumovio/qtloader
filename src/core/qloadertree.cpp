@@ -33,14 +33,19 @@ bool QLoaderTree::copy(const QStringList &section, const QStringList &to)
     return d_ptr->copyOrMove(section, to, Section::Move);
 }
 
-QString QLoaderTree::error() const
+QString QLoaderTree::errorMessage() const
 {
-    return d_ptr->error;
+    return d_ptr->errorMessage;
 }
 
 int QLoaderTree::errorLine() const
 {
     return d_ptr->errorLine;
+}
+
+QObject *QLoaderTree::errorObject() const
+{
+    return d_ptr->errorObject;
 }
 
 QString QLoaderTree::fileName() const
@@ -49,6 +54,16 @@ QString QLoaderTree::fileName() const
         return d_ptr->file->fileName();
 
     return {};
+}
+
+QString QLoaderTree::infoMessage() const
+{
+    return d_ptr->infoMessage;
+}
+
+QObject *QLoaderTree::infoObject() const
+{
+    return d_ptr->infoObject;
 }
 
 bool QLoaderTree::isModified() const
@@ -74,4 +89,14 @@ bool QLoaderTree::save()
 QLoaderTree::Status QLoaderTree::status() const
 {
     return d_ptr->status;
+}
+
+QString QLoaderTree::warningMessage() const
+{
+    return d_ptr->warningMessage;
+}
+
+QObject *QLoaderTree::warningObject() const
+{
+    return d_ptr->warningObject;
 }
