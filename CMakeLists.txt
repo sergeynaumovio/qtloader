@@ -4,7 +4,7 @@ project("Qt Loader" LANGUAGES CXX)
 
 if(MSVC)
     cmake_policy(SET CMP0092 NEW) # Disable passing /W3 by default on MSVC
-    add_compile_options(/W4 /WX /wd4127)
+    add_compile_options(/W4 /WX)
 else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()

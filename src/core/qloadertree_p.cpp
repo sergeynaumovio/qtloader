@@ -29,20 +29,25 @@
 #include <QAction>
 #include <QTextStream>
 
-class StringVariantConverter
+struct RegularExpressions
 {
     const QRegularExpression size;
+
+    RegularExpressions()
+    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)")
+    { }
+};
+
+class StringVariantConverter
+{
+    RegularExpressions expr;
 
     QRegularExpressionMatch match;
 
 public:
-    StringVariantConverter()
-    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)")
-    { }
-
     QVariant fromString(const QString &value)
     {
-        if ((match = size.match(value)).hasMatch())
+        if ((match = expr.size.match(value)).hasMatch())
             return QSize(match.captured("width").toInt(), match.captured("height").toInt());
 
         return value;
