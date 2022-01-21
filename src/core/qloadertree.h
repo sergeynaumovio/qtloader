@@ -71,6 +71,7 @@ public:
     bool isModified() const;
     bool load();
     bool move(const QStringList &section, const QStringList &to);
+    QObject *object(const QStringList &section);
     virtual bool save();
     QLoaderTree::Status status() const;
     QString warningMessage() const;

@@ -57,6 +57,7 @@ public:
 
     const QStringList &section;
     QLoaderSettings *settings{};
+    QObject *object{};
 
     enum Instance { Copy, Move };
 

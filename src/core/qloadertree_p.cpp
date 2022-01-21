@@ -19,7 +19,8 @@
 #include "qloadertree_p.h"
 #include "qloadertree.h"
 #include "qloadersettings.h"
-#include "qloaderinterface.h"
+#include "qloaderplugininterface.h"
+#include "qloadermoveinterface.h"
 #include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
@@ -204,7 +205,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
             return nullptr;
         }
 
-        QLoaderInterface *plugin = qobject_cast<QLoaderInterface*>(loader.instance());
+        QLoaderPluginInterface *plugin = qobject_cast<QLoaderPluginInterface*>(loader.instance());
         if (!plugin)
         {
             status = QLoaderTree::PluginError;
@@ -465,9 +466,10 @@ Section::Section(const QStringList &section, QLoaderTreePrivate *d)
         return;
     }
 
-    settings = d->hash.settings.value(section);
-    parent.settings = d->hash.settings.value(parent.section);
     valid = true;
+    parent.settings = d->hash.settings.value(parent.section);
+    settings = d->hash.settings.value(section);
+    object = d->hash.data.value(settings).object;
 }
 
 QVariant QLoaderTreePrivate::fromString(const QString &value)
@@ -524,6 +526,15 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
         Section dst(to, this);
         if (dst.valid)
         {
+            QLoaderMoveInterface *movable = qobject_cast<QLoaderMoveInterface*>(src.object);
+            if (instance == Section::Move && (!movable || !movable->move(to)))
+            {
+                status = QLoaderTree::ObjectError;
+                emit q_ptr->statusChanged(status);
+                emit q_ptr->errorChanged(src.object, "object is not movable");
+                return false;
+            }
+
             std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
             for (int i = 0; i < static_cast<int>(children.size()); ++i)
             {
@@ -538,6 +549,7 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
                     copyOrMoveRecursive(src.settings, src, dst, instance);
                     modified = true;
                     emit q_ptr->settingsChanged();
+
                     return true;
                 }
             }

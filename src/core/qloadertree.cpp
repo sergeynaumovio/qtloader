@@ -81,6 +81,16 @@ bool QLoaderTree::move(const QStringList &section, const QStringList &to)
     return d_ptr->copyOrMove(section, to, Section::Move);
 }
 
+QObject *QLoaderTree::object(const QStringList &section)
+{
+    const QHash<QStringList, QLoaderSettings*> &hash = d_ptr->hash.settings;
+
+    if (hash.contains(section))
+        return d_ptr->hash.data[hash[section]].object;
+
+    return nullptr;
+}
+
 bool QLoaderTree::save()
 {
     return d_ptr->save();

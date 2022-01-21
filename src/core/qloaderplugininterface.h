@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2021 Sergey Naumov
+** Copyright (C) 2021, 2022 Sergey Naumov
 **
 ** Permission to use, copy, modify, and/or distribute this
 ** software for any purpose with or without fee is hereby granted.
@@ -16,17 +16,17 @@
 **
 ****************************************************************************/
 
-#ifndef QLOADERINTERFACE_H
-#define QLOADERINTERFACE_H
+#ifndef QLOADERPLUGININTERFACE_H
+#define QLOADERPLUGININTERFACE_H
 
 #include <QObject>
 
 class QLoaderSettings;
-class QLoaderInterface
+class QLoaderPluginInterface
 {
 public:
     virtual QObject *object(QLoaderSettings *settings, QObject *parent) = 0;
 };
-Q_DECLARE_INTERFACE(QLoaderInterface, "QLoaderInterface")
+Q_DECLARE_INTERFACE(QLoaderPluginInterface, "QLoaderPluginInterface")
 
-#endif // QLOADERINTERFACE_H
+#endif // QLOADERPLUGININTERFACE_H
