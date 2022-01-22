@@ -528,23 +528,20 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
         if (dst.valid)
         {
             QLoaderMoveInterface *movable = qobject_cast<QLoaderMoveInterface*>(src.object);
-            if (instance == Section::Move)
+            if (instance == Section::Move && (!movable || !movable->move(to)))
             {
-                if (!movable)
-                {
-                    status = QLoaderTree::ObjectError;
-                    emit q_ptr->statusChanged(status);
-                    emit q_ptr->errorChanged(src.object, "object not movable");
-                    return false;
-                }
+                status = QLoaderTree::ObjectError;
+                emit q_ptr->statusChanged(status);
 
-                if (!movable->move(to))
-                {
-                    status = QLoaderTree::ObjectError;
-                    emit q_ptr->statusChanged(status);
-                    emit q_ptr->errorChanged(src.object, "movable object parent not valid");
-                    return false;
-                }
+                errorObject = src.object;
+                if (!movable)
+                    errorMessage = "object not movable";
+                else
+                    errorMessage = "movable object parent not valid";
+
+                emit q_ptr->errorChanged(errorObject, errorMessage);
+
+                return false;
             }
 
             std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
