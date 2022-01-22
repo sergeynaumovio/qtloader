@@ -33,6 +33,7 @@ target_sources(${QT_LOADER_LIBRARY}
     PRIVATE src/core/qtloaderglobal.h
             src/core/qloadermoveinterface.h
             src/core/qloaderplugininterface.h
+            src/core/qloadersaveinterface.h
             src/core/qloadersettings.h
             src/core/qloadersettings.cpp
             src/core/qloadertree.h
@@ -51,6 +52,8 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadermoveinterface.h
     src/core/QLoaderPluginInterface
     src/core/qloaderplugininterface.h
+    src/core/QLoaderSaveInterface
+    src/core/qloadersaveinterface.h
     src/core/QLoaderSettings
     src/core/qloadersettings.h
     src/core/QLoaderTree

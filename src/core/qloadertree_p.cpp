@@ -21,6 +21,7 @@
 #include "qloadersettings.h"
 #include "qloaderplugininterface.h"
 #include "qloadermoveinterface.h"
+#include "qloadersaveinterface.h"
 #include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
@@ -574,17 +575,22 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
 
 void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)
 {
-    out << '[' << hash.data[settings].section.join('/') << "]\n" ;
-    out << "class = " << hash.data[settings].className << '\n';
+    const QLoaderSettingsData &item = hash.data[settings];
+    out << '[' << item.section.join('/') << "]\n" ;
+    out << "class = " << item.className << '\n';
 
-    QMapIterator<QString, QVariant> i(hash.data[settings].properties);
+    QMapIterator<QString, QVariant> i(item.properties);
     while (i.hasNext())
     {
         i.next();
         out << i.key() << " = " << fromVariant(i.value()) << '\n';
     }
 
-    for (QLoaderSettings *child : hash.data[settings].children)
+    QLoaderSaveInterface *resources = qobject_cast<QLoaderSaveInterface*>(item.object);
+    if (resources)
+        resources->save();
+
+    for (QLoaderSettings *child : item.children)
     {
         out << '\n';
         saveRecursive(child, out);
