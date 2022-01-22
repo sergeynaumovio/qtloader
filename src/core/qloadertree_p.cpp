@@ -547,23 +547,17 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
             }
 
             std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
-            for (int i = 0; i < static_cast<int>(children.size()); ++i)
+            if (instance == Section::Move)
             {
-                if (children[i] == src.settings)
-                {
-                    if (instance == Section::Move)
-                    {
-                        children.erase(children.begin() + i);
-                        hash.data[dst.parent.settings].children.push_back(src.settings);
-                    }
-
-                    copyOrMoveRecursive(src.settings, src, dst, instance);
-                    modified = true;
-                    emit q_ptr->settingsChanged();
-
-                    return true;
-                }
+                std::erase(children, src.settings);
+                hash.data[dst.parent.settings].children.push_back(src.settings);
             }
+
+            copyOrMoveRecursive(src.settings, src, dst, instance);
+            modified = true;
+            emit q_ptr->settingsChanged();
+
+            return true;
         }
     }
 

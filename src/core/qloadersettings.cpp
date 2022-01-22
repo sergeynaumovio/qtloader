@@ -35,10 +35,11 @@ QLoaderSettings::~QLoaderSettings()
 {
     if (q_ptr != this)
     {
-        QStringList section = d_ptr->hash.data[q_ptr].section;
-        QLoaderSettings *settings = d_ptr->hash.settings[section];
-        d_ptr->hash.settings.remove(section);
-        d_ptr->hash.data.remove(settings);
+        QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
+        QLoaderSettingsData &item = data[q_ptr];
+        std::erase(data[item.parent].children, q_ptr);
+        data.remove(q_ptr);
+        d_ptr->hash.settings.remove(item.section);
         d_ptr->modified = true;
         emit d_ptr->q_ptr->settingsChanged();
     }
