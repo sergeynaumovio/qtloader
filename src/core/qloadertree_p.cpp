@@ -298,6 +298,8 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         if (!(v = value("visible")).isNull())
             widget->setVisible(v.toBool());
     }
+    else
+        return;
 
     QLabel *label = qobject_cast<QLabel*>(object);
     if (label)
