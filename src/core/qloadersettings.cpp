@@ -36,7 +36,7 @@ QLoaderSettings::~QLoaderSettings()
     if (q_ptr != this)
     {
         QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
-        QLoaderSettingsData &item = data[q_ptr];
+        const QLoaderSettingsData &item = data[q_ptr];
 
         if (data.contains(item.parent))
             std::erase(data[item.parent].children, q_ptr);
