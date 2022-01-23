@@ -37,9 +37,13 @@ QLoaderSettings::~QLoaderSettings()
     {
         QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
         QLoaderSettingsData &item = data[q_ptr];
-        std::erase(data[item.parent].children, q_ptr);
-        data.remove(q_ptr);
+
+        if (data.contains(item.parent))
+            std::erase(data[item.parent].children, q_ptr);
+
         d_ptr->hash.settings.remove(item.section);
+        data.remove(q_ptr);
+
         d_ptr->modified = true;
         emit d_ptr->q_ptr->settingsChanged();
     }
