@@ -92,18 +92,28 @@ void QLoaderSettings::emitWarning(const QString &warning)
     }
 }
 
+QVariant QLoaderSettings::fromString(const QString &value) const
+{
+    return d_ptr->fromString(value);
+}
+
+QString QLoaderSettings::fromVariant(const QVariant &variant) const
+{
+    return d_ptr->fromVariant(variant);
+}
+
 void QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
-    d_ptr->hash.data[q_ptr].properties[key] = value;
+    d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
     d_ptr->modified = true;
     emit d_ptr->q_ptr->settingsChanged();
 }
 
 QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue) const
 {
-    const QMap<QString, QVariant> &properties = d_ptr->hash.data[q_ptr].properties;
+    const QMap<QString, QString> &properties = d_ptr->hash.data[q_ptr].properties;
     if (properties.contains(key))
-        return properties[key];
+        return fromString(properties[key]);
 
     return defaultValue;
 }

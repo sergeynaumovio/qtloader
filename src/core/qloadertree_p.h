@@ -37,7 +37,7 @@ struct QLoaderSettingsData
     QByteArray className;
     int classLine;
     QObject *object{};
-    QMap<QString, QVariant> properties;
+    QMap<QString, QString> properties;
     std::vector<QLoaderSettings*> children;
 };
 
@@ -67,9 +67,6 @@ public:
 class QLoaderTreePrivate
 {
     QScopedPointer<StringVariantConverter> converter;
-
-    QVariant fromString(const QString &value);
-    QString fromVariant(const QVariant &variant);
 
     void copyOrMoveRecursive(QLoaderSettings *settings,
                              const Section &src, const Section &dst,
@@ -116,6 +113,8 @@ public:
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QObject *external(QLoaderSettings *settings, QObject *parent);
     void dump(QLoaderSettings *settings) const;
+    QVariant fromString(const QString &value) const;
+    QString fromVariant(const QVariant &variant) const;
     bool copyOrMove(const QStringList &section, const QStringList &to, Section::Instance instance);
     bool load();
     bool load(const QStringList &section);

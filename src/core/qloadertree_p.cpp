@@ -34,9 +34,11 @@
 struct RegularExpressions
 {
     const QRegularExpression size;
+    const QRegularExpression stringlist;
 
     RegularExpressions()
-    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)")
+    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"),
+        stringlist("^QStringList\\s*\\(\\s*(?<list>.*)\\)")
     { }
 };
 
@@ -44,18 +46,28 @@ class StringVariantConverter
 {
     RegularExpressions expr;
 
-    QRegularExpressionMatch match;
-
 public:
-    QVariant fromString(const QString &value)
+    QVariant fromString(const QString &value) const
     {
+        QRegularExpressionMatch match;
+
         if ((match = expr.size.match(value)).hasMatch())
             return QSize(match.captured("width").toInt(), match.captured("height").toInt());
+
+        if ((match = expr.stringlist.match(value)).hasMatch())
+        {
+            QStringList list = match.captured("list").split(',');
+
+            for (QString &string : list)
+                string = string.trimmed();
+
+            return list;
+        }
 
         return value;
     }
 
-    QString fromVariant(const QVariant &variant)
+    QString fromVariant(const QVariant &variant) const
     {
         if (variant.canConvert<QSize>())
         {
@@ -147,7 +159,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (keyValueMatch.hasMatch())
         {
             QString key = keyValueMatch.captured("key");
-            QVariant value = fromString(keyValueMatch.captured("value"));
+            QString value = keyValueMatch.captured("value");
 
             if (key == "class")
             {
@@ -158,7 +170,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
                     return;
                 }
 
-                hash.data[settings].className = value.toByteArray();
+                hash.data[settings].className = value.toLocal8Bit();
                 hash.data[settings].classLine = errorLine;
             }
             else
@@ -225,11 +237,11 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
 {
     object->setObjectName(hash.data[settings].section.last());
 
-    const QMap<QString, QVariant> &properties = hash.data[settings].properties;
-    auto value = [&properties](const QString &key, const QVariant defaultValue = QVariant())
+    const QMap<QString, QString> &properties = hash.data[settings].properties;
+    auto value = [&properties, this](const QString &key, const QVariant defaultValue = QVariant())
     {
         if (properties.contains(key))
-            return properties[key];
+            return fromString(properties[key]);
 
         return defaultValue;
     };
@@ -334,11 +346,11 @@ void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
     qDebug().noquote().nospace() << '[' << hash.data[settings].section.join('/') << ']';
     qDebug().noquote() << "class =" << hash.data[settings].className;
 
-    QMapIterator<QString, QVariant> i(hash.data[settings].properties);
+    QMapIterator<QString, QString> i(hash.data[settings].properties);
     while (i.hasNext())
     {
         i.next();
-        qDebug().noquote() << i.key() << '=' << i.value().toString();
+        qDebug().noquote() << i.key() << '=' << i.value();
     }
 
     qDebug() << "";
@@ -475,12 +487,12 @@ Section::Section(const QStringList &section, QLoaderTreePrivate *d)
     object = d->hash.data.value(settings).object;
 }
 
-QVariant QLoaderTreePrivate::fromString(const QString &value)
+QVariant QLoaderTreePrivate::fromString(const QString &value) const
 {
     return converter->fromString(value);
 }
 
-QString QLoaderTreePrivate::fromVariant(const QVariant &variant)
+QString QLoaderTreePrivate::fromVariant(const QVariant &variant) const
 {
     return converter->fromVariant(variant);
 }
@@ -572,11 +584,11 @@ void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &o
     out << '[' << item.section.join('/') << "]\n" ;
     out << "class = " << item.className << '\n';
 
-    QMapIterator<QString, QVariant> i(item.properties);
+    QMapIterator<QString, QString> i(item.properties);
     while (i.hasNext())
     {
         i.next();
-        out << i.key() << " = " << fromVariant(i.value()) << '\n';
+        out << i.key() << " = " << i.value() << '\n';
     }
 
     QLoaderSaveInterface *resources = qobject_cast<QLoaderSaveInterface*>(item.object);

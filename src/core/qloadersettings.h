@@ -39,6 +39,8 @@ protected:
     void emitError(const QString &error);
     void emitInfo(const QString &info);
     void emitWarning(const QString &warning);
+    virtual QVariant fromString(const QString &value) const;
+    virtual QString fromVariant(const QVariant &variant) const;
     void setValue(const QString &key, const QVariant &value);
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
