@@ -31,30 +31,121 @@
 #include <QAction>
 #include <QTextStream>
 
-struct RegularExpressions
+class QLoaderTreeSection
 {
-    const QRegularExpression size;
-    const QRegularExpression stringlist;
+    QLoaderTreeSection(const QStringList &section)
+    :   section(section)
+    {
+        if (section.isEmpty())
+            return;
 
-    RegularExpressions()
-    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"),
-        stringlist("^QStringList\\s*\\(\\s*(?<list>.*)\\)")
+        parent.section = section;
+        parent.section.removeLast();
+
+        valid = true;
+    }
+
+public:
+    bool valid{};
+
+    struct
+    {
+        QStringList section;
+        QLoaderSettings *settings{};
+
+    } parent;
+
+    const QStringList &section;
+    QLoaderSettings *settings{};
+    QObject *object{};
+
+    QLoaderTreeSection(const QStringList &section, QLoaderTreePrivate *d)
+    :   QLoaderTreeSection(section)
+    {
+        if (!valid)
+            return;
+
+        if (!d->hash.settings.contains(parent.section))
+        {
+            valid = false;
+            return;
+        }
+
+        valid = true;
+        parent.settings = d->hash.settings.value(parent.section);
+        settings = d->hash.settings.value(section);
+        object = d->hash.data.value(settings).object;
+    }
+};
+
+class KeyValueParser
+{
+    const QRegularExpression sectionName;
+    const QRegularExpression keyValue;
+    const QRegularExpression className;
+    mutable QRegularExpressionMatch match;
+
+public:
+    KeyValueParser()
+    :   sectionName("^\\[(?<section>[^\\[\\]]*)\\]$"),
+        keyValue("^(?<key>[^=]*[\\w]+)\\s*=\\s*(?<value>.+)$"),
+        className("^[A-Z]+[a-z,0-9]*")
     { }
+
+    bool matchSectionName(const QString &line, QStringList &section) const
+    {
+        if ((match = sectionName.match(line)).hasMatch())
+        {
+            section = match.captured("section").split('/');
+            return true;
+        }
+
+        return false;
+    }
+
+    bool matchKeyValue(const QString &line, QString &key, QString &value) const
+    {
+        if ((match = keyValue.match(line)).hasMatch())
+        {
+            key = match.captured("key");
+            value = match.captured("value");
+            return true;
+        }
+
+        return false;
+    }
+
+    bool matchClassName(const char *name, QString &libraryName) const
+    {
+        if ((match = className.match(name)).hasMatch())
+        {
+            libraryName += match.captured();
+            return true;
+        }
+
+        return false;
+    }
+
 };
 
 class StringVariantConverter
 {
-    RegularExpressions expr;
+    const QRegularExpression size;
+    const QRegularExpression stringlist;
+    mutable QRegularExpressionMatch match;
 
 public:
+    StringVariantConverter()
+    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"),
+        stringlist("^QStringList\\s*\\(\\s*(?<list>.*)\\)")
+    { }
+
     QVariant fromString(const QString &value) const
     {
-        QRegularExpressionMatch match;
-
-        if ((match = expr.size.match(value)).hasMatch())
+        if ((match = size.match(value)).hasMatch())
             return QSize(match.captured("width").toInt(), match.captured("height").toInt());
 
-        if ((match = expr.stringlist.match(value)).hasMatch())
+        if ((match = stringlist.match(value)).hasMatch())
         {
             QStringList list = match.captured("list").split(',');
 
@@ -80,12 +171,25 @@ public:
     }
 };
 
-QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
-:   converter(new StringVariantConverter),
-    q_ptr(q),
-    file(new QFile(fileName, q))
-
+class QLoaderTreePrivateData
 {
+public:
+    KeyValueParser parser;
+    StringVariantConverter converter;
+};
+
+QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
+:   q_ptr(q),
+    file(new QFile(fileName, q))
+{
+    new (&d) QLoaderTreePrivateData();
+    {
+        static_assert (d_size == sizeof (QLoaderTreePrivateData));
+        static_assert (d_align == alignof (QLoaderTreePrivateData));
+
+        d_ptr = reinterpret_cast<QLoaderTreePrivateData*>(&d);
+    }
+
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
         status = QLoaderTree::AccessError;
@@ -112,11 +216,8 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (line.startsWith(comment))
             continue;
 
-        QRegularExpression sectionName("^\\[(?<section>[^\\[\\]]*)\\]$");
-        QRegularExpressionMatch sectionNameMatch = sectionName.match(line);
-        if (sectionNameMatch.hasMatch())
+        if (d_ptr->parser.matchSectionName(line, section))
         {
-            section = sectionNameMatch.captured("section").split('/');
             settings = new QLoaderSettings(this);
             bool valid{};
             QLoaderSettingsData item;
@@ -154,13 +255,9 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             continue;
         }
 
-        QRegularExpression keyValue("^(?<key>[^=]*[\\w]+)\\s*=\\s*(?<value>.+)$");
-        QRegularExpressionMatch keyValueMatch = keyValue.match(line);
-        if (keyValueMatch.hasMatch())
+        QString key, value;
+        if (d_ptr->parser.matchKeyValue(line, key, value))
         {
-            QString key = keyValueMatch.captured("key");
-            QString value = keyValueMatch.captured("value");
-
             if (key == "class")
             {
                 if (!settings)
@@ -186,6 +283,8 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
+    d_ptr->~QLoaderTreePrivateData();
+
     QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
     while (i.hasNext())
     {
@@ -204,11 +303,8 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     const char *className = settings->className();
     QString libraryName("Qt" + QString::number(QT_VERSION_MAJOR));
 
-    QRegularExpression starts("^[A-Z]+[a-z,0-9]*");
-    QRegularExpressionMatch startsMatch = starts.match(className);
-    if (startsMatch.hasMatch())
+    if (d_ptr->parser.matchClassName(className, libraryName))
     {
-        libraryName += startsMatch.captured();
         QPluginLoader loader(libraryName);
         if (!loader.instance())
         {
@@ -371,8 +467,9 @@ void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
 
 void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
 {
+    QLoaderSettingsData &item = hash.data[settings];
     QObject *object;
-    if (!qstrncmp(hash.data[settings].className, "Loader", 6))
+    if (!qstrncmp(item.className, "Loader", 6))
         object = builtin(settings, parent);
     else
         object = external(settings, parent);
@@ -398,7 +495,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
             }
         }
 
-        errorLine = hash.data[settings].classLine;
+        errorLine = item.classLine;
 
         return;
     }
@@ -424,12 +521,12 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         emit q_ptr->warningChanged(object, warningMessage);
     }
 
-    hash.data[settings].object = object;
+    item.object = object;
     setProperties(settings, object);
 
-    for (QLoaderSettings *child : hash.data[settings].children)
+    for (QLoaderSettings *child : item.children)
     {
-        if (!status)
+        if (!status && item.section.last() != item.className)
             loadRecursive(child, object);
     }
 }
@@ -457,49 +554,19 @@ bool QLoaderTreePrivate::load(const QStringList & /*section*/)
     return false;
 }
 
-Section::Section(const QStringList &section)
-:   section(section)
-{
-    if (section.isEmpty())
-        return;
-
-    parent.section = section;
-    parent.section.removeLast();
-
-    valid = true;
-}
-
-Section::Section(const QStringList &section, QLoaderTreePrivate *d)
-:   Section(section)
-{
-    if (!valid)
-        return;
-
-    if (!d->hash.settings.contains(parent.section))
-    {
-        valid = false;
-        return;
-    }
-
-    valid = true;
-    parent.settings = d->hash.settings.value(parent.section);
-    settings = d->hash.settings.value(section);
-    object = d->hash.data.value(settings).object;
-}
-
 QVariant QLoaderTreePrivate::fromString(const QString &value) const
 {
-    return converter->fromString(value);
+    return d_ptr->converter.fromString(value);
 }
 
 QString QLoaderTreePrivate::fromVariant(const QVariant &variant) const
 {
-    return converter->fromVariant(variant);
+    return d_ptr->converter.fromVariant(variant);
 }
 
 void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
-                                             const Section &src, const Section &dst,
-                                             Section::Instance instance)
+                                             const QLoaderTreeSection &src, const QLoaderTreeSection &dst,
+                                             Action action)
 {
     QLoaderSettingsData &item = hash.data[settings];
 
@@ -518,7 +585,7 @@ void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
 
     }(hash.data[settings]);
 
-    if (instance == Section::Move)
+    if (action == Action::Move)
     {
         hash.settings.remove(item.section);
         item.section = std::move(section);
@@ -527,22 +594,22 @@ void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
     hash.settings.insert(item.section, settings);
 
     for (QLoaderSettings *child : item.children)
-        copyOrMoveRecursive(child, src, dst, instance);
+        copyOrMoveRecursive(child, src, dst, action);
 }
 
-bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Section::Instance instance)
+bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Action action)
 {
-    if (!loaded || instance == Section::Copy)
+    if (!loaded || action == Action::Copy)
         return false;
 
-    Section src(section, this);
+    QLoaderTreeSection src(section, this);
     if (src.valid)
     {
-        Section dst(to, this);
+        QLoaderTreeSection dst(to, this);
         if (dst.valid)
         {
             QLoaderMoveInterface *movable = qobject_cast<QLoaderMoveInterface*>(src.object);
-            if (instance == Section::Move && (!movable || !movable->move(to)))
+            if (action == Action::Move && (!movable || !movable->move(to)))
             {
                 status = QLoaderTree::ObjectError;
                 emit q_ptr->statusChanged(status);
@@ -559,13 +626,13 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
             }
 
             std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
-            if (instance == Section::Move)
+            if (action == Action::Move)
             {
                 std::erase(children, src.settings);
                 hash.data[dst.parent.settings].children.push_back(src.settings);
             }
 
-            copyOrMoveRecursive(src.settings, src, dst, instance);
+            copyOrMoveRecursive(src.settings, src, dst, action);
             modified = true;
             emit q_ptr->settingsChanged();
 

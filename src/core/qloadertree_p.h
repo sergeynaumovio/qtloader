@@ -24,11 +24,14 @@
 #include <QHash>
 #include <QVariant>
 
-class StringVariantConverter;
 class QLoaderSettings;
 class QLoaderTree;
 class QFile;
 class QTextStream;
+class QLoaderTreePrivateData;
+class QLoaderTreeSection;
+
+enum class Action { Copy, Move };
 
 struct QLoaderSettingsData
 {
@@ -41,36 +44,16 @@ struct QLoaderSettingsData
     std::vector<QLoaderSettings*> children;
 };
 
-class Section
-{
-    Section(const QStringList &section);
-
-public:
-    bool valid{};
-
-    struct
-    {
-        QStringList section;
-        QLoaderSettings *settings{};
-
-    } parent;
-
-    const QStringList &section;
-    QLoaderSettings *settings{};
-    QObject *object{};
-
-    enum Instance { Copy, Move };
-
-    Section(const QStringList &section, QLoaderTreePrivate *d);
-};
-
 class QLoaderTreePrivate
 {
-    QScopedPointer<StringVariantConverter> converter;
+    static const int d_size{56};
+    static const int d_align{8};
+    std::aligned_storage_t<d_size, d_align> d;
+    QLoaderTreePrivateData *d_ptr;
 
     void copyOrMoveRecursive(QLoaderSettings *settings,
-                             const Section &src, const Section &dst,
-                             Section::Instance instance);
+                             const QLoaderTreeSection &src, const QLoaderTreeSection &dst,
+                             Action action);
     void dumpRecursive(QLoaderSettings *settings) const;
     void loadRecursive(QLoaderSettings *settings, QObject *parent);
     void saveRecursive(QLoaderSettings *settings, QTextStream &out);
@@ -115,7 +98,7 @@ public:
     void dump(QLoaderSettings *settings) const;
     QVariant fromString(const QString &value) const;
     QString fromVariant(const QVariant &variant) const;
-    bool copyOrMove(const QStringList &section, const QStringList &to, Section::Instance instance);
+    bool copyOrMove(const QStringList &section, const QStringList &to, Action action);
     bool load();
     bool load(const QStringList &section);
     bool save();
