@@ -179,16 +179,12 @@ public:
 };
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
-:   q_ptr(q),
+:   d(*new (&d_storage) QLoaderTreePrivateData),
+    q_ptr(q),
     file(new QFile(fileName, q))
 {
-    new (&d) QLoaderTreePrivateData();
-    {
-        static_assert (d_size == sizeof (QLoaderTreePrivateData));
-        static_assert (d_align == alignof (QLoaderTreePrivateData));
-
-        d_ptr = reinterpret_cast<QLoaderTreePrivateData*>(&d);
-    }
+    static_assert (d_size == sizeof (QLoaderTreePrivateData));
+    static_assert (d_align == alignof (QLoaderTreePrivateData));
 
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -216,7 +212,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (line.startsWith(comment))
             continue;
 
-        if (d_ptr->parser.matchSectionName(line, section))
+        if (d.parser.matchSectionName(line, section))
         {
             settings = new QLoaderSettings(this);
             bool valid{};
@@ -256,7 +252,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         }
 
         QString key, value;
-        if (d_ptr->parser.matchKeyValue(line, key, value))
+        if (d.parser.matchKeyValue(line, key, value))
         {
             if (key == "class")
             {
@@ -283,7 +279,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
-    d_ptr->~QLoaderTreePrivateData();
+    d.~QLoaderTreePrivateData();
 
     QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
     while (i.hasNext())
@@ -303,7 +299,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     const char *className = settings->className();
     QString libraryName("Qt" + QString::number(QT_VERSION_MAJOR));
 
-    if (d_ptr->parser.matchClassName(className, libraryName))
+    if (d.parser.matchClassName(className, libraryName))
     {
         QPluginLoader loader(libraryName);
         if (!loader.instance())
@@ -556,12 +552,12 @@ bool QLoaderTreePrivate::load(const QStringList & /*section*/)
 
 QVariant QLoaderTreePrivate::fromString(const QString &value) const
 {
-    return d_ptr->converter.fromString(value);
+    return d.converter.fromString(value);
 }
 
 QString QLoaderTreePrivate::fromVariant(const QVariant &variant) const
 {
-    return d_ptr->converter.fromVariant(variant);
+    return d.converter.fromVariant(variant);
 }
 
 void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
