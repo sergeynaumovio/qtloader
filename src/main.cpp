@@ -68,13 +68,13 @@ int main(int argc, char *argv[])
     parser.process(*app);
     QString fileName;
 
-    bool noGui = !qobject_cast<QApplication*>(app.data());
+    bool coreApp = !qobject_cast<QApplication*>(app.data());
     QStringList arguments = parser.positionalArguments();
     if (!arguments.size() || !arguments.first().size())
     {
-        if (noGui)
+        if (coreApp)
         {
-            qInfo() << "Argument <file> is empty.";
+            qInfo().noquote() << "Argument <file> is empty.";
             return -1;
          }
         else
@@ -96,31 +96,37 @@ int main(int argc, char *argv[])
     {
         if (loaderTree.status() == QLoaderTree::AccessError)
         {
-            if (noGui)
+            if (coreApp)
             {
-                qInfo() << "File not found" << fileName;
+                qInfo().noquote() << "File not found" << fileName;
             }
             else
             {
-                QString msg = "File not found \"" + fileName + "\"";
+                QString messsage = "File not found \"" + fileName + "\"";
                 QMessageBox::warning(nullptr, "Qt Loader",
-                                              QDir::toNativeSeparators(msg),
+                                              QDir::toNativeSeparators(messsage),
                                               QMessageBox::Close);
             }
         }
-        QString msg = fileName + (loaderTree.errorLine() ?
-                                  ": " + QString::number(loaderTree.errorLine()) :
-                                  "") + ": " +
-                      QVariant::fromValue(loaderTree.status()).
-                      toString().toLower();
+        QString messsage = fileName + (loaderTree.errorLine() ?
+                                       ": " + QString::number(loaderTree.errorLine()) :
+                                       "") + ": " +
+                           QVariant::fromValue(loaderTree.status()).
+                           toString().toLower();
 
-        msg.insert(msg.size() - QString("error").size(), ' ');
+        messsage.insert(messsage.size() - QString("error").size(), ' ');
 
-        msg += ": " + loaderTree.errorMessage();
+        messsage += ": " + loaderTree.errorMessage();
 
-        return QMessageBox::critical(nullptr, "Qt Loader",
-                                     QDir::toNativeSeparators(msg),
-                                     QMessageBox::Close);
+        if (coreApp)
+        {
+            qInfo().noquote() << messsage;
+            return -1;
+        }
+        else
+            return QMessageBox::critical(nullptr, "Qt Loader",
+                                         QDir::toNativeSeparators(messsage),
+                                         QMessageBox::Close);
     }
 
     return app->exec();
