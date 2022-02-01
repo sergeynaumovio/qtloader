@@ -29,8 +29,8 @@ class Q_LOADER_EXPORT QLoaderSettings
 {
     Q_DISABLE_COPY_MOVE(QLoaderSettings)
 
-    QLoaderSettings *q_ptr;
-    QLoaderTreePrivate *d_ptr;
+    QLoaderSettings *const q_ptr;
+    QLoaderTreePrivate *const d_ptr;
 
 protected:
     explicit QLoaderSettings(QLoaderSettings *settings);
