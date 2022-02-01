@@ -473,19 +473,19 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     if (!parent)
         root.object = object;
 
-    if (!object || object == parent || status == QLoaderTree::PluginError)
+    if ((object && object == parent) || object == q_ptr || status == QLoaderTree::PluginError)
     {
         if (!status)
         {
-            if (!object)
+            if (object == parent)
             {
-                errorMessage = "class not found";
+                errorMessage = "parent object not valid";
                 status = QLoaderTree::ObjectError;
                 emit q_ptr->statusChanged(status);
             }
-            else if (object && object == parent)
+            else if (object == q_ptr)
             {
-                errorMessage = "parent object not valid";
+                errorMessage = "class not found";
                 status = QLoaderTree::ObjectError;
                 emit q_ptr->statusChanged(status);
             }
@@ -518,11 +518,13 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     }
 
     item.object = object;
-    setProperties(settings, object);
+
+    if (object)
+        setProperties(settings, object);
 
     for (QLoaderSettings *child : item.children)
     {
-        if (!status && item.section.last() != item.className)
+        if (!status && !(item.section.size() == 1 && item.section.last() == item.className))
             loadRecursive(child, object);
     }
 }
@@ -532,12 +534,15 @@ bool QLoaderTreePrivate::load()
     if (loaded)
         return false;
 
-    loaded = true;
-
     loadRecursive(root.settings, nullptr);
 
     if (status && root.object)
         root.object->deleteLater();
+    else
+    {
+        loaded = true;
+        emit q_ptr->loaded();
+    }
 
     return (status == QLoaderTree::NoError);
 }

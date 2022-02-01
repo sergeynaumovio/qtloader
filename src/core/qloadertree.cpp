@@ -66,6 +66,11 @@ QObject *QLoaderTree::infoObject() const
     return d_ptr->infoObject;
 }
 
+bool QLoaderTree::isLoaded() const
+{
+    return d_ptr->loaded;
+}
+
 bool QLoaderTree::isModified() const
 {
     return d_ptr->modified;

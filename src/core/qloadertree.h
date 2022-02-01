@@ -53,6 +53,7 @@ Q_SIGNALS:
     void errorLineChanged(int);
     void errorChanged(QObject *, QString);
     void infoChanged(QObject *, QString);
+    void loaded();
     void settingsChanged();
     void statusChanged(QLoaderTree::Status);
     void warningChanged(QObject *, QString);
@@ -68,6 +69,7 @@ public:
     QString fileName() const;
     QString infoMessage() const;
     QObject *infoObject() const;
+    bool isLoaded() const;
     bool isModified() const;
     bool load();
     bool move(const QStringList &section, const QStringList &to);

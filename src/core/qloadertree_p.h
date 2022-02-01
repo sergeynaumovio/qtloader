@@ -21,8 +21,8 @@
 
 #include "qloadertree.h"
 #include <QStringList>
+#include <QMap>
 #include <QHash>
-#include <QVariant>
 
 class QLoaderSettings;
 class QLoaderTree;
