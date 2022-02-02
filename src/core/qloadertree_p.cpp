@@ -467,7 +467,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
 
     if (object == parent || object == q_ptr || status == QLoaderTree::PluginError ||
         (!object->parent() && ((object->isWidgetType() && item.section.size() > 1) ||
-                                !object->isWidgetType())))
+                               !object->isWidgetType())))
     {
         if (!status)
         {
