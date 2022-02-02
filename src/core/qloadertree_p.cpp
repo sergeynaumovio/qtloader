@@ -462,8 +462,6 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     else
         object = external(settings, parent);
 
-    delete settings;
-
     if (!object)
         return;
 
@@ -549,6 +547,12 @@ bool QLoaderTreePrivate::load()
     else if (root.object)
         delete root.object;
 
+    QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
+    while (i.hasNext())
+    {
+        i.next();
+        delete i.value();
+    }
 
     return loaded;
 }
