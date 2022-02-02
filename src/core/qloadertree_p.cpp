@@ -29,6 +29,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QAction>
+#include <QApplication>
 #include <QTextStream>
 
 class QLoaderTreeSection
@@ -285,7 +286,14 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
     while (i.hasNext())
     {
         i.next();
-        delete i.value();
+
+        QLoaderSettings *settings = i.value();
+        QObject *object = hash.data[settings].object;
+
+        if (object)
+            delete object;
+        else
+            delete settings;
     }
 }
 
@@ -473,7 +481,9 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     if (!parent)
         root.object = object;
 
-    if ((object && object == parent) || object == q_ptr || status == QLoaderTree::PluginError)
+    if ((object && object == parent) || object == q_ptr || status == QLoaderTree::PluginError ||
+        (object && !object->parent() && ((object->isWidgetType() && item.section.size() > 1) ||
+                                         !object->isWidgetType())))
     {
         if (!status)
         {
@@ -489,6 +499,13 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
                 status = QLoaderTree::ObjectError;
                 emit q_ptr->statusChanged(status);
             }
+            else if (!object->parent())
+            {
+                item.object = object;
+                errorMessage = "parent object not set";
+                status = QLoaderTree::ObjectError;
+                emit q_ptr->statusChanged(status);
+            }
         }
 
         errorLine = item.classLine;
@@ -496,8 +513,11 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         return;
     }
 
+    item.object = object;
+
     if (status == QLoaderTree::ObjectError)
     {
+        errorObject = object;
         emit q_ptr->statusChanged(status);
         emit q_ptr->errorChanged(object, errorMessage);
         return;
@@ -517,8 +537,6 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         emit q_ptr->warningChanged(object, warningMessage);
     }
 
-    item.object = object;
-
     if (object)
         setProperties(settings, object);
 
@@ -534,7 +552,8 @@ bool QLoaderTreePrivate::load()
     if (loaded)
         return false;
 
-    loadRecursive(root.settings, nullptr);
+    bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
+    loadRecursive(root.settings, coreApp ? q_ptr : nullptr);
 
     if (status && root.object)
         root.object->deleteLater();
