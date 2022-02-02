@@ -22,9 +22,7 @@
 QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
-{
-    delete settings;
-}
+{ }
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *d)
 :   q_ptr(this),

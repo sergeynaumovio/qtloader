@@ -281,20 +281,6 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
     d.~QLoaderTreePrivateData();
-
-    QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
-    while (i.hasNext())
-    {
-        i.next();
-
-        QLoaderSettings *settings = i.value();
-        QObject *object = hash.data[settings].object;
-
-        if (object)
-            delete object;
-        else
-            delete settings;
-    }
 }
 
 QObject *QLoaderTreePrivate::builtin(QLoaderSettings* /*settings*/, QObject* /*parent*/)
@@ -333,11 +319,11 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     return nullptr;
 }
 
-void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *object)
+void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject *object)
 {
-    object->setObjectName(hash.data[settings].section.last());
+    object->setObjectName(item.section.last());
 
-    const QMap<QString, QString> &properties = hash.data[settings].properties;
+    const QMap<QString, QString> &properties = item.properties;
     auto value = [&properties, this](const QString &key, const QVariant defaultValue = QVariant())
     {
         if (properties.contains(key))
@@ -368,50 +354,48 @@ void QLoaderTreePrivate::setProperties(QLoaderSettings *settings, QObject *objec
         return;
     }
 
-    QWidget *widget = qobject_cast<QWidget*>(object);
-    if (widget)
-    {
-        if (!(v = value("enabled")).isNull())
-            widget->setEnabled(v.toBool());
-
-        if (!(v = value("fixedHeight")).isNull())
-            widget->setFixedHeight(v.toInt());
-
-        if (!(v = value("fixedSize")).isNull())
-            widget->setFixedSize(v.toSize());
-
-        if (!(v = value("fixedWidth")).isNull())
-            widget->setFixedWidth(v.toInt());
-
-        if (!(v = value("hidden")).isNull())
-            widget->setHidden(v.toBool());
-
-        if (!(v = value("maximumHeight")).isNull())
-            widget->setMaximumHeight(v.toInt());
-
-        if (!(v = value("maximumSize")).isNull())
-            widget->setMaximumSize(v.toSize());
-
-        if (!(v = value("maximumWidth")).isNull())
-            widget->setMaximumWidth(v.toInt());
-
-        if (!(v = value("minimumHeight")).isNull())
-            widget->setMinimumHeight(v.toInt());
-
-        if (!(v = value("minimumSize")).isNull())
-            widget->setMinimumSize(v.toSize());
-
-        if (!(v = value("minimumWidth")).isNull())
-            widget->setMinimumWidth(v.toInt());
-
-        if (!(v = value("styleSheet")).isNull())
-            widget->setStyleSheet(v.toString());
-
-        if (!(v = value("visible")).isNull())
-            widget->setVisible(v.toBool());
-    }
-    else
+    if (!object->isWidgetType())
         return;
+
+    QWidget *widget = qobject_cast<QWidget*>(object);
+    if (!(v = value("enabled")).isNull())
+        widget->setEnabled(v.toBool());
+
+    if (!(v = value("fixedHeight")).isNull())
+        widget->setFixedHeight(v.toInt());
+
+    if (!(v = value("fixedSize")).isNull())
+        widget->setFixedSize(v.toSize());
+
+    if (!(v = value("fixedWidth")).isNull())
+        widget->setFixedWidth(v.toInt());
+
+    if (!(v = value("hidden")).isNull())
+        widget->setHidden(v.toBool());
+
+    if (!(v = value("maximumHeight")).isNull())
+        widget->setMaximumHeight(v.toInt());
+
+    if (!(v = value("maximumSize")).isNull())
+        widget->setMaximumSize(v.toSize());
+
+    if (!(v = value("maximumWidth")).isNull())
+        widget->setMaximumWidth(v.toInt());
+
+    if (!(v = value("minimumHeight")).isNull())
+        widget->setMinimumHeight(v.toInt());
+
+    if (!(v = value("minimumSize")).isNull())
+        widget->setMinimumSize(v.toSize());
+
+    if (!(v = value("minimumWidth")).isNull())
+        widget->setMinimumWidth(v.toInt());
+
+    if (!(v = value("styleSheet")).isNull())
+        widget->setStyleSheet(v.toString());
+
+    if (!(v = value("visible")).isNull())
+        widget->setVisible(v.toBool());
 
     QLabel *label = qobject_cast<QLabel*>(object);
     if (label)
@@ -478,40 +462,43 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     else
         object = external(settings, parent);
 
-    if (!parent)
-        root.object = object;
+    delete settings;
 
-    if ((object && object == parent) || object == q_ptr || status == QLoaderTree::PluginError ||
-        (object && !object->parent() && ((object->isWidgetType() && item.section.size() > 1) ||
-                                         !object->isWidgetType())))
+    if (!object)
+        return;
+
+    if (object == parent || object == q_ptr || status == QLoaderTree::PluginError ||
+        (!object->parent() && ((object->isWidgetType() && item.section.size() > 1) ||
+                                !object->isWidgetType())))
     {
         if (!status)
         {
-            if (object == parent)
+            status = QLoaderTree::ObjectError;
+
+            if (object != q_ptr && object == parent)
             {
                 errorMessage = "parent object not valid";
-                status = QLoaderTree::ObjectError;
-                emit q_ptr->statusChanged(status);
             }
             else if (object == q_ptr)
             {
                 errorMessage = "class not found";
-                status = QLoaderTree::ObjectError;
-                emit q_ptr->statusChanged(status);
             }
             else if (!object->parent())
             {
-                item.object = object;
                 errorMessage = "parent object not set";
-                status = QLoaderTree::ObjectError;
-                emit q_ptr->statusChanged(status);
+                delete object;
             }
+
+            emit q_ptr->statusChanged(status);
         }
 
         errorLine = item.classLine;
 
         return;
     }
+
+    if (!root.object && item.section.size() == 1)
+        root.object = object;
 
     item.object = object;
 
@@ -537,8 +524,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         emit q_ptr->warningChanged(object, warningMessage);
     }
 
-    if (object)
-        setProperties(settings, object);
+    setProperties(item, object);
 
     for (QLoaderSettings *child : item.children)
     {
@@ -555,15 +541,16 @@ bool QLoaderTreePrivate::load()
     bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
     loadRecursive(root.settings, coreApp ? q_ptr : nullptr);
 
-    if (status && root.object)
-        root.object->deleteLater();
-    else
+    if (!status)
     {
         loaded = true;
         emit q_ptr->loaded();
     }
+    else if (root.object)
+        delete root.object;
 
-    return (status == QLoaderTree::NoError);
+
+    return loaded;
 }
 
 bool QLoaderTreePrivate::load(const QStringList & /*section*/)

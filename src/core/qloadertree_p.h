@@ -57,7 +57,7 @@ class QLoaderTreePrivate
     void dumpRecursive(QLoaderSettings *settings) const;
     void loadRecursive(QLoaderSettings *settings, QObject *parent);
     void saveRecursive(QLoaderSettings *settings, QTextStream &out);
-    void setProperties(QLoaderSettings *settings, QObject *object);
+    void setProperties(const QLoaderSettingsData &item, QObject *object);
 
 public:
     QLoaderTree *const q_ptr;
