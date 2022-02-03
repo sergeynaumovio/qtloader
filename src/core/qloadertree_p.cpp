@@ -241,10 +241,10 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 
             if (!valid)
             {
-                status = QLoaderTree::DesignError;
-                emit q->statusChanged(status);
                 delete settings;
                 qDeleteAll(hash.settings);
+                status = QLoaderTree::DesignError;
+                emit q->statusChanged(status);
                 return;
             }
 
@@ -324,11 +324,10 @@ void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject 
 {
     object->setObjectName(item.section.last());
 
-    const QMap<QString, QString> &properties = item.properties;
-    auto value = [&properties, this](const QString &key, const QVariant defaultValue = QVariant())
+    auto value = [&item, this](const QString &key, const QVariant defaultValue = QVariant())
     {
-        if (properties.contains(key))
-            return fromString(properties[key]);
+        if (item.properties.contains(key))
+            return fromString(item.properties[key]);
 
         return defaultValue;
     };
