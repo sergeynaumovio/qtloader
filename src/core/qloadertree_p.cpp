@@ -534,7 +534,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
 
 bool QLoaderTreePrivate::load()
 {
-    if (loaded)
+    if (loaded || status)
         return false;
 
     bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
