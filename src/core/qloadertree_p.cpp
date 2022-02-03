@@ -465,32 +465,27 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     if (!object)
         return;
 
-    if (object == parent || object == q_ptr || status == QLoaderTree::PluginError ||
+    if (object == parent || object == q_ptr ||
         (!object->parent() && ((object->isWidgetType() && item.section.size() > 1) ||
                                !object->isWidgetType())))
     {
-        if (!status)
+        if (object != q_ptr && object == parent)
         {
-            status = QLoaderTree::ObjectError;
-
-            if (object != q_ptr && object == parent)
-            {
-                errorMessage = "parent object not valid";
-            }
-            else if (object == q_ptr)
-            {
-                errorMessage = "class not found";
-            }
-            else if (!object->parent())
-            {
-                errorMessage = "parent object not set";
-                delete object;
-            }
-
-            emit q_ptr->statusChanged(status);
+            errorMessage = "parent object not valid";
+        }
+        else if (object == q_ptr)
+        {
+            errorMessage = "class not found";
+        }
+        else if (!object->parent())
+        {
+            errorMessage = "parent object not set";
+            delete object;
         }
 
+        status = QLoaderTree::ObjectError;
         errorLine = item.classLine;
+        emit q_ptr->statusChanged(status);
 
         return;
     }
