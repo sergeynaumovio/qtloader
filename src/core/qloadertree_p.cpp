@@ -131,18 +131,38 @@ public:
 
 class StringVariantConverter
 {
+    const QRegularExpression charlist;
     const QRegularExpression size;
     const QRegularExpression stringlist;
     mutable QRegularExpressionMatch match;
 
 public:
     StringVariantConverter()
-    :   size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"),
+    :   charlist("^QCharList\\s*\\(\\s*(?<list>.*)\\)"),
+        size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"),
         stringlist("^QStringList\\s*\\(\\s*(?<list>.*)\\)")
+
     { }
 
     QVariant fromString(const QString &value) const
     {
+        if ((match = charlist.match(value)).hasMatch())
+        {
+            QStringList stringlist = match.captured("list").split(',');
+            QList<QChar> list;
+
+            for (QString &string : stringlist)
+            {
+                string = string.trimmed();
+                if (string.size() != 1)
+                    return QVariant();
+
+                list.append(string.at(0));
+            }
+
+            return QVariant::fromValue(list);
+        }
+
         if ((match = size.match(value)).hasMatch())
             return QSize(match.captured("width").toInt(), match.captured("height").toInt());
 
@@ -317,6 +337,9 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         return plugin->object(settings, parent);
     }
 
+    status = QLoaderTree::PluginError;
+    errorMessage = "invalid class name";
+    emit q_ptr->statusChanged(status);
     return nullptr;
 }
 
