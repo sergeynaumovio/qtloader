@@ -540,6 +540,8 @@ bool QLoaderTreePrivate::load()
     bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
     loadRecursive(root.settings, coreApp ? q_ptr : nullptr);
 
+    qDeleteAll(hash.settings);
+
     if (!status)
     {
         loaded = true;
@@ -547,8 +549,6 @@ bool QLoaderTreePrivate::load()
     }
     else if (root.object)
         delete root.object;
-
-    qDeleteAll(hash.settings);
 
     return loaded;
 }
