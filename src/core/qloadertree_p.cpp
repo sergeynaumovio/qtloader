@@ -244,6 +244,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
                 status = QLoaderTree::DesignError;
                 emit q->statusChanged(status);
                 delete settings;
+                qDeleteAll(hash.settings);
                 return;
             }
 
@@ -547,12 +548,7 @@ bool QLoaderTreePrivate::load()
     else if (root.object)
         delete root.object;
 
-    QHashIterator<QStringList, QLoaderSettings*> i(hash.settings);
-    while (i.hasNext())
-    {
-        i.next();
-        delete i.value();
-    }
+    qDeleteAll(hash.settings);
 
     return loaded;
 }
