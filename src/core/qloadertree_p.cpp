@@ -338,7 +338,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
     }
 
     status = QLoaderTree::PluginError;
-    errorMessage = "invalid class name";
+    errorMessage = "class name not valid";
     emit q_ptr->statusChanged(status);
     return nullptr;
 }
@@ -521,6 +521,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     if (status == QLoaderTree::ObjectError)
     {
         errorObject = object;
+        errorLine = item.classLine;
         emit q_ptr->statusChanged(status);
         emit q_ptr->errorChanged(object, errorMessage);
         return;
@@ -642,7 +643,7 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
                 if (!movable)
                     errorMessage = "object not movable";
                 else
-                    errorMessage = "movable object parent not valid";
+                    errorMessage = "parent object not valid";
 
                 emit q_ptr->errorChanged(errorObject, errorMessage);
 
