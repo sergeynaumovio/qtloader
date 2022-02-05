@@ -145,7 +145,7 @@ public:
         if ((match = d.charlist.match(value)).hasMatch())
         {
             QStringList stringlist = match.captured("list").split(',');
-            QList<QChar> list;
+            QList<QChar> charlist;
 
             for (QString &string : stringlist)
             {
@@ -153,10 +153,10 @@ public:
                 if (string.size() != 1)
                     return QVariant();
 
-                list.append(string.at(0));
+                charlist.append(string.at(0));
             }
 
-            return QVariant::fromValue(list);
+            return QVariant::fromValue(charlist);
         }
 
         if ((match = d.size.match(value)).hasMatch())
@@ -164,12 +164,12 @@ public:
 
         if ((match = d.stringlist.match(value)).hasMatch())
         {
-            QStringList list = match.captured("list").split(',');
+            QStringList stringlist = match.captured("list").split(',');
 
-            for (QString &string : list)
+            for (QString &string : stringlist)
                 string = string.trimmed();
 
-            return list;
+            return stringlist;
         }
 
         return value;
