@@ -321,6 +321,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         {
             status = QLoaderTree::PluginError;
             errorMessage = "library not loaded";
+            errorLine = hash.data[settings].classLine;
             emit q_ptr->statusChanged(status);
             return nullptr;
         }
@@ -330,6 +331,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         {
             status = QLoaderTree::PluginError;
             errorMessage = "interface not valid";
+            errorLine = hash.data[settings].classLine;
             emit q_ptr->statusChanged(status);
             return nullptr;
         }
@@ -339,6 +341,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
 
     status = QLoaderTree::PluginError;
     errorMessage = "class name not valid";
+    errorLine = hash.data[settings].classLine;
     emit q_ptr->statusChanged(status);
     return nullptr;
 }
