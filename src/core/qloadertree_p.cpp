@@ -81,21 +81,19 @@ public:
 
 class KeyValueParser
 {
-    const QRegularExpression sectionName;
-    const QRegularExpression keyValue;
-    const QRegularExpression className;
-    mutable QRegularExpressionMatch match;
+    struct
+    {
+        const QRegularExpression sectionName{"^\\[(?<section>[^\\[\\]]*)\\]$"};
+        const QRegularExpression keyValue{"^(?<key>[^=]*[\\w]+)\\s*=\\s*(?<value>.+)$"};
+        const QRegularExpression className{"^[A-Z]+[a-z,0-9]*"};
+
+    } d;
 
 public:
-    KeyValueParser()
-    :   sectionName("^\\[(?<section>[^\\[\\]]*)\\]$"),
-        keyValue("^(?<key>[^=]*[\\w]+)\\s*=\\s*(?<value>.+)$"),
-        className("^[A-Z]+[a-z,0-9]*")
-    { }
-
     bool matchSectionName(const QString &line, QStringList &section) const
     {
-        if ((match = sectionName.match(line)).hasMatch())
+        QRegularExpressionMatch match;
+        if ((match = d.sectionName.match(line)).hasMatch())
         {
             section = match.captured("section").split('/');
             return true;
@@ -106,7 +104,8 @@ public:
 
     bool matchKeyValue(const QString &line, QString &key, QString &value) const
     {
-        if ((match = keyValue.match(line)).hasMatch())
+        QRegularExpressionMatch match;
+        if ((match = d.keyValue.match(line)).hasMatch())
         {
             key = match.captured("key");
             value = match.captured("value");
@@ -118,7 +117,8 @@ public:
 
     bool matchClassName(const char *name, QString &libraryName) const
     {
-        if ((match = className.match(name)).hasMatch())
+        QRegularExpressionMatch match;
+        if ((match = d.className.match(name)).hasMatch())
         {
             libraryName += match.captured();
             return true;
@@ -126,27 +126,23 @@ public:
 
         return false;
     }
-
 };
 
 class StringVariantConverter
 {
-    const QRegularExpression charlist;
-    const QRegularExpression size;
-    const QRegularExpression stringlist;
-    mutable QRegularExpressionMatch match;
+    struct
+    {
+        const QRegularExpression charlist{"^QCharList\\s*\\(\\s*(?<list>.*)\\)"};
+        const QRegularExpression size{"^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"};
+        const QRegularExpression stringlist{"^QStringList\\s*\\(\\s*(?<list>.*)\\)"};
+
+    } d;
 
 public:
-    StringVariantConverter()
-    :   charlist("^QCharList\\s*\\(\\s*(?<list>.*)\\)"),
-        size("^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"),
-        stringlist("^QStringList\\s*\\(\\s*(?<list>.*)\\)")
-
-    { }
-
     QVariant fromString(const QString &value) const
     {
-        if ((match = charlist.match(value)).hasMatch())
+        QRegularExpressionMatch match;
+        if ((match = d.charlist.match(value)).hasMatch())
         {
             QStringList stringlist = match.captured("list").split(',');
             QList<QChar> list;
@@ -163,10 +159,10 @@ public:
             return QVariant::fromValue(list);
         }
 
-        if ((match = size.match(value)).hasMatch())
+        if ((match = d.size.match(value)).hasMatch())
             return QSize(match.captured("width").toInt(), match.captured("height").toInt());
 
-        if ((match = stringlist.match(value)).hasMatch())
+        if ((match = d.stringlist.match(value)).hasMatch())
         {
             QStringList list = match.captured("list").split(',');
 
