@@ -50,7 +50,7 @@ public:
 
     const char *className() const;
     void dumpSettingsTree() const;
-    const QStringList section() const;
+    const QStringList &section() const;
     QLoaderTree *tree() const;
 };
 
