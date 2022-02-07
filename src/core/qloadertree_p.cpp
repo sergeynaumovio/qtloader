@@ -200,8 +200,8 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
     q_ptr(q),
     file(new QFile(fileName, q))
 {
-    static_assert (d_size == sizeof (QLoaderTreePrivateData));
-    static_assert (d_align == alignof (QLoaderTreePrivateData));
+    static_assert (sizeof (d_storage) == sizeof (QLoaderTreePrivateData));
+    static_assert (sizeof (ptrdiff_t) == alignof (QLoaderTreePrivateData));
 
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
