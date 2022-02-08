@@ -24,9 +24,9 @@ QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
     d_ptr(settings->d_ptr)
 { }
 
-QLoaderSettings::QLoaderSettings(QLoaderTreePrivate *d)
+QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)
 :   q_ptr(this),
-    d_ptr(d)
+    d_ptr(&d)
 { }
 
 QLoaderSettings::~QLoaderSettings()

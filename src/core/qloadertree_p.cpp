@@ -231,7 +231,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 
         if (d.parser.matchSectionName(line, section))
         {
-            settings = new QLoaderSettings(this);
+            settings = new QLoaderSettings(*this);
             bool valid{};
             QLoaderSettingsData item;
             item.section = section;
