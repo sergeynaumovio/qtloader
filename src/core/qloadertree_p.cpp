@@ -133,6 +133,7 @@ class StringVariantConverter
     struct
     {
         const QRegularExpression bytearray{"^QByteArray\\s*\\(\\s*(?<bytearray>.*)\\)"};
+        const QRegularExpression chr{"^QChar\\s*\\(\\s*(?<char>.{1})\\s*\\)"};
         const QRegularExpression charlist{"^QCharList\\s*\\(\\s*(?<list>.*)\\)"};
         const QRegularExpression size{"^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"};
         const QRegularExpression stringlist{"^QStringList\\s*\\(\\s*(?<list>.*)\\)"};
@@ -145,6 +146,9 @@ public:
         QRegularExpressionMatch match;
         if ((match = d.bytearray.match(value)).hasMatch())
             return QVariant::fromValue(QByteArray::fromBase64(match.captured("bytearray").toLocal8Bit()));
+
+        if ((match = d.chr.match(value)).hasMatch())
+            return match.captured("char").front();
 
         if ((match = d.charlist.match(value)).hasMatch())
         {
@@ -185,6 +189,11 @@ public:
         {
             QByteArray bytearray = variant.toByteArray();
             return QString("QByteArray(" + bytearray.toBase64() + ')');
+        }
+
+        if (variant.canConvert<QChar>())
+        {
+            return QString(QLatin1String("QChar(") + variant.toChar() + ')');
         }
 
         if (variant.canConvert<QSize>())
