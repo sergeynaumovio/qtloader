@@ -49,12 +49,7 @@ QLoaderSettings::~QLoaderSettings()
     }
 }
 
-bool QLoaderSettings::contains(const QString &key) const
-{
-    return d_ptr->hash.data[q_ptr].properties.contains(key);;
-}
-
-void QLoaderSettings::emitError(const QString &error)
+void QLoaderSettings::emitError(const QString &error) const
 {
     QLoaderTree::Status status = QLoaderTree::ObjectError;
     d_ptr->status = status;
@@ -68,7 +63,7 @@ void QLoaderSettings::emitError(const QString &error)
     }
 }
 
-void QLoaderSettings::emitInfo(const QString &info)
+void QLoaderSettings::emitInfo(const QString &info) const
 {
     d_ptr->infoMessage = info;
     d_ptr->infoChanged = true;
@@ -80,7 +75,7 @@ void QLoaderSettings::emitInfo(const QString &info)
     }
 }
 
-void QLoaderSettings::emitWarning(const QString &warning)
+void QLoaderSettings::emitWarning(const QString &warning) const
 {
     d_ptr->warningMessage = warning;
     d_ptr->warningChanged = true;
@@ -109,13 +104,9 @@ void QLoaderSettings::setValue(const QString &key, const QVariant &value)
     emit d_ptr->q_ptr->settingsChanged();
 }
 
-QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue) const
+bool QLoaderSettings::contains(const QString &key) const
 {
-    const QMap<QString, QString> &properties = d_ptr->hash.data[q_ptr].properties;
-    if (properties.contains(key))
-        return fromString(properties[key]);
-
-    return defaultValue;
+    return d_ptr->hash.data[q_ptr].properties.contains(key);;
 }
 
 const char *QLoaderSettings::className() const
@@ -136,4 +127,13 @@ const QStringList &QLoaderSettings::section() const
 QLoaderTree *QLoaderSettings::tree() const
 {
     return d_ptr->q_ptr;
+}
+
+QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue) const
+{
+    const QMap<QString, QString> &properties = d_ptr->hash.data[q_ptr].properties;
+    if (properties.contains(key))
+        return fromString(properties[key]);
+
+    return defaultValue;
 }

@@ -33,9 +33,9 @@ class Q_LOADER_EXPORT QLoaderSettings
 protected:
     explicit QLoaderSettings(QLoaderSettings *settings);
 
-    void emitError(const QString &error);
-    void emitInfo(const QString &info);
-    void emitWarning(const QString &warning);
+    void emitError(const QString &error) const;
+    void emitInfo(const QString &info) const;
+    void emitWarning(const QString &warning) const;
     virtual QVariant fromString(const QString &value) const;
     virtual QString fromVariant(const QVariant &variant) const;
     void setValue(const QString &key, const QVariant &value);
