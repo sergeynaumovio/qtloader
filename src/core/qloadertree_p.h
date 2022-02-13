@@ -42,18 +42,21 @@ struct QLoaderSettingsData
     QObject *object{};
     QMap<QString, QString> properties;
     std::vector<QLoaderSettings*> children;
+
+    void clear();
 };
 
 class QLoaderTreePrivate
 {
-    const QLoaderTreePrivateData &d;
-    std::aligned_storage_t<64, sizeof (ptrdiff_t)> d_storage;
+    QLoaderTreePrivateData &d;
+    std::aligned_storage_t<104, sizeof (ptrdiff_t)> d_storage;
 
     void copyOrMoveRecursive(QLoaderSettings *settings,
                              const QLoaderTreeSection &src, const QLoaderTreeSection &dst,
                              Action action);
     void dumpRecursive(QLoaderSettings *settings) const;
     void loadRecursive(QLoaderSettings *settings, QObject *parent);
+    void saveItem(const QLoaderSettingsData &item, QTextStream &out);
     void saveRecursive(QLoaderSettings *settings, QTextStream &out);
     void setProperties(const QLoaderSettingsData &item, QObject *object);
 
@@ -73,13 +76,6 @@ public:
     QString warningMessage;
     QObject *warningObject{};
     bool warningChanged{};
-
-    struct
-    {
-        QLoaderSettings *settings{};
-        QObject *object{};
-
-    } root;
 
     struct
     {

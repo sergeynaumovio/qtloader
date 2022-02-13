@@ -32,6 +32,16 @@
 #include <QApplication>
 #include <QTextStream>
 
+void QLoaderSettingsData::clear()
+{
+    parent = nullptr;
+    section.clear();
+    className.clear();
+    object = nullptr;
+    properties.clear();
+    children.clear();
+}
+
 class QLoaderTreeSection
 {
     QLoaderTreeSection(const QStringList &section)
@@ -210,6 +220,15 @@ public:
 class QLoaderTreePrivateData
 {
 public:
+    QList<QLoaderSettings*> imported;
+
+    struct
+    {
+        QLoaderSettings *settings{};
+        QObject *object{};
+
+    } root;
+
     KeyValueParser parser;
     StringVariantConverter converter;
 };
@@ -229,10 +248,10 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         return;
     }
 
-    QStringList section;
     QLoaderSettings *settings{};
+    QLoaderSettingsData item;
     errorLine = 0;
-    char comment = '#';
+    const char comment = '#';
 
     while (!file->atEnd())
     {
@@ -245,33 +264,54 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             continue;
         }
 
+        if (line == "\n")
+            continue;
+
         if (line.startsWith(comment))
             continue;
 
+        QStringList section;
         if (d.parser.matchSectionName(line, section))
         {
+            if (settings)
+            {
+                hash.data[settings] = item;
+
+                if (item.section.size() == 1 && settings != d.root.settings)
+                    d.imported.append(settings);
+           }
+
             settings = new QLoaderSettings(*this);
             bool valid{};
-            QLoaderSettingsData item;
+            item.clear();
             item.section = section;
 
-            if (!root.settings && section.size() == 1 && section.back().size())
+            if (!hash.settings.contains(section))
             {
-                root.settings = settings;
-                valid = true;
-            }
-            else if (root.settings && section.size() > 1 && section.back().size() &&
-                     !hash.settings.contains(section))
-            {
-                QStringList parent = section;
-                parent.removeLast();
-
-                if (hash.settings.contains(parent))
+                if (section.size() == 1 && section.back().size())
                 {
                     valid = true;
-                    item.parent = hash.settings[parent];
-                    hash.data[item.parent].children.push_back(settings);
                 }
+                else if (d.root.settings && section.size() > 1 && section.back().size())
+                {
+                    QStringList parent = section;
+                    parent.removeLast();
+
+                    if (hash.settings.contains(parent))
+                    {
+                        valid = true;
+                        item.parent = hash.settings[parent];
+                        hash.data[item.parent].children.push_back(settings);
+                    }
+                }
+                else
+                {
+                    errorMessage = "section not valid";
+                }
+            }
+            else
+            {
+                errorMessage = "section already set";
             }
 
             if (!valid)
@@ -284,32 +324,47 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             }
 
             hash.settings[section] = settings;
-            hash.data[settings] = item;
             continue;
         }
 
         QString key, value;
         if (d.parser.matchKeyValue(line, key, value))
         {
+            if (!item.section.size())
+            {
+                status = QLoaderTree::FormatError;
+                errorMessage = "section not set";
+                emit q->statusChanged(status);
+                return;
+            }
+
             if (key == "class")
             {
-                if (!settings)
+                if (item.className.size())
                 {
                     status = QLoaderTree::FormatError;
+                    errorMessage = "class already set";
                     emit q->statusChanged(status);
                     return;
                 }
 
-                hash.data[settings].className = value.toLocal8Bit();
-                hash.data[settings].classLine = errorLine;
+                if (!d.root.settings && item.section.size() == 1 &&
+                                        item.section.back() != value)
+                {
+                    d.root.settings = settings;
+                }
+
+                item.className = value.toLocal8Bit();
+                item.classLine = errorLine;
             }
             else
             {
-                hash.data[settings].properties[key] = value;
+                item.properties[key] = value;
             }
         }
     }
 
+    hash.data[settings] = item;
     errorLine = -1;
     file->close();
 }
@@ -497,6 +552,10 @@ void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
 void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
 {
     QLoaderSettingsData &item = hash.data[settings];
+
+    if (item.section.size() == 1 && item.section.last() == item.className)
+         return;
+
     QObject *object;
     if (!qstrncmp(item.className, "Loader", 6))
         object = builtin(settings, parent);
@@ -531,8 +590,8 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         return;
     }
 
-    if (!root.object && item.section.size() == 1)
-        root.object = object;
+    if (!d.root.object && item.section.size() == 1)
+        d.root.object = object;
 
     item.object = object;
 
@@ -563,7 +622,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
 
     for (QLoaderSettings *child : item.children)
     {
-        if (!status && !(item.section.size() == 1 && item.section.last() == item.className))
+        if (!status)
             loadRecursive(child, object);
     }
 }
@@ -574,7 +633,7 @@ bool QLoaderTreePrivate::load()
         return false;
 
     bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
-    loadRecursive(root.settings, coreApp ? q_ptr : nullptr);
+    loadRecursive(d.root.settings, coreApp ? q_ptr : nullptr);
 
     qDeleteAll(hash.settings);
 
@@ -583,8 +642,8 @@ bool QLoaderTreePrivate::load()
         loaded = true;
         emit q_ptr->loaded();
     }
-    else if (root.object)
-        delete root.object;
+    else if (d.root.object)
+        delete d.root.object;
 
     return loaded;
 }
@@ -688,10 +747,9 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
     return false;
 }
 
-void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)
+void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &out)
 {
-    const QLoaderSettingsData &item = hash.data[settings];
-    out << '[' << item.section.join('/') << "]\n" ;
+    out << "\n[" << item.section.join('/') << "]\n" ;
     out << "class = " << item.className << '\n';
 
     QMapIterator<QString, QString> i(item.properties);
@@ -704,12 +762,15 @@ void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &o
     QLoaderSaveInterface *resources = qobject_cast<QLoaderSaveInterface*>(item.object);
     if (resources)
         resources->save();
+}
+
+void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)
+{
+    const QLoaderSettingsData &item = hash.data[settings];
+    saveItem(item, out);
 
     for (QLoaderSettings *child : item.children)
-    {
-        out << '\n';
         saveRecursive(child, out);
-    }
 }
 
 bool QLoaderTreePrivate::save()
@@ -726,9 +787,12 @@ bool QLoaderTreePrivate::save()
         QTextStream out(file);
 
         if (execLine.size())
-            out << execLine << '\n';
+            out << execLine;
 
-        saveRecursive(root.settings, out);
+        for (QLoaderSettings *settings : d.imported)
+            saveItem(hash.data[settings], out);
+
+        saveRecursive(d.root.settings, out);
 
         modified = false;
         file->close();
