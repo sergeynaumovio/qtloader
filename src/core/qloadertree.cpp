@@ -28,6 +28,11 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
+bool QLoaderTree::contains(const QStringList &section) const
+{
+    return d_ptr->hash.settings.contains(section);
+}
+
 bool QLoaderTree::copy(const QStringList &section, const QStringList &to)
 {
     return d_ptr->copyOrMove(section, to, Action::Copy);
@@ -76,7 +81,7 @@ bool QLoaderTree::isModified() const
     return d_ptr->modified;
 }
 
-bool QLoaderTree::load()
+bool QLoaderTree::load() const
 {
     return d_ptr->load();
 }
@@ -86,19 +91,25 @@ bool QLoaderTree::move(const QStringList &section, const QStringList &to)
     return d_ptr->copyOrMove(section, to, Action::Move);
 }
 
-QObject *QLoaderTree::object(const QStringList &section)
+QObject *QLoaderTree::object(const QStringList &section) const
 {
-    const QHash<QStringList, QLoaderSettings*> &hash = d_ptr->hash.settings;
-
-    if (hash.contains(section))
-        return d_ptr->hash.data[hash[section]].object;
+    if (d_ptr->hash.settings.contains(section))
+        return d_ptr->hash.data[d_ptr->hash.settings[section]].object;
 
     return nullptr;
 }
 
-bool QLoaderTree::save()
+bool QLoaderTree::save() const
 {
     return d_ptr->save();
+}
+
+const QLoaderSettings *QLoaderTree::settings(const QStringList &section) const
+{
+    if (d_ptr->hash.settings.contains(section))
+        return d_ptr->hash.data[d_ptr->hash.settings[section]].settings;
+
+    return nullptr;
 }
 
 QLoaderTree::Status QLoaderTree::status() const

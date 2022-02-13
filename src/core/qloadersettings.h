@@ -33,23 +33,23 @@ class Q_LOADER_EXPORT QLoaderSettings
 protected:
     explicit QLoaderSettings(QLoaderSettings *settings);
 
-    bool contains(const QString &key) const;
     void emitError(const QString &error);
     void emitInfo(const QString &info);
     void emitWarning(const QString &warning);
     virtual QVariant fromString(const QString &value) const;
     virtual QString fromVariant(const QVariant &variant) const;
     void setValue(const QString &key, const QVariant &value);
-    QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
 public:
     QLoaderSettings(QLoaderTreePrivate &d);
     virtual ~QLoaderSettings();
 
+    bool contains(const QString &key) const;
     const char *className() const;
     void dumpSettingsTree() const;
     const QStringList &section() const;
     QLoaderTree *tree() const;
+    QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 };
 
 #endif // QLOADERSETTINGS_H

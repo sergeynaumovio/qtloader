@@ -23,6 +23,7 @@
 #include <QObject>
 
 class QLoaderTreePrivate;
+class QLoaderSettings;
 
 class Q_LOADER_EXPORT QLoaderTree : public QObject
 {
@@ -62,6 +63,7 @@ public:
     explicit QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
+    bool contains(const QStringList &section) const;
     bool copy(const QStringList &section, const QStringList &to);
     QString errorMessage() const;
     int errorLine() const;
@@ -71,10 +73,11 @@ public:
     QObject *infoObject() const;
     bool isLoaded() const;
     bool isModified() const;
-    bool load();
+    bool load() const;
     bool move(const QStringList &section, const QStringList &to);
-    QObject *object(const QStringList &section);
-    virtual bool save();
+    QObject *object(const QStringList &section) const;
+    virtual bool save() const;
+    const QLoaderSettings *settings(const QStringList &section) const;
     QLoaderTree::Status status() const;
     QString warningMessage() const;
     QObject *warningObject() const;

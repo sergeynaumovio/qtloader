@@ -36,6 +36,7 @@ enum class Action { Copy, Move };
 struct QLoaderSettingsData
 {
     QLoaderSettings *parent{};
+    QLoaderSettings *settings;
     QStringList section;
     QByteArray className;
     int classLine;

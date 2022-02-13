@@ -284,6 +284,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             settings = new QLoaderSettings(*this);
             bool valid{};
             item.clear();
+            item.settings = settings;
             item.section = section;
 
             if (!hash.settings.contains(section))

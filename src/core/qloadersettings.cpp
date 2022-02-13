@@ -22,7 +22,9 @@
 QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
-{ }
+{
+    d_ptr->hash.data[q_ptr].settings = this;
+}
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)
 :   q_ptr(this),
