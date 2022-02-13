@@ -72,7 +72,7 @@ target_link_libraries(${QT_LOADER_LIBRARY}
 )
 
 target_compile_definitions(${QT_LOADER_LIBRARY}
-    PRIVATE QT_LOADER_LIBRARY
+    PRIVATE QT_BUILD_LOADER_LIB
 )
 
 include(GNUInstallDirs)

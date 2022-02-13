@@ -22,7 +22,7 @@
 #include <QtCore/qcompilerdetection.h>
 
 #ifndef QT_STATIC
-#  if defined(QT_LOADER_LIBRARY)
+#  if defined(QT_BUILD_LOADER_LIB)
 #    define Q_LOADER_EXPORT Q_DECL_EXPORT
 #  else
 #    define Q_LOADER_EXPORT Q_DECL_IMPORT
