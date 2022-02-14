@@ -30,7 +30,6 @@ class Q_LOADER_EXPORT QLoaderTree : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(QLoaderTree)
 
-    Q_PROPERTY(int errorLine READ errorLine NOTIFY errorLineChanged)
     Q_PROPERTY(QString fileName READ fileName CONSTANT)
     Q_PROPERTY(bool isModified READ isModified NOTIFY settingsChanged)
     Q_PROPERTY(QLoaderTree::Status status READ status NOTIFY statusChanged)
@@ -53,7 +52,6 @@ public:
     Q_ENUM(Status)
 
 Q_SIGNALS:
-    void errorLineChanged(int);
     void errorChanged(QObject *, QString);
     void infoChanged(QObject *, QString);
     void loaded();
