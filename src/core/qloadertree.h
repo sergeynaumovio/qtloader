@@ -77,7 +77,6 @@ public:
     bool move(const QStringList &section, const QStringList &to);
     QObject *object(const QStringList &section) const;
     virtual bool save() const;
-    QLoaderSettings *settings(const QStringList &section) const;
     QLoaderTree::Status status() const;
     QString warningMessage() const;
     QObject *warningObject() const;

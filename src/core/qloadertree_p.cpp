@@ -220,8 +220,6 @@ public:
 class QLoaderTreePrivateData
 {
 public:
-    QList<QLoaderSettings*> imported;
-
     struct
     {
         QLoaderSettings *settings{};
@@ -274,24 +272,21 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
         if (d.parser.matchSectionName(line, section))
         {
             if (settings)
-            {
                 hash.data[settings] = item;
-
-                if (item.section.size() == 1 && settings != d.root.settings)
-                    d.imported.append(settings);
-           }
 
             settings = new QLoaderSettings(*this);
             bool valid{};
             item.clear();
-            item.settings = settings;
             item.section = section;
 
             if (!hash.settings.contains(section))
             {
                 if (section.size() == 1 && section.back().size())
                 {
-                    valid = true;
+                    if (!d.root.settings)
+                        valid = true;
+                    else
+                        errorMessage = "root object already set";
                 }
                 else if (d.root.settings && section.size() > 1 && section.back().size())
                 {
@@ -349,8 +344,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
                     return;
                 }
 
-                if (!d.root.settings && item.section.size() == 1 &&
-                                        item.section.back() != value)
+                if (!d.root.settings && item.section.size() == 1)
                 {
                     d.root.settings = settings;
                 }
@@ -553,9 +547,6 @@ void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
 void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
 {
     QLoaderSettingsData &item = hash.data[settings];
-
-    if (item.section.size() == 1 && item.section.last() == item.className)
-         return;
 
     QObject *object;
     if (!qstrncmp(item.className, "Loader", 6))
@@ -789,9 +780,6 @@ bool QLoaderTreePrivate::save()
 
         if (execLine.size())
             out << execLine;
-
-        for (QLoaderSettings *settings : d.imported)
-            saveItem(hash.data[settings], out);
 
         saveRecursive(d.root.settings, out);
 

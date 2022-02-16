@@ -22,9 +22,7 @@
 QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
-{
-    d_ptr->hash.data[q_ptr].settings = this;
-}
+{ }
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)
 :   q_ptr(this),
@@ -109,9 +107,9 @@ bool QLoaderSettings::contains(const QString &key) const
     return d_ptr->hash.data[q_ptr].properties.contains(key);;
 }
 
-const char *QLoaderSettings::className() const
+QByteArray QLoaderSettings::className() const
 {
-    return d_ptr->hash.data[q_ptr].className.data();
+    return d_ptr->hash.data[q_ptr].className;
 }
 
 void QLoaderSettings::dumpSettingsTree() const
@@ -119,7 +117,7 @@ void QLoaderSettings::dumpSettingsTree() const
     d_ptr->dump(q_ptr);
 }
 
-const QStringList &QLoaderSettings::section() const
+const QStringList QLoaderSettings::section() const
 {
     return d_ptr->hash.data[q_ptr].section;
 }

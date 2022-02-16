@@ -45,9 +45,9 @@ public:
     virtual ~QLoaderSettings();
 
     bool contains(const QString &key) const;
-    const char *className() const;
+    QByteArray className() const;
     void dumpSettingsTree() const;
-    const QStringList &section() const;
+    const QStringList section() const;
     QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 };
