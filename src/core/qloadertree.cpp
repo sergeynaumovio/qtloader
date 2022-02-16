@@ -109,7 +109,7 @@ bool QLoaderTree::save() const
     return d_ptr->save();
 }
 
-const QLoaderSettings *QLoaderTree::settings(const QStringList &section) const
+QLoaderSettings *QLoaderTree::settings(const QStringList &section) const
 {
     if (d_ptr->hash.settings.contains(section))
         return d_ptr->hash.data[d_ptr->hash.settings[section]].settings;
