@@ -20,9 +20,9 @@
 #include "qloadertree_p.h"
 #include <QFile>
 
-QLoaderTree::QLoaderTree(QLoaderTreePrivate &dd, QObject *parent)
+QLoaderTree::QLoaderTree(QLoaderTreePrivate &d, QObject *parent)
 :   QObject(parent),
-    d_ptr(&dd)
+    d_ptr(&d)
 { }
 
 QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)

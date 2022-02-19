@@ -37,7 +37,7 @@ class Q_LOADER_EXPORT QLoaderTree : public QObject
 protected:
     const QScopedPointer<QLoaderTreePrivate> d_ptr;
 
-    QLoaderTree(QLoaderTreePrivate &dd, QObject *parent = nullptr);
+    QLoaderTree(QLoaderTreePrivate &d, QObject *parent = nullptr);
 
 public:
     enum Status
