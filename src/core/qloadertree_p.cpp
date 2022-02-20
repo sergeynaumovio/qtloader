@@ -448,7 +448,7 @@ void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject 
     if (!object->isWidgetType())
         return;
 
-    QWidget *widget = qobject_cast<QWidget*>(object);
+    QWidget *widget = static_cast<QWidget*>(object);
     if (!(v = value("enabled")).isNull())
         widget->setEnabled(v.toBool());
 
