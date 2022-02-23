@@ -376,10 +376,9 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings* /*settings*/, QObject* /*p
 
 QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent)
 {
-    const char *className = settings->className();
     QString libraryName("Qt" + QString::number(QT_VERSION_MAJOR));
 
-    if (d.parser.matchClassName(className, libraryName))
+    if (d.parser.matchClassName(settings->className(), libraryName))
     {
         QPluginLoader loader(libraryName);
         if (!loader.instance())
