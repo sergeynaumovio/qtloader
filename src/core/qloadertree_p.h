@@ -37,8 +37,8 @@ struct QLoaderSettingsData
 {
     QLoaderSettings *parent{};
     QStringList section;
+    int sectionLine;
     QByteArray className;
-    int classLine;
     QObject *object{};
     QMap<QString, QString> properties;
     std::vector<QLoaderSettings*> children;

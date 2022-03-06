@@ -320,6 +320,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
             }
 
             hash.settings[section] = settings;
+            item.sectionLine = errorLine;
             continue;
         }
 
@@ -350,7 +351,6 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
                 }
 
                 item.className = value.toLocal8Bit();
-                item.classLine = errorLine;
             }
             else
             {
@@ -385,7 +385,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         {
             status = QLoaderTree::PluginError;
             errorMessage = "library not loaded";
-            errorLine = hash.data[settings].classLine;
+            errorLine = hash.data[settings].sectionLine;
             emit q_ptr->statusChanged(status);
             return nullptr;
         }
@@ -395,7 +395,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         {
             status = QLoaderTree::PluginError;
             errorMessage = "interface not valid";
-            errorLine = hash.data[settings].classLine;
+            errorLine = hash.data[settings].sectionLine;
             emit q_ptr->statusChanged(status);
             return nullptr;
         }
@@ -405,7 +405,7 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
 
     status = QLoaderTree::PluginError;
     errorMessage = "class name not valid";
-    errorLine = hash.data[settings].classLine;
+    errorLine = hash.data[settings].sectionLine;
     emit q_ptr->statusChanged(status);
     return nullptr;
 }
@@ -575,7 +575,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         }
 
         status = QLoaderTree::ObjectError;
-        errorLine = item.classLine;
+        errorLine = item.sectionLine;
         emit q_ptr->statusChanged(status);
 
         return;
@@ -589,7 +589,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     if (status == QLoaderTree::ObjectError)
     {
         errorObject = object;
-        errorLine = item.classLine;
+        errorLine = item.sectionLine;
         emit q_ptr->statusChanged(status);
         emit q_ptr->errorChanged(object, errorMessage);
         return;
