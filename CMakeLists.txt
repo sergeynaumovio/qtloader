@@ -23,6 +23,11 @@ if(NOT APPLE)
     set(CMAKE_INSTALL_RPATH $ORIGIN)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
+
 # QT_LOADER_LIBRARY ------------------------------------------------------------
 include("cmake/QtLoaderVersion.in")
 set(QT_LOADER_LIBRARY Qt${QT_VERSION_MAJOR}Loader)
