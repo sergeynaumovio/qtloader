@@ -44,8 +44,8 @@ public:
     QLoaderSettings(QLoaderTreePrivate &d);
     virtual ~QLoaderSettings();
 
-    bool contains(const QString &key) const;
     QByteArray className() const;
+    bool contains(const QString &key) const;
     void dumpSettingsTree() const;
     const QStringList section() const;
     QLoaderTree *tree() const;
