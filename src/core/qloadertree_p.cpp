@@ -229,6 +229,8 @@ public:
 
     KeyValueParser parser;
     StringVariantConverter converter;
+
+    QList<QLoaderSettings*> copied;
 };
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
@@ -530,9 +532,7 @@ void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
     qDebug() << "";
 
     for (QLoaderSettings *child : hash.data[settings].children)
-    {
         dumpRecursive(child);
-    }
 }
 
 void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
@@ -554,7 +554,7 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
         object = external(settings, parent);
 
     if (!object)
-        return;
+       return;
 
     if (object == parent || object == q_ptr ||
         (!object->parent() && ((object->isWidgetType() && item.section.size() > 1) ||
@@ -615,6 +615,8 @@ void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *paren
     {
         if (!status)
             loadRecursive(child, object);
+        else
+            return;
     }
 }
 
@@ -658,41 +660,51 @@ QString QLoaderTreePrivate::fromVariant(const QVariant &variant) const
 }
 
 void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
-                                             const QLoaderTreeSection &src, const QLoaderTreeSection &dst,
+                                             const QLoaderTreeSection &src,
+                                             const QLoaderTreeSection &dst,
                                              Action action)
 {
     QLoaderSettingsData &item = hash.data[settings];
 
-    QStringList section = [&src, &dst](const QLoaderSettingsData &item)
-    {
-        int d = dst.section.size() - src.section.size();
-        int size = item.section.size() + d;
-        QStringList section(size);
-
-        std::copy_n(dst.section.begin(), dst.section.size(), section.begin());
-        std::copy_n(item.section.begin() + src.section.size(),
-                    item.section.size() - src.section.size(),
-                    section.begin() + dst.section.size());
-
-        return section;
-
-    }(hash.data[settings]);
+    int size = item.section.size() + (dst.section.size() - src.section.size());
+    QStringList section(size);
+    std::copy_n(dst.section.begin(), dst.section.size(), section.begin());
+    std::copy_n(item.section.begin() + src.section.size(),
+                item.section.size() - src.section.size(),
+                section.begin() + dst.section.size());
 
     if (action == Action::Move)
     {
         hash.settings.remove(item.section);
+        hash.settings[section] = settings;
         item.section = std::move(section);
     }
+    else
+    {
+        QLoaderSettings *copySettings = new QLoaderSettings(*this);
+        d.copied.append(copySettings);
+        hash.settings[section] = copySettings;
 
-    hash.settings.insert(item.section, settings);
+        QStringList parentSection = section;
+        parentSection.removeLast();
 
-    for (QLoaderSettings *child : item.children)
+        QLoaderSettings *parentSettings = hash.settings[parentSection];
+        hash.data[parentSettings].children.push_back(copySettings);
+
+        QLoaderSettingsData &copy = hash.data[copySettings];
+        copy.parent = parentSettings;
+        copy.section = std::move(section);
+        copy.className = hash.data[settings].className;
+        copy.properties = hash.data[settings].properties;
+    }
+
+    for (QLoaderSettings *child : hash.data[settings].children)
         copyOrMoveRecursive(child, src, dst, action);
 }
 
 bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Action action)
 {
-    if (!loaded || action == Action::Copy)
+    if (!loaded)
         return false;
 
     QLoaderTreeSection src(section, this);
@@ -701,31 +713,47 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
         QLoaderTreeSection dst(to, this);
         if (dst.valid)
         {
-            QLoaderMoveInterface *movable = qobject_cast<QLoaderMoveInterface*>(src.object);
-            if (action == Action::Move && (!movable || !movable->move(to)))
-            {
-                status = QLoaderTree::ObjectError;
-                emit q_ptr->statusChanged(status);
-
-                errorObject = src.object;
-                if (!movable)
-                    errorMessage = "object not movable";
-                else
-                    errorMessage = "parent object not valid";
-
-                emit q_ptr->errorChanged(errorObject, errorMessage);
-
-                return false;
-            }
-
-            std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
             if (action == Action::Move)
             {
+                QLoaderMoveInterface *movable = qobject_cast<QLoaderMoveInterface*>(src.object);
+                if (!movable || !movable->move(to))
+                {
+                    if (!movable)
+                        errorMessage = "object not movable";
+                    else
+                        errorMessage = "parent object not valid";
+
+                    status = QLoaderTree::ObjectError;
+                    errorObject = src.object;
+                    emit q_ptr->statusChanged(status);
+                    emit q_ptr->errorChanged(errorObject, errorMessage);
+
+                    return false;
+                }
+
+                std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
                 std::erase(children, src.settings);
                 hash.data[dst.parent.settings].children.push_back(src.settings);
             }
 
             copyOrMoveRecursive(src.settings, src, dst, action);
+
+            if (action == Action::Copy)
+            {
+                status = QLoaderTree::NoError;
+                loadRecursive(hash.settings[dst.section],
+                              hash.data[hash.settings[dst.parent.section]].object);
+
+                qDeleteAll(d.copied);
+                d.copied.clear();
+
+                if (status)
+                {
+                    removeRecursive(dst.settings);
+                    return false;
+                }
+            }
+
             modified = true;
             emit q_ptr->settingsChanged();
 
@@ -736,6 +764,11 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
     status = QLoaderTree::DesignError;
     emit q_ptr->statusChanged(status);
     return false;
+}
+
+void QLoaderTreePrivate::removeRecursive(QLoaderSettings */*settings*/)
+{
+
 }
 
 void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &out)
