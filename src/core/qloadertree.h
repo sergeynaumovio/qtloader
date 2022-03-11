@@ -30,10 +30,6 @@ class Q_LOADER_EXPORT QLoaderTree : public QObject
     Q_OBJECT
     Q_DISABLE_COPY(QLoaderTree)
 
-    Q_PROPERTY(QString fileName READ fileName CONSTANT)
-    Q_PROPERTY(bool isModified READ isModified NOTIFY settingsChanged)
-    Q_PROPERTY(QLoaderTree::Status status READ status NOTIFY statusChanged)
-
 protected:
     const QScopedPointer<QLoaderTreePrivate> d_ptr;
 
@@ -51,35 +47,32 @@ public:
     };
     Q_ENUM(Status)
 
+    struct Error
+    {
+        int line{};
+        Status status{};
+        QString message;
+    };
+
 Q_SIGNALS:
-    void errorChanged(QObject *, QString);
-    void infoChanged(QObject *, QString);
+    void errorChanged(QObject *sender, QString message);
+    void infoChanged(QObject *sender, QString message);
     void loaded();
     void settingsChanged();
-    void statusChanged(QLoaderTree::Status);
-    void warningChanged(QObject *, QString);
+    void warningChanged(QObject *sender, QString message);
 
 public:
     explicit QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
     bool contains(const QStringList &section) const;
-    bool copy(const QStringList &section, const QStringList &to);
-    QString errorMessage() const;
-    int errorLine() const;
-    QObject *errorObject() const;
+    QLoaderTree::Error copy(const QStringList &section, const QStringList &to);
     QString fileName() const;
-    QString infoMessage() const;
-    QObject *infoObject() const;
-    bool isLoaded() const;
     bool isModified() const;
-    bool load() const;
-    bool move(const QStringList &section, const QStringList &to);
+    QLoaderTree::Error load() const;
+    QLoaderTree::Error move(const QStringList &section, const QStringList &to);
     QObject *object(const QStringList &section) const;
-    virtual bool save() const;
-    QLoaderTree::Status status() const;
-    QString warningMessage() const;
-    QObject *warningObject() const;
+    QLoaderTree::Error save() const;
 };
 
 #endif // QLOADERTREE_H

@@ -91,40 +91,38 @@ int main(int argc, char *argv[])
         fileName = arguments.first();
 
     QLoaderTree loaderTree(fileName);
-    if (loaderTree.status() || !loaderTree.load())
+    QLoaderTree::Error error = loaderTree.load();
+    if (error.status)
     {
-        if (loaderTree.status() == QLoaderTree::AccessError)
+        if (error.status == QLoaderTree::AccessError)
         {
             if (coreApp)
             {
                 qInfo().noquote() << "File not found" << fileName;
+                return -1;
             }
             else
             {
                 QString messsage = "File not found \"" + fileName + "\"";
-                QMessageBox::warning(nullptr, "Qt Loader",
-                                              QDir::toNativeSeparators(messsage),
-                                              QMessageBox::Close);
+                return QMessageBox::warning(nullptr, "Qt Loader",
+                                            QDir::toNativeSeparators(messsage),
+                                            QMessageBox::Close);
             }
         }
-        QString messsage = fileName + (loaderTree.errorLine() ?
-                                       ": " + QString::number(loaderTree.errorLine()) :
-                                       "") + ": " +
-                           QVariant::fromValue(loaderTree.status()).
-                           toString().toLower();
+        QString message = fileName + ": " + QString::number(error.line) + ": " +
+                          QVariant::fromValue(error.status).toString().toLower();
 
-        messsage.insert(messsage.size() - QString("error").size(), ' ');
-
-        messsage += ": " + loaderTree.errorMessage();
+        message.insert(message.size() - QString("error").size(), ' ');
+        message += ": " + error.message;
 
         if (coreApp)
         {
-            qInfo().noquote() << messsage;
+            qInfo().noquote() << message;
             return -1;
         }
         else
             return QMessageBox::critical(nullptr, "Qt Loader",
-                                         QDir::toNativeSeparators(messsage),
+                                         QDir::toNativeSeparators(message),
                                          QMessageBox::Close);
     }
 

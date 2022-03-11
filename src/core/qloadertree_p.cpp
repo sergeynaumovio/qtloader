@@ -76,16 +76,17 @@ public:
         if (!valid)
             return;
 
+        d->mutex.lock();
         if (!d->hash.settings.contains(parent.section))
-        {
             valid = false;
-            return;
+        else
+        {
+            valid = true;
+            parent.settings = d->hash.settings.value(parent.section);
+            settings = d->hash.settings.value(section);
+            object = d->hash.data.value(settings).object;
         }
-
-        valid = true;
-        parent.settings = d->hash.settings.value(parent.section);
-        settings = d->hash.settings.value(section);
-        object = d->hash.data.value(settings).object;
+        d->mutex.unlock();
     }
 };
 
@@ -229,7 +230,8 @@ public:
 
     KeyValueParser parser;
     StringVariantConverter converter;
-
+    QMutex loading;
+    QString execLine;
     QList<QLoaderSettings*> copied;
 };
 
@@ -240,130 +242,6 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 {
     static_assert (sizeof (d_storage) == sizeof (QLoaderTreePrivateData));
     static_assert (sizeof (ptrdiff_t) == alignof (QLoaderTreePrivateData));
-
-    if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        status = QLoaderTree::AccessError;
-        emit q->statusChanged(status);
-        return;
-    }
-
-    QLoaderSettings *settings{};
-    QLoaderSettingsData item;
-    errorLine = 0;
-    const char comment = '#';
-
-    while (!file->atEnd())
-    {
-        QByteArray line = file->readLine();
-        ++errorLine;
-
-        if (errorLine == 1 && line.startsWith("#!"))
-        {
-            execLine = line;
-            continue;
-        }
-
-        if (line == "\n")
-            continue;
-
-        if (line.startsWith(comment))
-            continue;
-
-        QStringList section;
-        if (d.parser.matchSectionName(line, section))
-        {
-            if (settings)
-                hash.data[settings] = item;
-
-            settings = new QLoaderSettings(*this);
-            bool valid{};
-            item.clear();
-            item.section = section;
-
-            if (!hash.settings.contains(section))
-            {
-                if (section.size() == 1 && section.back().size())
-                {
-                    if (!d.root.settings)
-                        valid = true;
-                    else
-                        errorMessage = "root object already set";
-                }
-                else if (d.root.settings && section.size() > 1 && section.back().size())
-                {
-                    QStringList parent = section;
-                    parent.removeLast();
-
-                    if (hash.settings.contains(parent))
-                    {
-                        valid = true;
-                        item.parent = hash.settings[parent];
-                        hash.data[item.parent].children.push_back(settings);
-                    }
-                }
-                else
-                {
-                    errorMessage = "section not valid";
-                }
-            }
-            else
-            {
-                errorMessage = "section already set";
-            }
-
-            if (!valid)
-            {
-                delete settings;
-                qDeleteAll(hash.settings);
-                status = QLoaderTree::DesignError;
-                emit q->statusChanged(status);
-                return;
-            }
-
-            hash.settings[section] = settings;
-            item.sectionLine = errorLine;
-            continue;
-        }
-
-        QString key, value;
-        if (d.parser.matchKeyValue(line, key, value))
-        {
-            if (!item.section.size())
-            {
-                status = QLoaderTree::FormatError;
-                errorMessage = "section not set";
-                emit q->statusChanged(status);
-                return;
-            }
-
-            if (key == "class")
-            {
-                if (item.className.size())
-                {
-                    status = QLoaderTree::FormatError;
-                    errorMessage = "class already set";
-                    emit q->statusChanged(status);
-                    return;
-                }
-
-                if (!d.root.settings && item.section.size() == 1)
-                {
-                    d.root.settings = settings;
-                }
-
-                item.className = value.toLocal8Bit();
-            }
-            else
-            {
-                item.properties[key] = value;
-            }
-        }
-    }
-
-    hash.data[settings] = item;
-    errorLine = -1;
-    file->close();
 }
 
 QLoaderTreePrivate::~QLoaderTreePrivate()
@@ -371,12 +249,16 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
     d.~QLoaderTreePrivateData();
 }
 
-QObject *QLoaderTreePrivate::builtin(QLoaderSettings* /*settings*/, QObject* /*parent*/)
+QObject *QLoaderTreePrivate::builtin(QLoaderTree::Error & /*error*/,
+                                     QLoaderSettings * /*settings*/,
+                                     QObject * /*parent*/)
 {
     return nullptr;
 }
 
-QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent)
+QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,
+                                      QLoaderSettings *settings,
+                                      QObject *parent)
 {
     QString libraryName("Qt" + QString::number(QT_VERSION_MAJOR));
 
@@ -385,30 +267,33 @@ QObject *QLoaderTreePrivate::external(QLoaderSettings *settings, QObject *parent
         QPluginLoader loader(libraryName);
         if (!loader.instance())
         {
-            status = QLoaderTree::PluginError;
-            errorMessage = "library not loaded";
-            errorLine = hash.data[settings].sectionLine;
-            emit q_ptr->statusChanged(status);
+            mutex.lock();
+            error.line = hash.data[settings].sectionLine;
+            error.status = QLoaderTree::PluginError;
+            error.message = "library not loaded";
+            mutex.unlock();
             return nullptr;
         }
 
         QLoaderPluginInterface *plugin = qobject_cast<QLoaderPluginInterface*>(loader.instance());
         if (!plugin)
         {
-            status = QLoaderTree::PluginError;
-            errorMessage = "interface not valid";
-            errorLine = hash.data[settings].sectionLine;
-            emit q_ptr->statusChanged(status);
+            mutex.lock();
+            error.line = hash.data[settings].sectionLine;
+            error.status = QLoaderTree::PluginError;
+            error.message = "interface not valid";
+            mutex.unlock();
             return nullptr;
         }
 
         return plugin->object(settings, parent);
     }
 
-    status = QLoaderTree::PluginError;
-    errorMessage = "class name not valid";
-    errorLine = hash.data[settings].sectionLine;
-    emit q_ptr->statusChanged(status);
+    mutex.lock();
+    error.line = hash.data[settings].sectionLine;
+    error.status = QLoaderTree::PluginError;
+    error.message = "class name not valid";
+    mutex.unlock();
     return nullptr;
 }
 
@@ -537,116 +422,281 @@ void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
 
 void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
 {
-    if (execLine.size())
-        qDebug().noquote() << execLine;
+    if (d.execLine.size())
+        qDebug().noquote() << d.execLine;
 
     dumpRecursive(settings);
 }
 
-void QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
+QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
 {
-    QLoaderSettingsData &item = hash.data[settings];
+    QLoaderTree::Error error{};
+
+    mutex.lock();
+    QByteArray itemClassName = hash.data[settings].className;
+    mutex.unlock();
 
     QObject *object;
-    if (!qstrncmp(item.className, "Loader", 6))
-        object = builtin(settings, parent);
+    if (!qstrncmp(itemClassName, "Loader", 6))
+        object = builtin(error, settings, parent);
     else
-        object = external(settings, parent);
+        object = external(error, settings, parent);
 
     if (!object)
-       return;
+       return error;
+
+    mutex.lock();
+    int itemSectionSize = hash.data[settings].section.size();
+    int itemSectionLine = hash.data[settings].sectionLine;
+    mutex.unlock();
 
     if (object == parent || object == q_ptr ||
-        (!object->parent() && ((object->isWidgetType() && item.section.size() > 1) ||
+        (!object->parent() && ((object->isWidgetType() && itemSectionSize > 1) ||
                                !object->isWidgetType())))
     {
+        error.line = itemSectionLine;
+        error.status = QLoaderTree::ObjectError;
         if (object != q_ptr && object == parent)
         {
-            errorMessage = "parent object not valid";
+            error.message = "parent object not valid";
         }
         else if (object == q_ptr)
         {
-            errorMessage = "class not found";
+            error.message = "class not found";
         }
         else if (!object->parent())
         {
-            errorMessage = "parent object not set";
+            error.message = "parent object not set";
             delete object;
         }
 
-        status = QLoaderTree::ObjectError;
-        errorLine = item.sectionLine;
-        emit q_ptr->statusChanged(status);
-
-        return;
+        return error;
     }
 
-    if (!d.root.object && item.section.size() == 1)
+    if (!d.root.object && itemSectionSize == 1)
         d.root.object = object;
 
-    item.object = object;
+    mutex.lock();
+    hash.data[settings].object = object;
+    mutex.unlock();
 
-    if (status == QLoaderTree::ObjectError)
+    if (errorMessage.has_value())
     {
-        errorObject = object;
-        errorLine = item.sectionLine;
-        emit q_ptr->statusChanged(status);
-        emit q_ptr->errorChanged(object, errorMessage);
-        return;
+        error.line = itemSectionLine;
+        error.status = QLoaderTree::ObjectError;
+        error.message = errorMessage.value();
+        return error;
     }
 
-    if (infoChanged)
+    if (infoMessage.has_value())
     {
-        infoObject = object;
-        infoChanged = false;
-        emit q_ptr->infoChanged(object, infoMessage);
+        QString message = infoMessage.value();
+        infoMessage.reset();
+        emit q_ptr->infoChanged(object, message);
     }
 
-    if (warningChanged)
+    if (warningMessage.has_value())
     {
-        warningObject = object;
-        warningChanged = false;
-        emit q_ptr->warningChanged(object, warningMessage);
+        QString message = warningMessage.value();
+        warningMessage.reset();
+        emit q_ptr->warningChanged(object, message);
     }
 
-    setProperties(item, object);
+    mutex.lock();
+    setProperties(hash.data[settings], object);
+    std::vector<QLoaderSettings*> children = hash.data[settings].children;
+    mutex.unlock();
 
-    for (QLoaderSettings *child : item.children)
+    for (QLoaderSettings *child : children)
     {
-        if (!status)
-            loadRecursive(child, object);
-        else
-            return;
+        error = loadRecursive(child, object);
+        if (error.status)
+            return error;
     }
+
+    return error;
 }
 
-bool QLoaderTreePrivate::load()
+QLoaderTree::Error QLoaderTreePrivate::read()
 {
-    if (loaded || status)
-        return false;
-
-    bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
-    loadRecursive(d.root.settings, coreApp ? q_ptr : nullptr);
-
-    qDeleteAll(hash.settings);
-
-    if (!status)
+    QLoaderTree::Error error{};
+    if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        loaded = true;
-        emit q_ptr->loaded();
+        error.status = QLoaderTree::AccessError;
+        error.message = "read error";
+        return error;
     }
-    else if (d.root.object)
-        delete d.root.object;
 
-    return loaded;
+    struct CloseFile
+    {
+        QFile *file;
+        CloseFile(QFile *f) : file(f) { }
+        ~CloseFile(){ file->close(); }
+
+    } closeFile (file);
+
+    QLoaderSettings *settings{};
+    QLoaderSettingsData item;
+    int errorLine = 0;
+    const char comment = '#';
+
+    while (!file->atEnd())
+    {
+        QByteArray line = file->readLine();
+        ++errorLine;
+
+        if (errorLine == 1 && line.startsWith("#!"))
+        {
+            d.execLine = line;
+            continue;
+        }
+
+        if (line == "\n")
+            continue;
+
+        if (line.startsWith(comment))
+            continue;
+
+        QStringList section;
+        if (d.parser.matchSectionName(line, section))
+        {
+            if (settings)
+                hash.data[settings] = item;
+
+            settings = new QLoaderSettings(*this);
+            bool valid{};
+            item.clear();
+            item.section = section;
+
+            if (!hash.settings.contains(section))
+            {
+                if (section.size() == 1 && section.back().size())
+                {
+                    if (!d.root.settings)
+                        valid = true;
+                    else
+                        error.message = "root object already set";
+                }
+                else if (d.root.settings && section.size() > 1 && section.back().size())
+                {
+                    QStringList parent = section;
+                    parent.removeLast();
+
+                    if (hash.settings.contains(parent))
+                    {
+                        valid = true;
+                        item.parent = hash.settings[parent];
+                        hash.data[item.parent].children.push_back(settings);
+                    }
+                }
+                else
+                {
+                    error.message = "section not valid";
+                }
+            }
+            else
+            {
+                error.message = "section already set";
+            }
+
+            if (!valid)
+            {
+                delete settings;
+                qDeleteAll(hash.settings);
+                error.line = item.sectionLine;
+                error.status = QLoaderTree::DesignError;
+                return error;
+            }
+
+            hash.settings[section] = settings;
+            item.sectionLine = errorLine;
+            continue;
+        }
+
+        QString key, value;
+        if (d.parser.matchKeyValue(line, key, value))
+        {
+            if (!item.section.size())
+            {
+                error.line = item.sectionLine;
+                error.status = QLoaderTree::FormatError;
+                error.message = "section not set";
+                return error;
+            }
+
+            if (key == "class")
+            {
+                if (item.className.size())
+                {
+                    error.line = item.sectionLine;
+                    error.status = QLoaderTree::FormatError;
+                    error.message = "class already set";
+                    return error;
+                }
+
+                if (!d.root.settings && item.section.size() == 1)
+                {
+                    d.root.settings = settings;
+                }
+
+                item.className = value.toLocal8Bit();
+            }
+            else
+            {
+                item.properties[key] = value;
+            }
+        }
+    }
+
+    hash.data[settings] = item;
+
+    return {};
 }
 
-bool QLoaderTreePrivate::load(const QStringList & /*section*/)
+QLoaderTree::Error QLoaderTreePrivate::load()
+{
+    QLoaderTree::Error error;
+    d.loading.lock();
+    {
+        if (loaded)
+        {
+            error.status = QLoaderTree::ObjectError;
+            error.message = "already loaded";
+            d.loading.unlock();
+            return error;
+        }
+
+        error = read();
+        if (error.status)
+        {
+            d.loading.unlock();
+            return error;
+        }
+
+        bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
+        error = loadRecursive(d.root.settings, coreApp ? q_ptr : nullptr);
+
+        qDeleteAll(hash.settings);
+
+        if (!error.status)
+            loaded = true;
+        else if (d.root.object)
+            delete d.root.object;
+    }
+    d.loading.unlock();
+
+    if (loaded)
+        emit q_ptr->loaded();
+
+    return error;
+}
+
+QLoaderTree::Error QLoaderTreePrivate::load(const QStringList & /*section*/)
 {
     if (loaded)
-        return false;
+        return {};
 
-    return false;
+    return {};
 }
 
 QVariant QLoaderTreePrivate::fromString(const QString &value) const
@@ -689,6 +739,7 @@ void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
         parentSection.removeLast();
 
         QLoaderSettings *parentSettings = hash.settings[parentSection];
+
         hash.data[parentSettings].children.push_back(copySettings);
 
         QLoaderSettingsData &copy = hash.data[copySettings];
@@ -702,10 +753,15 @@ void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
         copyOrMoveRecursive(child, src, dst, action);
 }
 
-bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Action action)
+QLoaderTree::Error QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Action action)
 {
+    QLoaderTree::Error error;
     if (!loaded)
-        return false;
+    {
+        error.status = QLoaderTree::ObjectError;
+        error.message = "tree not loaded";
+        return error;
+    }
 
     QLoaderTreeSection src(section, this);
     if (src.valid)
@@ -719,51 +775,57 @@ bool QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringLis
                 if (!movable || !movable->move(to))
                 {
                     if (!movable)
-                        errorMessage = "object not movable";
+                        error.message = "object not movable";
                     else
-                        errorMessage = "parent object not valid";
+                        error.message = "parent object not valid";
 
-                    status = QLoaderTree::ObjectError;
-                    errorObject = src.object;
-                    emit q_ptr->statusChanged(status);
-                    emit q_ptr->errorChanged(errorObject, errorMessage);
+                    error.status = QLoaderTree::ObjectError;
+                    emit q_ptr->errorChanged(src.object, error.message);
 
-                    return false;
+                    return error;
                 }
 
+                mutex.lock();
                 std::vector<QLoaderSettings*> &children = hash.data[src.parent.settings].children;
                 std::erase(children, src.settings);
                 hash.data[dst.parent.settings].children.push_back(src.settings);
+                mutex.unlock();
             }
 
+            mutex.lock();
             copyOrMoveRecursive(src.settings, src, dst, action);
+            mutex.unlock();
 
             if (action == Action::Copy)
             {
-                status = QLoaderTree::NoError;
-                loadRecursive(hash.settings[dst.section],
-                              hash.data[hash.settings[dst.parent.section]].object);
+                error = loadRecursive(hash.settings[dst.section],
+                                      hash.data[hash.settings[dst.parent.section]].object);
 
+                mutex.lock();
                 qDeleteAll(d.copied);
                 d.copied.clear();
+                mutex.unlock();
 
-                if (status)
+                if (error.status)
                 {
+                    mutex.lock();
                     removeRecursive(dst.settings);
-                    return false;
+                    mutex.unlock();
+
+                    return error;
                 }
             }
 
             modified = true;
             emit q_ptr->settingsChanged();
 
-            return true;
+            return error;
         }
     }
 
-    status = QLoaderTree::DesignError;
-    emit q_ptr->statusChanged(status);
-    return false;
+    error.status = QLoaderTree::DesignError;
+    error.message = "section not valid";
+    return error;
 }
 
 void QLoaderTreePrivate::removeRecursive(QLoaderSettings */*settings*/)
@@ -797,29 +859,32 @@ void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &o
         saveRecursive(child, out);
 }
 
-bool QLoaderTreePrivate::save()
+QLoaderTree::Error QLoaderTreePrivate::save()
 {
-    if (loaded && modified)
+    QLoaderTree::Error error;
+    if (loaded)
     {
         if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
         {
-            status = QLoaderTree::AccessError;
-            emit q_ptr->statusChanged(status);
-            return false;
+            error.status = QLoaderTree::AccessError;
+            error.message = "read-only file";
+            return error;
         }
 
         QTextStream out(file);
 
-        if (execLine.size())
-            out << execLine;
+        if (d.execLine.size())
+            out << d.execLine;
 
         saveRecursive(d.root.settings, out);
 
-        modified = false;
         file->close();
+        modified = false;
 
-        return true;
+        return {};
     }
 
-    return false;
+    error.status = QLoaderTree::ObjectError;
+    error.message = "tree not loaded";
+    return error;
 }

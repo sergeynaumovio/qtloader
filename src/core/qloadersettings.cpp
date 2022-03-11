@@ -33,56 +33,65 @@ QLoaderSettings::~QLoaderSettings()
 {
     if (q_ptr != this)
     {
-        QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
-        const QLoaderSettingsData &item = data[q_ptr];
+        d_ptr->mutex.lock();
+        {
+            QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
+            const QLoaderSettingsData &item = data[q_ptr];
 
-        if (data.contains(item.parent))
-            std::erase(data[item.parent].children, q_ptr);
+            if (data.contains(item.parent))
+                std::erase(data[item.parent].children, q_ptr);
 
-        d_ptr->hash.settings.remove(item.section);
-        data.remove(q_ptr);
+            d_ptr->hash.settings.remove(item.section);
+            data.remove(q_ptr);
 
-        d_ptr->modified = true;
+            d_ptr->modified = true;
+        }
+        d_ptr->mutex.unlock();
+
         emit d_ptr->q_ptr->settingsChanged();
     }
 }
 
 void QLoaderSettings::emitError(const QString &error) const
 {
-    QLoaderTree::Status status = QLoaderTree::ObjectError;
-    d_ptr->status = status;
-    d_ptr->errorMessage = error;
-    QObject *object = d_ptr->hash.data[q_ptr].object;
-    if (object)
+    if (d_ptr->loaded)
     {
-        d_ptr->errorObject = object;
-        emit d_ptr->q_ptr->statusChanged(status);
+        d_ptr->mutex.lock();
+        QObject *object = d_ptr->hash.data[q_ptr].object;
+        d_ptr->mutex.unlock();
+
         emit d_ptr->q_ptr->errorChanged(object, error);
     }
+    else
+        d_ptr->errorMessage = error;
 }
 
 void QLoaderSettings::emitInfo(const QString &info) const
 {
-    d_ptr->infoMessage = info;
-    d_ptr->infoChanged = true;
-    QObject *object = d_ptr->hash.data[q_ptr].object;
-    if (object)
+    if (d_ptr->loaded)
     {
-        d_ptr->infoObject = object;
+        d_ptr->mutex.lock();
+        QObject *object = d_ptr->hash.data[q_ptr].object;
+        d_ptr->mutex.unlock();
+
         emit d_ptr->q_ptr->infoChanged(object, info);
     }
+    else
+        d_ptr->infoMessage = info;
 }
 
 void QLoaderSettings::emitWarning(const QString &warning) const
 {
-    d_ptr->warningMessage = warning;
-    d_ptr->warningChanged = true;
-    QObject *object = d_ptr->hash.data[q_ptr].object;
-    if (object)
+    if (d_ptr->loaded)
     {
-        d_ptr->warningObject = object;
+        d_ptr->mutex.lock();
+        QObject *object = d_ptr->hash.data[q_ptr].object;
+        d_ptr->mutex.unlock();
+
         emit d_ptr->q_ptr->warningChanged(object, warning);
     }
+    else
+        d_ptr->warningMessage = warning;
 }
 
 QVariant QLoaderSettings::fromString(const QString &value) const
@@ -97,29 +106,46 @@ QString QLoaderSettings::fromVariant(const QVariant &variant) const
 
 void QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
+    d_ptr->mutex.lock();
     d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
     d_ptr->modified = true;
+    d_ptr->mutex.unlock();
+
     emit d_ptr->q_ptr->settingsChanged();
 }
 
 bool QLoaderSettings::contains(const QString &key) const
 {
-    return d_ptr->hash.data[q_ptr].properties.contains(key);;
+    d_ptr->mutex.lock();
+    bool containsKey = d_ptr->hash.data[q_ptr].properties.contains(key);
+    d_ptr->mutex.unlock();
+
+    return containsKey;
 }
 
 QByteArray QLoaderSettings::className() const
 {
-    return d_ptr->hash.data[q_ptr].className;
+    d_ptr->mutex.lock();
+    QByteArray name = d_ptr->hash.data[q_ptr].className;
+    d_ptr->mutex.unlock();
+
+    return name;
 }
 
 void QLoaderSettings::dumpSettingsTree() const
 {
+    d_ptr->mutex.lock();
     d_ptr->dump(q_ptr);
+    d_ptr->mutex.unlock();
 }
 
-const QStringList QLoaderSettings::section() const
+QStringList QLoaderSettings::section() const
 {
-    return d_ptr->hash.data[q_ptr].section;
+    d_ptr->mutex.lock();
+    QStringList list = d_ptr->hash.data[q_ptr].section;
+    d_ptr->mutex.unlock();
+
+    return list;
 }
 
 QLoaderTree *QLoaderSettings::tree() const
@@ -129,9 +155,12 @@ QLoaderTree *QLoaderSettings::tree() const
 
 QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue) const
 {
+    d_ptr->mutex.lock();
+    QVariant variant = defaultValue;
     const QMap<QString, QString> &properties = d_ptr->hash.data[q_ptr].properties;
     if (properties.contains(key))
-        return fromString(properties[key]);
+        variant = fromString(properties[key]);
+    d_ptr->mutex.unlock();
 
-    return defaultValue;
+    return variant;
 }

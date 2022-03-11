@@ -35,27 +35,16 @@ QLoaderTree::~QLoaderTree()
 
 bool QLoaderTree::contains(const QStringList &section) const
 {
-    return d_ptr->hash.settings.contains(section);
+    d_ptr->mutex.lock();
+    bool containsSection = d_ptr->hash.settings.contains(section);
+    d_ptr->mutex.unlock();
+
+    return containsSection;
 }
 
-bool QLoaderTree::copy(const QStringList &section, const QStringList &to)
+QLoaderTree::Error QLoaderTree::copy(const QStringList &section, const QStringList &to)
 {
     return d_ptr->copyOrMove(section, to, Action::Copy);
-}
-
-QString QLoaderTree::errorMessage() const
-{
-    return d_ptr->errorMessage;
-}
-
-int QLoaderTree::errorLine() const
-{
-    return d_ptr->errorLine;
-}
-
-QObject *QLoaderTree::errorObject() const
-{
-    return d_ptr->errorObject;
 }
 
 QString QLoaderTree::fileName() const
@@ -66,60 +55,37 @@ QString QLoaderTree::fileName() const
     return {};
 }
 
-QString QLoaderTree::infoMessage() const
-{
-    return d_ptr->infoMessage;
-}
-
-QObject *QLoaderTree::infoObject() const
-{
-    return d_ptr->infoObject;
-}
-
-bool QLoaderTree::isLoaded() const
-{
-    return d_ptr->loaded;
-}
-
 bool QLoaderTree::isModified() const
 {
     return d_ptr->modified;
 }
 
-bool QLoaderTree::load() const
+QLoaderTree::Error QLoaderTree::load() const
 {
     return d_ptr->load();
 }
 
-bool QLoaderTree::move(const QStringList &section, const QStringList &to)
+QLoaderTree::Error QLoaderTree::move(const QStringList &section, const QStringList &to)
 {
     return d_ptr->copyOrMove(section, to, Action::Move);
 }
 
 QObject *QLoaderTree::object(const QStringList &section) const
 {
+    QObject *object{};
+    d_ptr->mutex.lock();
     if (d_ptr->hash.settings.contains(section))
-        return d_ptr->hash.data[d_ptr->hash.settings[section]].object;
+        object = d_ptr->hash.data[d_ptr->hash.settings[section]].object;
+    d_ptr->mutex.unlock();
 
-    return nullptr;
+    return object;
 }
 
-bool QLoaderTree::save() const
+QLoaderTree::Error QLoaderTree::save() const
 {
-    return d_ptr->save();
-}
+    d_ptr->mutex.lock();
+    QLoaderTree::Error error = d_ptr->save();
+    d_ptr->mutex.unlock();
 
-QLoaderTree::Status QLoaderTree::status() const
-{
-    return d_ptr->status;
-}
-
-QString QLoaderTree::warningMessage() const
-{
-    return d_ptr->warningMessage;
-}
-
-QObject *QLoaderTree::warningObject() const
-{
-    return d_ptr->warningObject;
+    return error;
 }

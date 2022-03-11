@@ -23,6 +23,7 @@
 #include <QStringList>
 #include <QMap>
 #include <QHash>
+#include <QMutex>
 
 class QLoaderSettings;
 class QLoaderTree;
@@ -37,7 +38,7 @@ struct QLoaderSettingsData
 {
     QLoaderSettings *parent{};
     QStringList section;
-    int sectionLine;
+    int sectionLine{};
     QByteArray className;
     QObject *object{};
     QMap<QString, QString> properties;
@@ -49,14 +50,15 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    std::aligned_storage_t<104, sizeof (ptrdiff_t)> d_storage;
+    std::aligned_storage_t<136, sizeof (ptrdiff_t)> d_storage;
 
     void copyOrMoveRecursive(QLoaderSettings *settings,
                              const QLoaderTreeSection &src,
                              const QLoaderTreeSection &dst,
                              Action action);
     void dumpRecursive(QLoaderSettings *settings) const;
-    void loadRecursive(QLoaderSettings *settings, QObject *parent);
+    QLoaderTree::Error loadRecursive(QLoaderSettings *settings, QObject *parent);
+    QLoaderTree::Error read();
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
     void saveRecursive(QLoaderSettings *settings, QTextStream &out);
@@ -65,19 +67,13 @@ class QLoaderTreePrivate
 public:
     QLoaderTree *const q_ptr;
     QFile *file{};
-    QLoaderTree::Status status{};
-    QString errorMessage;
-    int errorLine{-1};
-    QObject *errorObject{};
-    QByteArray execLine;
+    QMutex mutex;
     bool loaded{};
     bool modified{};
-    QString infoMessage;
-    QObject *infoObject{};
-    bool infoChanged{};
-    QString warningMessage;
-    QObject *warningObject{};
-    bool warningChanged{};
+
+    std::optional<QString> errorMessage;
+    std::optional<QString> infoMessage;
+    std::optional<QString> warningMessage;
 
     struct
     {
@@ -89,15 +85,15 @@ public:
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
 
-    QObject *builtin(QLoaderSettings *settings, QObject *parent);
-    QObject *external(QLoaderSettings *settings, QObject *parent);
+    QObject *builtin(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
+    QObject *external(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
     void dump(QLoaderSettings *settings) const;
     QVariant fromString(const QString &value) const;
     QString fromVariant(const QVariant &variant) const;
-    bool copyOrMove(const QStringList &section, const QStringList &to, Action action);
-    bool load();
-    bool load(const QStringList &section);
-    bool save();
+    QLoaderTree::Error copyOrMove(const QStringList &section, const QStringList &to, Action action);
+    QLoaderTree::Error load();
+    QLoaderTree::Error load(const QStringList &section);
+    QLoaderTree::Error save();
 };
 
 #endif // QLOADERTREE_P_H
