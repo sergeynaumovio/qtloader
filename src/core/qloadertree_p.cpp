@@ -480,27 +480,39 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
     hash.data[settings].object = object;
     mutex.unlock();
 
+    mutex.lock();
     if (errorMessage.has_value())
     {
         error.line = itemSectionLine;
         error.status = QLoaderTree::ObjectError;
         error.message = errorMessage.value();
+        mutex.unlock();
         return error;
     }
+    else
+        mutex.unlock();
 
+    mutex.lock();
     if (infoMessage.has_value())
     {
         QString message = infoMessage.value();
         infoMessage.reset();
+        mutex.unlock();
         emit q_ptr->infoChanged(object, message);
     }
+    else
+        mutex.unlock();
 
+    mutex.lock();
     if (warningMessage.has_value())
     {
         QString message = warningMessage.value();
         warningMessage.reset();
+        mutex.unlock();
         emit q_ptr->warningChanged(object, message);
     }
+    else
+        mutex.unlock();
 
     mutex.lock();
     setProperties(hash.data[settings], object);

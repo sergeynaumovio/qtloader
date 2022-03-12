@@ -47,7 +47,6 @@ QLoaderSettings::~QLoaderSettings()
             d_ptr->modified = true;
         }
         d_ptr->mutex.unlock();
-
         emit d_ptr->q_ptr->settingsChanged();
     }
 }
@@ -59,11 +58,14 @@ void QLoaderSettings::emitError(const QString &error) const
         d_ptr->mutex.lock();
         QObject *object = d_ptr->hash.data[q_ptr].object;
         d_ptr->mutex.unlock();
-
         emit d_ptr->q_ptr->errorChanged(object, error);
     }
     else
+    {
+        d_ptr->mutex.lock();
         d_ptr->errorMessage = error;
+        d_ptr->mutex.unlock();
+    }
 }
 
 void QLoaderSettings::emitInfo(const QString &info) const
@@ -73,11 +75,14 @@ void QLoaderSettings::emitInfo(const QString &info) const
         d_ptr->mutex.lock();
         QObject *object = d_ptr->hash.data[q_ptr].object;
         d_ptr->mutex.unlock();
-
         emit d_ptr->q_ptr->infoChanged(object, info);
     }
     else
+    {
+        d_ptr->mutex.lock();
         d_ptr->infoMessage = info;
+        d_ptr->mutex.unlock();
+    }
 }
 
 void QLoaderSettings::emitWarning(const QString &warning) const
@@ -87,11 +92,14 @@ void QLoaderSettings::emitWarning(const QString &warning) const
         d_ptr->mutex.lock();
         QObject *object = d_ptr->hash.data[q_ptr].object;
         d_ptr->mutex.unlock();
-
         emit d_ptr->q_ptr->warningChanged(object, warning);
     }
     else
+    {
+        d_ptr->mutex.lock();
         d_ptr->warningMessage = warning;
+        d_ptr->mutex.unlock();
+    }
 }
 
 QVariant QLoaderSettings::fromString(const QString &value) const
@@ -110,7 +118,6 @@ void QLoaderSettings::setValue(const QString &key, const QVariant &value)
     d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
     d_ptr->modified = true;
     d_ptr->mutex.unlock();
-
     emit d_ptr->q_ptr->settingsChanged();
 }
 
