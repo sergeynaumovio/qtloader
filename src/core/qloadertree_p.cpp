@@ -614,7 +614,6 @@ QLoaderTree::Error QLoaderTreePrivate::read()
             if (!valid)
             {
                 delete settings;
-                qDeleteAll(hash.settings);
                 error.line = item.sectionLine;
                 error.status = QLoaderTree::DesignError;
                 return error;
