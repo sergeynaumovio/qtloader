@@ -24,7 +24,7 @@
 
 namespace {
 
-QCoreApplication *createApplication(int &argc, char *argv[])
+QCoreApplication *application(int &argc, char *argv[])
 {
     for (int i = 1; i < argc; ++i)
     {
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QCoreApplication::setApplicationName("Qt Loader");
 
-    QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
+    QScopedPointer<QCoreApplication> app(application(argc, argv));
 
 #ifdef Q_OS_LINUX
     app->addLibraryPath("/usr/lib");
