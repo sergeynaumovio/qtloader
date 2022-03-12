@@ -139,7 +139,7 @@ void QLoaderSettings::dumpSettingsTree() const
     d_ptr->mutex.unlock();
 }
 
-QStringList QLoaderSettings::section() const
+const QStringList QLoaderSettings::section() const
 {
     d_ptr->mutex.lock();
     QStringList list = d_ptr->hash.data[q_ptr].section;
