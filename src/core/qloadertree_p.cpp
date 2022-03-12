@@ -669,6 +669,7 @@ QLoaderTree::Error QLoaderTreePrivate::load()
         error = read();
         if (error.status)
         {
+            qDeleteAll(hash.settings);
             d.loading.unlock();
             return error;
         }
