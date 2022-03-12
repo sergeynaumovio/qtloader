@@ -58,10 +58,8 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
 
-    parser.addOption(QCommandLineOption({"s", "section"},
-                                        "Root section."));
-    parser.addOption(QCommandLineOption("no-gui",
-                                         "Start console application."));
+    parser.addOption(QCommandLineOption({"s", "section"}, "Root section."));
+    parser.addOption(QCommandLineOption("no-gui", "Start console application."));
 
     parser.addPositionalArgument("file", "Set .qt file");
     parser.process(*app);
