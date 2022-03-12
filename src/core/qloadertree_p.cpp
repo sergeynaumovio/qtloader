@@ -614,8 +614,9 @@ QLoaderTree::Error QLoaderTreePrivate::read()
             if (!valid)
             {
                 delete settings;
-                error.line = item.sectionLine;
+                error.line = errorLine;
                 error.status = QLoaderTree::DesignError;
+                if (!error.message.size()) error.message = "section not valid";
                 return error;
             }
 
