@@ -20,6 +20,7 @@
 #include "qloadertree.h"
 #include "qloadersettings.h"
 #include "qloaderplugininterface.h"
+#include "qloadercopyinterface.h"
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
 #include <QRegularExpression>
@@ -782,7 +783,23 @@ QLoaderTree::Error QLoaderTreePrivate::copyOrMove(const QStringList &section, co
         QLoaderTreeSection dst(to, this);
         if (dst.valid)
         {
-            if (action == Action::Move)
+            if (action == Action::Copy)
+            {
+                QLoaderCopyInterface *copyable = qobject_cast<QLoaderCopyInterface*>(src.object);
+                if (!copyable || !copyable->copy(to))
+                {
+                    if (!copyable)
+                        error.message = "object not copyable";
+                    else
+                        error.message = "parent object not valid";
+
+                    error.status = QLoaderTree::ObjectError;
+                    emit q_ptr->errorChanged(src.object, error.message);
+
+                    return error;
+                }
+            }
+            else if (action == Action::Move)
             {
                 QLoaderMoveInterface *movable = qobject_cast<QLoaderMoveInterface*>(src.object);
                 if (!movable || !movable->move(to))
