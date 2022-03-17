@@ -47,7 +47,7 @@ public:
     QByteArray className() const;
     bool contains(const QString &key) const;
     void dumpSettingsTree() const;
-    const QStringList section() const;
+    QStringList section() const;
     QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 };
