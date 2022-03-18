@@ -25,6 +25,7 @@
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
 #include "qloaderdata.h"
+#include "qloaderdatablob.h"
 #include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
@@ -266,7 +267,16 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings,
         return parent;
     }
 
-    return nullptr;
+    if (!qstrcmp(shortName, "DataBlob"))
+    {
+        QLoaderData *data = qobject_cast<QLoaderData*>(parent);
+        if (data)
+            return new QLoaderDataBlob(settings, data);
+
+        return parent;
+    }
+
+    return q_ptr;
 }
 
 QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,

@@ -28,6 +28,8 @@ class QLoaderDataBlob;
 
 class Q_LOADER_EXPORT QLoaderData : public QObject, public QLoaderSettings
 {
+    Q_OBJECT
+
     QScopedPointer<QLoaderDataPrivate> d_ptr;
 
 public:

@@ -16,34 +16,24 @@
 **
 ****************************************************************************/
 
-#include "qloaderdata.h"
-#include "qloaderdatablob.h"
-#include "qloaderdatainterface.h"
+#ifndef QLOADERDATABLOB_H
+#define QLOADERDATABLOB_H
 
-class QLoaderDataPrivate
+#include <QObject>
+#include <QLoaderSettings>
+
+class QLoaderDataBlobPrivate;
+class QLoaderData;
+
+class QLoaderDataBlob : public QObject, public QLoaderSettings
 {
+    Q_OBJECT
+
+    QScopedPointer<QLoaderDataBlobPrivate> d_ptr;
+
 public:
-    QLoaderDataBlob *blob;
+    QLoaderDataBlob(QLoaderSettings *settings, QLoaderData *parent);
+    ~QLoaderDataBlob();
 };
 
-QLoaderData::QLoaderData(QLoaderSettings *settings, QObject *parent)
-:   QObject(parent),
-    QLoaderSettings(settings),
-    d_ptr(new QLoaderDataPrivate)
-{
-    if (!qobject_cast<QLoaderDataInterface*>(parent))
-    {
-        emitError("QLoaderDataInterface not found");
-        return;
-    }
-
-}
-
-QLoaderData::~QLoaderData()
-{ }
-
-void QLoaderData::setBlob(QLoaderDataBlob *blob)
-{
-    d_ptr->blob = blob;
-}
-
+#endif // QLOADERDATABLOB_H
