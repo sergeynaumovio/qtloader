@@ -253,8 +253,7 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
     d.~QLoaderTreePrivateData();
 }
 
-QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings,
-                                     QObject *parent)
+QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 {
     QByteArray className = settings->className();
     const char *shortName = className.data() + qstrlen("Loader");
