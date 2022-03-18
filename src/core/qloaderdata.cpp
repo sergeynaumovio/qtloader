@@ -31,12 +31,14 @@ QLoaderData::QLoaderData(QLoaderSettings *settings, QObject *parent)
     QLoaderSettings(settings),
     d_ptr(new QLoaderDataPrivate)
 {
-    if (!qobject_cast<QLoaderDataInterface*>(parent))
+    QLoaderDataInterface *parentInterface = qobject_cast<QLoaderDataInterface*>(parent);
+    if (!parentInterface)
     {
         emitError("QLoaderDataInterface not found");
         return;
     }
 
+    parentInterface->setData(this);
 }
 
 QLoaderData::~QLoaderData()
