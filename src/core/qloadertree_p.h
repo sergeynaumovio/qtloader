@@ -85,7 +85,7 @@ public:
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
 
-    QObject *builtin(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
+    QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QObject *external(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
     void dump(QLoaderSettings *settings) const;
     QVariant fromString(const QString &value) const;

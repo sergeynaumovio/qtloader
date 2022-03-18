@@ -21,8 +21,10 @@
 #include "qloadersettings.h"
 #include "qloaderplugininterface.h"
 #include "qloadercopyinterface.h"
+#include "qloaderdatainterface.h"
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
+#include "qloaderdata.h"
 #include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
@@ -250,10 +252,20 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
     d.~QLoaderTreePrivateData();
 }
 
-QObject *QLoaderTreePrivate::builtin(QLoaderTree::Error & /*error*/,
-                                     QLoaderSettings * /*settings*/,
-                                     QObject * /*parent*/)
+QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings,
+                                     QObject *parent)
 {
+    QByteArray className = settings->className();
+    const char *shortName = className.data() + qstrlen("Loader");
+
+    if (!qstrcmp(shortName, "Data"))
+    {
+        if (qobject_cast<QLoaderDataInterface*>(parent))
+            return new QLoaderData(settings, parent);
+
+        return parent;
+    }
+
     return nullptr;
 }
 
@@ -439,7 +451,7 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
 
     QObject *object;
     if (!qstrncmp(itemClassName, "Loader", 6))
-        object = builtin(error, settings, parent);
+        object = builtin(settings, parent);
     else
         object = external(error, settings, parent);
 
