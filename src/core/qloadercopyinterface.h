@@ -24,7 +24,7 @@
 class QLoaderCopyInterface
 {
 public:
-    virtual bool copy(const QStringList &to) = 0;
+    virtual bool copy(const QStringList &to) const = 0;
 };
 Q_DECLARE_INTERFACE(QLoaderCopyInterface, "QLoaderCopyInterface")
 
