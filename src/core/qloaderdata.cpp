@@ -23,7 +23,7 @@
 class QLoaderDataPrivate
 {
 public:
-    QLoaderDataBlob *blob;
+    QLoaderDataBlob *blob{};
 };
 
 QLoaderData::QLoaderData(QLoaderSettings *settings, QObject *parent)
