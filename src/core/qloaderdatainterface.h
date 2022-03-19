@@ -26,7 +26,7 @@ class QLoaderData;
 class QLoaderDataInterface
 {
 public:
-    virtual QLoaderData *data() = 0;
+    virtual QLoaderData *data() const = 0;
     virtual void setData(QLoaderData *data) = 0;
 };
 Q_DECLARE_INTERFACE(QLoaderDataInterface, "QLoaderDataInterface")
