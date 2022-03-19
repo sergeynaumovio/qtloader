@@ -34,7 +34,7 @@ QLoaderData::QLoaderData(QLoaderSettings *settings, QObject *parent)
     QLoaderDataInterface *parentInterface = qobject_cast<QLoaderDataInterface*>(parent);
     if (!parentInterface)
     {
-        emitError("QLoaderDataInterface not found");
+        emitError("parent object QLoaderDataInterface not found");
         return;
     }
 

@@ -259,12 +259,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     const char *shortName = className.data() + qstrlen("Loader");
 
     if (!qstrcmp(shortName, "Data"))
-    {
-        if (qobject_cast<QLoaderDataInterface*>(parent))
-            return new QLoaderData(settings, parent);
-
-        return parent;
-    }
+        return new QLoaderData(settings, parent);
 
     if (!qstrcmp(shortName, "DataBlob"))
     {
