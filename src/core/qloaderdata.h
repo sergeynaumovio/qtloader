@@ -20,8 +20,8 @@
 #define QLOADERDATA_H
 
 #include "qtloaderglobal.h"
+#include "qloadersettings.h"
 #include <QObject>
-#include <QLoaderSettings>
 
 class QLoaderDataPrivate;
 class QLoaderDataBlob;
@@ -36,7 +36,7 @@ public:
     QLoaderData(QLoaderSettings *settings, QObject *parent);
     ~QLoaderData();
 
-    void setBlob(QLoaderDataBlob *blob);
+    void addBlob(QLoaderDataBlob *blob);
 };
 
 #endif // QLOADERDATA_H

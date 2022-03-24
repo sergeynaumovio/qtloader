@@ -19,13 +19,15 @@
 #ifndef QLOADERDATABLOB_H
 #define QLOADERDATABLOB_H
 
+#include "qloadersettings.h"
+#include "qloadersaveinterface.h"
 #include <QObject>
-#include <QLoaderSettings>
 
 class QLoaderDataBlobPrivate;
 class QLoaderData;
 
-class QLoaderDataBlob : public QObject, public QLoaderSettings
+class QLoaderDataBlob : public QObject, public QLoaderSettings,
+                                               QLoaderSaveInterface
 {
     Q_OBJECT
 
@@ -34,6 +36,8 @@ class QLoaderDataBlob : public QObject, public QLoaderSettings
 public:
     QLoaderDataBlob(QLoaderSettings *settings, QLoaderData *parent);
     ~QLoaderDataBlob();
+
+    void save() override;
 };
 
 #endif // QLOADERDATABLOB_H

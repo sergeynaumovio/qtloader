@@ -51,6 +51,11 @@ QLoaderSettings::~QLoaderSettings()
     }
 }
 
+QByteArray QLoaderSettings::blob(const QString &/*key*/) const
+{
+    return {};
+}
+
 void QLoaderSettings::emitError(const QString &error) const
 {
     if (d_ptr->loaded)
@@ -110,6 +115,11 @@ QVariant QLoaderSettings::fromString(const QString &value) const
 QString QLoaderSettings::fromVariant(const QVariant &variant) const
 {
     return d_ptr->fromVariant(variant);
+}
+
+void QLoaderSettings::setBlob(const QString &/*key*/, const QByteArray &/*ba*/)
+{
+
 }
 
 void QLoaderSettings::setValue(const QString &key, const QVariant &value)

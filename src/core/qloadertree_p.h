@@ -31,6 +31,7 @@ class QFile;
 class QTextStream;
 class QLoaderTreePrivateData;
 class QLoaderTreeSection;
+class QLoaderData;
 
 enum class Action { Copy, Move };
 
@@ -68,6 +69,7 @@ public:
     QLoaderTree *const q_ptr;
     QFile *file{};
     QMutex mutex;
+    QLoaderData *data{};
     bool loaded{};
     bool modified{};
 

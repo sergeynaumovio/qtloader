@@ -37,7 +37,6 @@ add_library(${QT_LOADER_LIBRARY} SHARED)
 target_sources(${QT_LOADER_LIBRARY}
     PRIVATE src/core/qtloaderglobal.h
             src/core/qloadercopyinterface.h
-            src/core/qloaderdatainterface.h
             src/core/qloadermoveinterface.h
             src/core/qloaderplugininterface.h
             src/core/qloadersaveinterface.h
@@ -61,8 +60,6 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qtloaderglobal.h
     src/core/QLoaderCopyInterface
     src/core/qloadercopyinterface.h
-    src/core/QLoaderDataInterface
-    src/core/qloaderdatainterface.h
     src/core/QLoaderMoveInterface
     src/core/qloadermoveinterface.h
     src/core/QLoaderPluginInterface

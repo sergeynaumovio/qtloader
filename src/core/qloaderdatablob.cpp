@@ -29,8 +29,13 @@ QLoaderDataBlob::QLoaderDataBlob(QLoaderSettings *settings, QLoaderData *parent)
     QLoaderSettings(settings),
     d_ptr(new QLoaderDataBlobPrivate)
 {
-    parent->setBlob(this);
+    parent->addBlob(this);
 }
 
 QLoaderDataBlob::~QLoaderDataBlob()
 { }
+
+void QLoaderDataBlob::save()
+{
+
+}

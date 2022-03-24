@@ -21,7 +21,6 @@
 #include "qloadersettings.h"
 #include "qloaderplugininterface.h"
 #include "qloadercopyinterface.h"
-#include "qloaderdatainterface.h"
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
 #include "qloaderdata.h"

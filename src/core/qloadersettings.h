@@ -38,12 +38,14 @@ protected:
     void emitWarning(const QString &warning) const;
     virtual QVariant fromString(const QString &value) const;
     virtual QString fromVariant(const QVariant &variant) const;
+    void setBlob(const QString &key, const QByteArray &ba);
     void setValue(const QString &key, const QVariant &value);
 
 public:
     QLoaderSettings(QLoaderTreePrivate &d);
     virtual ~QLoaderSettings();
 
+    QByteArray blob(const QString &key) const;
     QByteArray className() const;
     bool contains(const QString &key) const;
     void dumpSettingsTree() const;
