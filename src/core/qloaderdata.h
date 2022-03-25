@@ -24,7 +24,7 @@
 #include <QObject>
 
 class QLoaderDataPrivate;
-class QLoaderBlobArray;
+class QLoaderStorage;
 
 class Q_LOADER_EXPORT QLoaderData : public QObject, public QLoaderSettings
 {
@@ -36,7 +36,7 @@ public:
     QLoaderData(QLoaderSettings *settings, QObject *parent);
     ~QLoaderData();
 
-    void addBlobArray(QLoaderBlobArray *blob);
+    void addStorage(QLoaderStorage *blob);
 };
 
 #endif // QLOADERDATA_H

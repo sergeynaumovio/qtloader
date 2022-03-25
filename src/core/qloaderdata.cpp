@@ -17,12 +17,12 @@
 ****************************************************************************/
 
 #include "qloaderdata.h"
-#include "qloaderblobarray.h"
+#include "qloaderstorage.h"
 
 class QLoaderDataPrivate
 {
 public:
-    QList<QLoaderBlobArray*> baList{};
+    QList<QLoaderStorage*> storageList{};
 };
 
 QLoaderData::QLoaderData(QLoaderSettings *settings, QObject *parent)
@@ -34,7 +34,7 @@ QLoaderData::QLoaderData(QLoaderSettings *settings, QObject *parent)
 QLoaderData::~QLoaderData()
 { }
 
-void QLoaderData::addBlobArray(QLoaderBlobArray *blob)
+void QLoaderData::addStorage(QLoaderStorage *storage)
 {
-    d_ptr->baList.append(blob);
+    d_ptr->storageList.append(storage);
 }

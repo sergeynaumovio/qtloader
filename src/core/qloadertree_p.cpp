@@ -24,7 +24,7 @@
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
 #include "qloaderdata.h"
-#include "qloaderblobarray.h"
+#include "qloaderstorage.h"
 #include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
@@ -260,11 +260,11 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     if (!qstrcmp(shortName, "Data"))
         return new QLoaderData(settings, parent);
 
-    if (!qstrcmp(shortName, "BlobArray"))
+    if (!qstrcmp(shortName, "Storage"))
     {
         QLoaderData *data = qobject_cast<QLoaderData*>(parent);
         if (data)
-            return new QLoaderBlobArray(settings, data);
+            return new QLoaderStorage(settings, data);
 
         return parent;
     }
