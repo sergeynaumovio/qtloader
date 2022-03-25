@@ -47,6 +47,11 @@ QLoaderTree::Error QLoaderTree::copy(const QStringList &section, const QStringLi
     return d_ptr->copyOrMove(section, to, Action::Copy);
 }
 
+QLoaderData *QLoaderTree::data() const
+{
+    return d_ptr->data;
+}
+
 QString QLoaderTree::fileName() const
 {
     if (d_ptr->file)
