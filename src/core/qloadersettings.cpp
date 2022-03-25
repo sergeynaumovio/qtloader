@@ -51,7 +51,7 @@ QLoaderSettings::~QLoaderSettings()
     }
 }
 
-QByteArray QLoaderSettings::blob(const QString &/*key*/) const
+QLoaderBlob QLoaderSettings::blob(const QString &/*key*/) const
 {
     return {};
 }
@@ -117,7 +117,7 @@ QString QLoaderSettings::fromVariant(const QVariant &variant) const
     return d_ptr->fromVariant(variant);
 }
 
-void QLoaderSettings::setBlob(const QString &/*key*/, const QByteArray &/*ba*/)
+void QLoaderSettings::setBlob(const QString &/*key*/, const QByteArray &/*bo*/)
 {
 
 }

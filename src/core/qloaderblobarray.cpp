@@ -16,26 +16,26 @@
 **
 ****************************************************************************/
 
-#include "qloaderdatablob.h"
+#include "qloaderblobarray.h"
 #include "qloaderdata.h"
 
-class QLoaderDataBlobPrivate
+class QLoaderBlobArrayPrivate
 {
 
 };
 
-QLoaderDataBlob::QLoaderDataBlob(QLoaderSettings *settings, QLoaderData *parent)
+QLoaderBlobArray::QLoaderBlobArray(QLoaderSettings *settings, QLoaderData *parent)
 :   QObject(parent),
     QLoaderSettings(settings),
-    d_ptr(new QLoaderDataBlobPrivate)
+    d_ptr(new QLoaderBlobArrayPrivate)
 {
-    parent->addBlob(this);
+    parent->addBlobArray(this);
 }
 
-QLoaderDataBlob::~QLoaderDataBlob()
+QLoaderBlobArray::~QLoaderBlobArray()
 { }
 
-void QLoaderDataBlob::save()
+void QLoaderBlobArray::save()
 {
 
 }

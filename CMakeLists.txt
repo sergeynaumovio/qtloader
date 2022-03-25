@@ -42,8 +42,8 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadersaveinterface.h
             src/core/qloaderdata.h
             src/core/qloaderdata.cpp
-            src/core/qloaderdatablob.h
-            src/core/qloaderdatablob.cpp
+            src/core/qloaderblobarray.h
+            src/core/qloaderblobarray.cpp
             src/core/qloadersettings.h
             src/core/qloadersettings.cpp
             src/core/qloadertree.h

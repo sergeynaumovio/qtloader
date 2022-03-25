@@ -16,28 +16,28 @@
 **
 ****************************************************************************/
 
-#ifndef QLOADERDATABLOB_H
-#define QLOADERDATABLOB_H
+#ifndef QLOADERBLOBARRAY_H
+#define QLOADERBLOBARRAY_H
 
 #include "qloadersettings.h"
 #include "qloadersaveinterface.h"
 #include <QObject>
 
-class QLoaderDataBlobPrivate;
+class QLoaderBlobArrayPrivate;
 class QLoaderData;
 
-class QLoaderDataBlob : public QObject, public QLoaderSettings,
+class QLoaderBlobArray : public QObject, public QLoaderSettings,
                                                QLoaderSaveInterface
 {
     Q_OBJECT
 
-    QScopedPointer<QLoaderDataBlobPrivate> d_ptr;
+    QScopedPointer<QLoaderBlobArrayPrivate> d_ptr;
 
 public:
-    QLoaderDataBlob(QLoaderSettings *settings, QLoaderData *parent);
-    ~QLoaderDataBlob();
+    QLoaderBlobArray(QLoaderSettings *settings, QLoaderData *parent);
+    ~QLoaderBlobArray();
 
     void save() override;
 };
 
-#endif // QLOADERDATABLOB_H
+#endif // QLOADERBLOBARRAY_H
