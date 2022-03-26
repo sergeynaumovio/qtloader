@@ -21,7 +21,6 @@
 
 #include "qtloaderglobal.h"
 #include "qloadersettings.h"
-#include <QObject>
 
 class QLoaderDataPrivate;
 class QLoaderStorage;

@@ -21,10 +21,8 @@
 
 #include "qloadersettings.h"
 #include "qloadersaveinterface.h"
-#include <QObject>
 
 class QLoaderStoragePrivate;
-class QLoaderData;
 
 class QLoaderStorage : public QObject, public QLoaderSettings,
                                               QLoaderSaveInterface
@@ -34,7 +32,7 @@ class QLoaderStorage : public QObject, public QLoaderSettings,
     QScopedPointer<QLoaderStoragePrivate> d_ptr;
 
 public:
-    QLoaderStorage(QLoaderSettings *settings, QLoaderData *parent);
+    QLoaderStorage(QLoaderSettings *settings, QObject *parent);
     ~QLoaderStorage();
 
     void save() override;

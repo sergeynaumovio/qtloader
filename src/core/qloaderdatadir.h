@@ -16,23 +16,21 @@
 **
 ****************************************************************************/
 
-#include "qloaderstorage.h"
+#ifndef QLOADERDATADIR_H
+#define QLOADERDATADIR_H
 
-class QLoaderStoragePrivate
+#include "qtloaderglobal.h"
+#include "qloadersettings.h"
+
+class QLoaderData;
+
+class Q_LOADER_EXPORT QLoaderDataDir : public QObject, public QLoaderSettings
 {
+    Q_OBJECT
 
+public:
+    QLoaderDataDir(QLoaderSettings *settings, QLoaderData *parent);
+    QLoaderDataDir(QLoaderSettings *settings, QLoaderDataDir *parent);
 };
 
-QLoaderStorage::QLoaderStorage(QLoaderSettings *settings, QObject *parent)
-:   QObject(parent),
-    QLoaderSettings(settings),
-    d_ptr(new QLoaderStoragePrivate)
-{ }
-
-QLoaderStorage::~QLoaderStorage()
-{ }
-
-void QLoaderStorage::save()
-{
-
-}
+#endif // QLOADERDATADIR_H
