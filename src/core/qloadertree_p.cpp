@@ -24,7 +24,7 @@
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
 #include "qloaderdata.h"
-#include "qloaderdatadir.h"
+#include "qloaderdir.h"
 #include "qloaderstorage.h"
 #include <QRegularExpression>
 #include <QFile>
@@ -261,15 +261,15 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     if (!qstrcmp(shortName, "Data"))
         return new QLoaderData(settings, parent);
 
-    if (!qstrcmp(shortName, "DataDir"))
+    if (!qstrcmp(shortName, "Dir"))
     {
         QLoaderData *ldata = qobject_cast<QLoaderData*>(parent);
         if (ldata)
-            return new QLoaderData(settings, ldata);
+            return new QLoaderDir(settings, ldata);
 
-        QLoaderDataDir *dir = qobject_cast<QLoaderDataDir*>(parent);
+        QLoaderDir *dir = qobject_cast<QLoaderDir*>(parent);
         if (dir)
-            return new QLoaderData(settings, dir);
+            return new QLoaderDir(settings, dir);
 
         return parent;
     }

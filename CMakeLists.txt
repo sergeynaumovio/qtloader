@@ -43,8 +43,8 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadersaveinterface.h
             src/core/qloaderdata.h
             src/core/qloaderdata.cpp
-            src/core/qloaderdatadir.h
-            src/core/qloaderdatadir.cpp
+            src/core/qloaderdir.h
+            src/core/qloaderdir.cpp
             src/core/qloaderstorage.h
             src/core/qloaderstorage.cpp
             src/core/qloadersettings.h
@@ -73,8 +73,8 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadersaveinterface.h
     src/core/QLoaderData
     src/core/qloaderdata.h
-    src/core/QLoaderDataDir
-    src/core/qloaderdatadir.h
+    src/core/QLoaderDir
+    src/core/qloaderdir.h
     src/core/QLoaderSettings
     src/core/qloadersettings.h
     src/core/QLoaderTree

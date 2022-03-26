@@ -16,15 +16,15 @@
 **
 ****************************************************************************/
 
-#include "qloaderdatadir.h"
+#include "qloaderdir.h"
 #include "qloaderdata.h"
 
-QLoaderDataDir::QLoaderDataDir(QLoaderSettings *settings, QLoaderData *parent)
+QLoaderDir::QLoaderDir(QLoaderSettings *settings, QLoaderData *parent)
 :   QObject(parent),
     QLoaderSettings(settings)
 { }
 
-QLoaderDataDir::QLoaderDataDir(QLoaderSettings *settings, QLoaderDataDir *parent)
+QLoaderDir::QLoaderDir(QLoaderSettings *settings, QLoaderDir *parent)
 :   QObject(parent),
     QLoaderSettings(settings)
 { }
