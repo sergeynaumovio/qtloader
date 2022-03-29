@@ -28,3 +28,8 @@ QLoaderDir::QLoaderDir(QLoaderSettings *settings, QLoaderDir *parent)
 :   QObject(parent),
     QLoaderSettings(settings)
 { }
+
+QIcon QLoaderDir::icon() const
+{
+    return {};
+}
