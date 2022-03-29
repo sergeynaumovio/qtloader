@@ -710,7 +710,7 @@ QLoaderTree::Error QLoaderTreePrivate::read()
 
                     if (isData)
                         d.data.settings = settings;
-                    else if (isStorage)
+                    else
                         d.storage.settings = settings;
                 }
             }
