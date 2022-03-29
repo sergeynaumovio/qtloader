@@ -225,12 +225,15 @@ public:
 class QLoaderTreePrivateData
 {
 public:
-    struct
+    struct SettingsObject
     {
         QLoaderSettings *settings{};
         QObject *object{};
+    };
 
-    } root;
+    SettingsObject root;
+    SettingsObject data;
+    SettingsObject storage;
 
     KeyValueParser parser;
     StringVariantConverter converter;
@@ -256,7 +259,7 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
 QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 {
     QByteArray className = settings->className();
-    const char *shortName = className.data() + qstrlen("Loader");
+    const char *shortName = className.data() + qstrlen("QLoader");
 
     if (!qstrcmp(shortName, "Data"))
         return new QLoaderData(settings, parent);
@@ -294,7 +297,7 @@ QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,
             mutex.lock();
             error.line = hash.data[settings].sectionLine;
             error.status = QLoaderTree::PluginError;
-            error.message = "library not loaded";
+            error.message = "library " + libraryName + " not loaded";
             mutex.unlock();
             return nullptr;
         }
@@ -461,7 +464,7 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
     mutex.unlock();
 
     QObject *object;
-    if (!qstrncmp(itemClassName, "Loader", 6))
+    if (!qstrncmp(itemClassName, "QLoader", 7))
         object = builtin(settings, parent);
     else
         object = external(error, settings, parent);
@@ -573,15 +576,15 @@ QLoaderTree::Error QLoaderTreePrivate::read()
 
     QLoaderSettings *settings{};
     QLoaderSettingsData item;
-    int errorLine = 0;
+    int currentLine = 0;
     const char comment = '#';
 
     while (!file->atEnd())
     {
         QByteArray line = file->readLine();
-        ++errorLine;
+        ++currentLine;
 
-        if (errorLine == 1 && line.startsWith("#!"))
+        if (currentLine == 1 && line.startsWith("#!"))
         {
             d.execLine = line;
             continue;
@@ -638,14 +641,14 @@ QLoaderTree::Error QLoaderTreePrivate::read()
             if (!valid)
             {
                 delete settings;
-                error.line = errorLine;
+                error.line = currentLine;
                 error.status = QLoaderTree::DesignError;
                 if (!error.message.size()) error.message = "section not valid";
                 return error;
             }
 
             hash.settings[section] = settings;
-            item.sectionLine = errorLine;
+            item.sectionLine = currentLine;
             continue;
         }
 
@@ -676,6 +679,32 @@ QLoaderTree::Error QLoaderTreePrivate::read()
                 }
 
                 item.className = value.toLocal8Bit();
+                if (!qstrncmp(item.className, "Loader", 6))
+                {
+                    error.line = item.sectionLine;
+                    error.status = QLoaderTree::ObjectError;
+                    error.message = "class not found";
+                    return error;
+                }
+
+                bool isData{};
+                bool isStorage{};
+                const char *shortName = item.className.data() + qstrlen("QLoader");
+                if ((isData = !qstrcmp(shortName, "Data")) || (isStorage = !qstrcmp(shortName, "Storage")))
+                {
+                    if (item.section.size() > 2)
+                    {
+                        error.line = item.sectionLine;
+                        error.status = QLoaderTree::DesignError;
+                        error.message = "parent object not valid";
+                        return error;
+                    }
+
+                    if (isData)
+                        d.data.settings = settings;
+                    else if (isStorage)
+                        d.storage.settings = settings;
+                }
             }
             else
             {
