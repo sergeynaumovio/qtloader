@@ -700,6 +700,14 @@ QLoaderTree::Error QLoaderTreePrivate::read()
                         return error;
                     }
 
+                    if ((isData && d.data.settings) || (isStorage && d.storage.settings))
+                    {
+                        error.line = item.sectionLine;
+                        error.status = QLoaderTree::DesignError;
+                        error.message = isData ? "data object already set" : "storage object already set";
+                        return error;
+                    }
+
                     if (isData)
                         d.data.settings = settings;
                     else if (isStorage)
