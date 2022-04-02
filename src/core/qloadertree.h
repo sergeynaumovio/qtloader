@@ -52,6 +52,7 @@ public:
         int line{};
         Status status{};
         QString message;
+        operator bool() { return status; }
     };
 
 Q_SIGNALS:
