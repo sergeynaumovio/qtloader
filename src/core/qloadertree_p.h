@@ -58,6 +58,7 @@ class QLoaderTreePrivate
                              const QLoaderTreeSection &dst,
                              Action action);
     void dumpRecursive(QLoaderSettings *settings) const;
+    QLoaderTree::Error load(const QStringList &section);
     QLoaderTree::Error loadRecursive(QLoaderSettings *settings, QObject *parent);
     QLoaderTree::Error read();
     void removeRecursive(QLoaderSettings *settings);
@@ -69,7 +70,6 @@ public:
     QLoaderTree *const q_ptr;
     QFile *file{};
     QMutex mutex;
-    QLoaderData *data{};
     bool loaded{};
     bool modified{};
 
@@ -89,12 +89,12 @@ public:
 
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QObject *external(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
+    QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
     QVariant fromString(const QString &value) const;
     QString fromVariant(const QVariant &variant) const;
     QLoaderTree::Error copyOrMove(const QStringList &section, const QStringList &to, Action action);
     QLoaderTree::Error load();
-    QLoaderTree::Error load(const QStringList &section);
     QLoaderTree::Error save();
 };
 

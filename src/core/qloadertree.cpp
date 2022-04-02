@@ -49,7 +49,7 @@ QLoaderTree::Error QLoaderTree::copy(const QStringList &section, const QStringLi
 
 QLoaderData *QLoaderTree::data() const
 {
-    return d_ptr->data;
+    return d_ptr->data();
 }
 
 QString QLoaderTree::fileName() const
