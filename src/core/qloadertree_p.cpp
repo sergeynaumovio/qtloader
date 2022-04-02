@@ -35,7 +35,6 @@
 #include <QAction>
 #include <QApplication>
 #include <QTextStream>
-#include <QMutexLocker>
 
 void QLoaderSettingsData::clear()
 {
