@@ -632,9 +632,12 @@ QLoaderTree::Error QLoaderTreePrivate::read()
             bool valid{};
             item.clear();
             item.section = section;
+            item.sectionLine = currentLine;
 
             if (!hash.settings.contains(section))
             {
+                hash.settings[section] = settings;
+
                 if (section.size() == 1 && section.back().size())
                 {
                     if (!d.root.settings)
@@ -662,7 +665,9 @@ QLoaderTree::Error QLoaderTreePrivate::read()
             else
             {
                 error.message = "section already set";
+                delete settings;
             }
+
 
             if (!valid)
             {
@@ -674,8 +679,6 @@ QLoaderTree::Error QLoaderTreePrivate::read()
                 break;
             }
 
-            hash.settings[section] = settings;
-            item.sectionLine = currentLine;
             continue;
         }
 
