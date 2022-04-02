@@ -668,7 +668,6 @@ QLoaderTree::Error QLoaderTreePrivate::read()
                 delete settings;
             }
 
-
             if (!valid)
             {
                 error.line = currentLine;
