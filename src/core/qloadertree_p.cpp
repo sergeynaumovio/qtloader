@@ -902,12 +902,16 @@ void QLoaderTreePrivate::copyOrMoveRecursive(QLoaderSettings *settings,
 QLoaderTree::Error QLoaderTreePrivate::copyOrMove(const QStringList &section, const QStringList &to, Action action)
 {
     QLoaderTree::Error error;
+    mutex.lock();
     if (!loaded)
     {
         error.status = QLoaderTree::ObjectError;
         error.message = "tree not loaded";
+        mutex.unlock();
         return error;
     }
+    else
+        mutex.unlock();
 
     QLoaderTreeSection src(section, this);
     if (src.valid)
@@ -977,8 +981,10 @@ QLoaderTree::Error QLoaderTreePrivate::copyOrMove(const QStringList &section, co
                     return error;
                 }
             }
-
+            mutex.lock();
             modified = true;
+            mutex.unlock();
+
             emit q_ptr->settingsChanged();
 
             return error;
