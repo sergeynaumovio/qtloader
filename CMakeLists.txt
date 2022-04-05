@@ -38,7 +38,6 @@ target_sources(${QT_LOADER_LIBRARY}
     PRIVATE src/core/qtloaderglobal.h
             src/core/qloadercopyinterface.h
             src/core/qloadermoveinterface.h
-            src/core/qloadericoninterface.h
             src/core/qloaderplugininterface.h
             src/core/qloadersaveinterface.h
             src/core/qloaderdata.h
@@ -53,10 +52,12 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadertree.cpp
             src/core/qloadertree_p.h
             src/core/qloadertree_p.cpp
+            src/widgets/qloadericoninterface.h
 )
 
 target_include_directories(${QT_LOADER_LIBRARY}
     PRIVATE src/core
+            src/widgets
 )
 
 set(QT_LOADER_PUBLIC_HEADERS
@@ -65,8 +66,6 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadercopyinterface.h
     src/core/QLoaderMoveInterface
     src/core/qloadermoveinterface.h
-    src/core/QLoaderIconInterface
-    src/core/qloadericoninterface.h
     src/core/QLoaderPluginInterface
     src/core/qloaderplugininterface.h
     src/core/QLoaderSaveInterface
@@ -79,6 +78,8 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadersettings.h
     src/core/QLoaderTree
     src/core/qloadertree.h
+    src/widgets/QLoaderIconInterface
+    src/widgets/qloadericoninterface.h
 )
 
 set_target_properties(${QT_LOADER_LIBRARY} PROPERTIES
