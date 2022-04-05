@@ -689,9 +689,16 @@ QLoaderTree::Error QLoaderTreePrivate::read()
 
                     if (hash.settings.contains(parent))
                     {
-                        valid = true;
-                        item.parent = hash.settings[parent];
-                        hash.data[item.parent].children.push_back(settings);
+                        if (parent.size() == 1 && d.storage.settings)
+                        {
+                            error.message = "last direct root child not valid (use QLoaderStorage)";
+                        }
+                        else
+                        {
+                            valid = true;
+                            item.parent = hash.settings[parent];
+                            hash.data[item.parent].children.push_back(settings);
+                        }
                     }
                 }
                 else
