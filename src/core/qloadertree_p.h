@@ -51,7 +51,7 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    std::aligned_storage_t<168, sizeof (ptrdiff_t)> d_storage;
+    std::aligned_storage_t<192, sizeof (ptrdiff_t)> d_storage;
 
     void copyOrMoveRecursive(QLoaderSettings *settings,
                              const QLoaderTreeSection &src,
@@ -94,6 +94,7 @@ public:
     QVariant fromString(const QString &value) const;
     QString fromVariant(const QVariant &variant) const;
     QLoaderTree::Error copyOrMove(const QStringList &section, const QStringList &to, Action action);
+    bool isSaving() const;
     QLoaderTree::Error load();
     QLoaderTree::Error save();
 };

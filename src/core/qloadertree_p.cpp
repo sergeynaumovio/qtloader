@@ -222,6 +222,42 @@ public:
     }
 };
 
+class Saving
+{
+    Saving *s{};
+    QMutex mutex;
+    bool inProgress{};
+
+public:
+    Saving() { }
+
+    Saving(Saving *saving)
+    :   s(saving)
+    {
+        s->mutex.lock();
+        s->inProgress = true;
+        s->mutex.unlock();
+    }
+
+    ~Saving()
+    {
+        if (s)
+        {
+            s->mutex.lock();
+            s->inProgress = false;
+            s->mutex.unlock();
+        }
+    }
+
+    bool operator ()()
+    {
+        mutex.lock();
+        bool ret = inProgress;
+        mutex.unlock();
+
+        return ret;
+    }
+};
 
 class QLoaderTreePrivateData
 {
@@ -238,6 +274,7 @@ public:
     QMutex loading;
     QString execLine;
     QList<QLoaderSettings*> copied;
+    Saving saving;
 };
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
@@ -953,6 +990,11 @@ QLoaderTree::Error QLoaderTreePrivate::copyOrMove(const QStringList &section, co
     return error;
 }
 
+bool QLoaderTreePrivate::isSaving() const
+{
+    return d.saving();
+}
+
 void QLoaderTreePrivate::removeRecursive(QLoaderSettings */*settings*/)
 {
 
@@ -989,6 +1031,8 @@ QLoaderTree::Error QLoaderTreePrivate::save()
     QLoaderTree::Error error;
     if (loaded)
     {
+        Saving saving(&d.saving);
+
         if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
         {
             error.status = QLoaderTree::AccessError;
@@ -1005,11 +1049,12 @@ QLoaderTree::Error QLoaderTreePrivate::save()
 
         file->close();
         modified = false;
-
-        return {};
+    }
+    else
+    {
+        error.status = QLoaderTree::ObjectError;
+        error.message = "tree not loaded";
     }
 
-    error.status = QLoaderTree::ObjectError;
-    error.message = "tree not loaded";
     return error;
 }

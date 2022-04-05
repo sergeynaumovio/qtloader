@@ -88,9 +88,18 @@ QObject *QLoaderTree::object(const QStringList &section) const
 
 QLoaderTree::Error QLoaderTree::save() const
 {
-    d_ptr->mutex.lock();
-    QLoaderTree::Error error = d_ptr->save();
-    d_ptr->mutex.unlock();
+    QLoaderTree::Error error;
+    if (d_ptr->isSaving())
+    {
+        error.status = QLoaderTree::AccessError;
+        error.message = "saving in progress";
+    }
+    else
+    {
+        d_ptr->mutex.lock();
+        error = d_ptr->save();
+        d_ptr->mutex.unlock();
+    }
 
     return error;
 }

@@ -117,9 +117,20 @@ QString QLoaderSettings::fromVariant(const QVariant &variant) const
     return d_ptr->fromVariant(variant);
 }
 
-void QLoaderSettings::setBlob(const QString &/*key*/, const QByteArray &/*bo*/)
+QLoaderTree::Error QLoaderSettings::saveBlob(const QString &/*key*/, const QLoaderBlob &/*bo*/)
 {
+    QLoaderTree::Error error;
+    if (d_ptr->isSaving())
+    {
+    }
+    else
+    {
+        error.status = QLoaderTree::AccessError;
+        error.message = "Please, use QLoaderTree::Error saveBlob(const QString &, const QLoaderBlob &) "
+                        "in void QLoaderSaveInterface::save() to save blob during tree saving.";
+    }
 
+    return error;
 }
 
 void QLoaderSettings::setValue(const QString &key, const QVariant &value)
