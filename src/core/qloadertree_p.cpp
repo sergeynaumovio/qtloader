@@ -691,7 +691,7 @@ QLoaderTree::Error QLoaderTreePrivate::read()
                     {
                         if (parent.size() == 1 && d.storage.settings)
                         {
-                            error.message = "last direct root child not valid (use QLoaderStorage)";
+                            error.message = "last direct root child not valid (please, use QLoaderStorage)";
                         }
                         else
                         {
