@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
                                             QMessageBox::Close);
             }
         }
-        QString message = fileName + ": " + QString::number(error.line) + ": " +
+        QString message = fileName + ":" + QString::number(error.line) + ": " +
                           QVariant::fromValue(error.status).toString().toLower();
 
         message.insert(message.size() - QString("error").size(), ' ');
