@@ -822,7 +822,7 @@ QLoaderTree::Error QLoaderTreePrivate::load()
     }();
 
     qDeleteAll(hash.settings);
-    if (error)
+    if (!loaded)
     {
         if (d.storage.object) delete d.storage.object;
         if (d.data.object) delete d.data.object;
