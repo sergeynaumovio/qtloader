@@ -29,6 +29,7 @@ class Q_LOADER_EXPORT QLoaderDir : public QObject, public QLoaderSettings,
                                                           QLoaderIconInterface
 {
     Q_OBJECT
+    Q_INTERFACES(QLoaderIconInterface)
 
 public:
     QLoaderDir(QLoaderSettings *settings, QLoaderData *parent);

@@ -31,8 +31,3 @@ QLoaderStorage::QLoaderStorage(QLoaderSettings *settings, QObject *parent)
 
 QLoaderStorage::~QLoaderStorage()
 { }
-
-void QLoaderStorage::save()
-{
-
-}

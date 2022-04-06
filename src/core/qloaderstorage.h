@@ -24,8 +24,7 @@
 
 class QLoaderStoragePrivate;
 
-class QLoaderStorage : public QObject, public QLoaderSettings,
-                                              QLoaderSaveInterface
+class QLoaderStorage : public QObject, public QLoaderSettings
 {
     Q_OBJECT
 
@@ -34,8 +33,6 @@ class QLoaderStorage : public QObject, public QLoaderSettings,
 public:
     QLoaderStorage(QLoaderSettings *settings, QObject *parent);
     ~QLoaderStorage();
-
-    void save() override;
 };
 
 #endif // QLOADERSTORAGE_H
