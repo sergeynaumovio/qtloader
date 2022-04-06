@@ -1030,13 +1030,18 @@ void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &
         resources->save();
 }
 
-void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)
+void QLoaderTreePrivate::saveRecursiveSettings(QLoaderSettings *settings, QTextStream &out)
 {
     const QLoaderSettingsData &item = hash.data[settings];
     saveItem(item, out);
 
     for (QLoaderSettings *child : item.children)
-        saveRecursive(child, out);
+        saveRecursiveSettings(child, out);
+}
+
+void QLoaderTreePrivate::saveRecursiveBlobs(QLoaderSettings */*settings*/, QDataStream &/*out*/)
+{
+
 }
 
 QLoaderTree::Error QLoaderTreePrivate::save()
@@ -1058,7 +1063,7 @@ QLoaderTree::Error QLoaderTreePrivate::save()
         if (d.execLine.size())
             out << d.execLine;
 
-        saveRecursive(d.root.settings, out);
+        saveRecursiveSettings(d.root.settings, out);
 
         file->close();
         modified = false;

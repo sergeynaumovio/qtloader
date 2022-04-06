@@ -63,7 +63,8 @@ class QLoaderTreePrivate
     QLoaderTree::Error read();
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
-    void saveRecursive(QLoaderSettings *settings, QTextStream &out);
+    void saveRecursiveSettings(QLoaderSettings *settings, QTextStream &out);
+    void saveRecursiveBlobs(QLoaderSettings *settings, QDataStream &out);
     void setProperties(const QLoaderSettingsData &item, QObject *object);
 
 public:
