@@ -20,10 +20,12 @@
 #define QLOADERSETTINGS_H
 
 #include "qtloaderglobal.h"
-#include "qloadertree.h"
 #include <QVariant>
 
 using QLoaderBlob = QByteArray;
+
+class QLoaderTreePrivate;
+class QLoaderTree;
 
 class Q_LOADER_EXPORT QLoaderSettings
 {
@@ -33,13 +35,15 @@ class Q_LOADER_EXPORT QLoaderSettings
 protected:
     explicit QLoaderSettings(QLoaderSettings *settings);
 
+    bool addBlob(const QString &key);
     void emitError(const QString &error) const;
     void emitInfo(const QString &info) const;
     void emitWarning(const QString &warning) const;
     virtual QVariant fromString(const QString &value) const;
     virtual QString fromVariant(const QVariant &variant) const;
-    QLoaderTree::Error saveBlob(const QString &key, const QLoaderBlob &bo);
-    void setValue(const QString &key, const QVariant &value);
+    bool removeBlob(const QString &key);
+    virtual QLoaderBlob saveBlob(const QString &key);
+    bool setValue(const QString &key, const QVariant &value);
 
 public:
     QLoaderSettings(QLoaderTreePrivate &d);

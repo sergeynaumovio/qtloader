@@ -51,7 +51,7 @@ QLoaderSettings::~QLoaderSettings()
     }
 }
 
-QLoaderBlob QLoaderSettings::blob(const QString &/*key*/) const
+bool QLoaderSettings::addBlob(const QString &/*key*/)
 {
     return {};
 }
@@ -117,29 +117,29 @@ QString QLoaderSettings::fromVariant(const QVariant &variant) const
     return d_ptr->fromVariant(variant);
 }
 
-QLoaderTree::Error QLoaderSettings::saveBlob(const QString &/*key*/, const QLoaderBlob &/*bo*/)
+bool QLoaderSettings::removeBlob(const QString &/*key*/)
 {
-    QLoaderTree::Error error;
-    if (d_ptr->isSaving())
-    {
-    }
-    else
-    {
-        error.status = QLoaderTree::AccessError;
-        error.message = "Please, use QLoaderTree::Error saveBlob(const QString &, const QLoaderBlob &) "
-                        "in void QLoaderSaveInterface::save() to save blob during tree saving.";
-    }
-
-    return error;
+    return {};
 }
 
-void QLoaderSettings::setValue(const QString &key, const QVariant &value)
+QLoaderBlob QLoaderSettings::saveBlob(const QString &/*key*/)
+{
+    return {};
+}
+
+bool QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
     d_ptr->mutex.lock();
     d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
     d_ptr->modified = true;
     d_ptr->mutex.unlock();
     emit d_ptr->q_ptr->settingsChanged();
+    return true;
+}
+
+QLoaderBlob QLoaderSettings::blob(const QString &/*key*/) const
+{
+    return {};
 }
 
 bool QLoaderSettings::contains(const QString &key) const
