@@ -122,7 +122,7 @@ bool QLoaderSettings::removeBlob(const QString &/*key*/)
     return {};
 }
 
-QLoaderBlob QLoaderSettings::saveBlob(const QString &/*key*/)
+QLoaderBlob QLoaderSettings::saveBlob(const QString &/*key*/) const
 {
     return {};
 }

@@ -42,7 +42,7 @@ protected:
     virtual QVariant fromString(const QString &value) const;
     virtual QString fromVariant(const QVariant &variant) const;
     bool removeBlob(const QString &key);
-    virtual QLoaderBlob saveBlob(const QString &key);
+    virtual QLoaderBlob saveBlob(const QString &key) const;
     bool setValue(const QString &key, const QVariant &value);
 
 public:
