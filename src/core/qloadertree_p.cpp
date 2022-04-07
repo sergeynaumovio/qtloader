@@ -803,30 +803,31 @@ QLoaderTree::Error QLoaderTreePrivate::load()
 {
     QLoaderTree::Error error;
     d.loading.lock();
-    [&error, this]()
+    do
     {
         if (loaded)
         {
             error.status = QLoaderTree::ObjectError;
             error.message = "already loaded";
-            return;
+            break;
         }
 
         if ((error = read()))
-            return;
+            break;
 
         if (d.storage.settings && (error = loadRecursive(d.storage.settings, q_ptr)))
-            return;
+            break;
 
         if (d.data.settings && (error = loadRecursive(d.data.settings, q_ptr)))
-            return;
+            break;
 
         bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
         if ((error = loadRecursive(d.root.settings, coreApp ? q_ptr : nullptr)))
-            return;
+            break;
 
         loaded = true;
-    }();
+
+    } while (0);
 
     qDeleteAll(hash.settings);
     if (!loaded)
@@ -1057,15 +1058,27 @@ QLoaderTree::Error QLoaderTreePrivate::save()
             error.message = "read-only file";
             return error;
         }
+        else
+        {
+            QTextStream out(file);
+            if (d.execLine.size()) out << d.execLine;
+            saveRecursiveSettings(d.root.settings, out);
+            file->close();
+        }
 
-        QTextStream out(file);
+        if (!file->open(QIODevice::WriteOnly | QIODevice::Append))
+        {
+            error.status = QLoaderTree::AccessError;
+            error.message = "read-only file";
+            return error;
+        }
+        else
+        {
+            /// QDataStream out(file);
 
-        if (d.execLine.size())
-            out << d.execLine;
+            file->close();
+        }
 
-        saveRecursiveSettings(d.root.settings, out);
-
-        file->close();
         modified = false;
     }
     else
