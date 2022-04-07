@@ -26,6 +26,7 @@
 #include "qloaderdata.h"
 #include "qloaderdir.h"
 #include "qloaderstorage.h"
+#include "qloaderstorage_p.h"
 #include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
@@ -259,15 +260,25 @@ public:
     }
 };
 
+class SettingsObject
+{
+public:
+    QLoaderSettings *settings{};
+    QObject *object{};
+};
+
+class StorageSettingsObject : public SettingsObject
+{
+public:
+    QLoaderStoragePrivate *d_ptr;
+};
+
 class QLoaderTreePrivateData
 {
 public:
-    struct
-    {
-        QLoaderSettings *settings{};
-        QObject *object{};
-
-    } root, data, storage;
+    SettingsObject root;
+    SettingsObject data;
+    StorageSettingsObject storage;
 
     KeyValueParser parser;
     StringVariantConverter converter;
@@ -321,7 +332,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     if (!qstrcmp(shortName, "Storage"))
     {
         if (!d.storage.object)
-            return d.storage.object = new QLoaderStorage(settings, parent);
+            return d.storage.object = new QLoaderStorage(*this, settings, parent);
 
         d.storage.object->setParent(parent);
         return nullptr;
@@ -609,23 +620,15 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
     return error;
 }
 
-QLoaderTree::Error QLoaderTreePrivate::read()
+QLoaderTree::Error QLoaderTreePrivate::readSettings()
 {
     QLoaderTree::Error error{};
-    if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!file->open(QIODevice::ReadOnly))
     {
         error.status = QLoaderTree::AccessError;
         error.message = "read error";
         return error;
     }
-
-    struct CloseFile
-    {
-        QFile *file;
-        CloseFile(QFile *f) : file(f) { }
-        ~CloseFile(){ file->close(); }
-
-    } closeFile (file);
 
     QLoaderSettings *settings{};
     QLoaderSettingsData item;
@@ -784,7 +787,10 @@ QLoaderTree::Error QLoaderTreePrivate::read()
                     if (isData)
                         d.data.settings = settings;
                     else
+                    {
                         d.storage.settings = settings;
+                        break;
+                    }
                 }
             }
             else
@@ -812,7 +818,7 @@ QLoaderTree::Error QLoaderTreePrivate::load()
             break;
         }
 
-        if ((error = read()))
+        if ((error = readSettings()))
             break;
 
         if (d.storage.settings && (error = loadRecursive(d.storage.settings, q_ptr)))
@@ -832,10 +838,13 @@ QLoaderTree::Error QLoaderTreePrivate::load()
     qDeleteAll(hash.settings);
     if (!loaded)
     {
+        file->close();
         if (d.storage.object) delete d.storage.object;
         if (d.data.object) delete d.data.object;
         if (d.root.object) delete d.root.object;
     }
+    else if (!d.storage.object)
+        file->close();
 
     d.loading.unlock();
 
@@ -1088,4 +1097,9 @@ QLoaderTree::Error QLoaderTreePrivate::save()
     }
 
     return error;
+}
+
+void QLoaderTreePrivate::setStorageData(QLoaderStoragePrivate &d_ref)
+{
+    d.storage.d_ptr = &d_ref;
 }

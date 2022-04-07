@@ -16,23 +16,17 @@
 **
 ****************************************************************************/
 
-#ifndef QLOADERSTORAGE_H
-#define QLOADERSTORAGE_H
+#ifndef QLOADERSTORAGE_P_H
+#define QLOADERSTORAGE_P_H
 
-#include "qloadersettings.h"
-
-class QLoaderStoragePrivate;
 class QLoaderTreePrivate;
 
-class QLoaderStorage : public QObject, public QLoaderSettings
+class QLoaderStoragePrivate
 {
-    Q_OBJECT
-
-    const QScopedPointer<QLoaderStoragePrivate> d_ptr;
+    QLoaderTreePrivate *const d_ptr;
 
 public:
-    QLoaderStorage(QLoaderTreePrivate &d, QLoaderSettings *settings, QObject *parent);
-    ~QLoaderStorage();
+    QLoaderStoragePrivate(QLoaderTreePrivate &d);
 };
 
-#endif // QLOADERSTORAGE_H
+#endif // QLOADERSTORAGE_P_H

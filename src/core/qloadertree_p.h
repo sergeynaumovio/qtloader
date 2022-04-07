@@ -32,6 +32,7 @@ class QTextStream;
 class QLoaderTreePrivateData;
 class QLoaderTreeSection;
 class QLoaderData;
+class QLoaderStoragePrivate;
 
 enum class Action { Copy, Move };
 
@@ -51,7 +52,7 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    std::aligned_storage_t<192, sizeof (ptrdiff_t)> d_storage;
+    std::aligned_storage_t<200, sizeof (ptrdiff_t)> d_storage;
 
     void copyOrMoveRecursive(QLoaderSettings *settings,
                              const QLoaderTreeSection &src,
@@ -60,7 +61,7 @@ class QLoaderTreePrivate
     void dumpRecursive(QLoaderSettings *settings) const;
     QLoaderTree::Error load(const QStringList &section);
     QLoaderTree::Error loadRecursive(QLoaderSettings *settings, QObject *parent);
-    QLoaderTree::Error read();
+    QLoaderTree::Error readSettings();
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
     void saveRecursiveSettings(QLoaderSettings *settings, QTextStream &out);
@@ -98,6 +99,7 @@ public:
     bool isSaving() const;
     QLoaderTree::Error load();
     QLoaderTree::Error save();
+    void setStorageData(QLoaderStoragePrivate &d);
 };
 
 #endif // QLOADERTREE_P_H

@@ -17,17 +17,16 @@
 ****************************************************************************/
 
 #include "qloaderstorage.h"
+#include "qloaderstorage_p.h"
+#include "qloadertree_p.h"
 
-class QLoaderStoragePrivate
-{
-
-};
-
-QLoaderStorage::QLoaderStorage(QLoaderSettings *settings, QObject *parent)
+QLoaderStorage::QLoaderStorage(QLoaderTreePrivate &d, QLoaderSettings *settings, QObject *parent)
 :   QObject(parent),
     QLoaderSettings(settings),
-    d_ptr(new QLoaderStoragePrivate)
-{ }
+    d_ptr(new QLoaderStoragePrivate(d))
+{
+    d.setStorageData(*d_ptr);
+}
 
 QLoaderStorage::~QLoaderStorage()
 { }
