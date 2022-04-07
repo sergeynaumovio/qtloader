@@ -142,18 +142,16 @@ QLoaderBlob QLoaderSettings::blob(const QString &/*key*/) const
     return {};
 }
 
-bool QLoaderSettings::containsBlob(const QString &/*key*/) const
-{
-    return {};
-}
-
-bool QLoaderSettings::containsValue(const QString &key) const
+QLoaderSettings::Key QLoaderSettings::contains(const QString &key) const
 {
     d_ptr->mutex.lock();
-    bool containsKey = d_ptr->hash.data[q_ptr].properties.contains(key);
+    bool containsKeyValue = d_ptr->hash.data[q_ptr].properties.contains(key);
     d_ptr->mutex.unlock();
 
-    return containsKey;
+    if (containsKeyValue)
+        return QLoaderSettings::Value;
+
+    return QLoaderSettings::No;
 }
 
 QByteArray QLoaderSettings::className() const

@@ -46,13 +46,19 @@ protected:
     bool setValue(const QString &key, const QVariant &value);
 
 public:
+    enum Key
+    {
+        No,
+        Value,
+        Blob
+    };
+
     QLoaderSettings(QLoaderTreePrivate &d);
     virtual ~QLoaderSettings();
 
     QLoaderBlob blob(const QString &key) const;
     QByteArray className() const;
-    bool containsBlob(const QString &key) const;
-    bool containsValue(const QString &key) const;
+    QLoaderSettings::Key contains(const QString &key) const;
     void dumpSettingsTree() const;
     QStringList section() const;
     QLoaderTree *tree() const;
