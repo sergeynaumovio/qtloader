@@ -142,7 +142,12 @@ QLoaderBlob QLoaderSettings::blob(const QString &/*key*/) const
     return {};
 }
 
-bool QLoaderSettings::contains(const QString &key) const
+bool QLoaderSettings::containsBlob(const QString &/*key*/) const
+{
+    return {};
+}
+
+bool QLoaderSettings::containsValue(const QString &key) const
 {
     d_ptr->mutex.lock();
     bool containsKey = d_ptr->hash.data[q_ptr].properties.contains(key);

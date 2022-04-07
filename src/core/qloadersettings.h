@@ -51,7 +51,8 @@ public:
 
     QLoaderBlob blob(const QString &key) const;
     QByteArray className() const;
-    bool contains(const QString &key) const;
+    bool containsBlob(const QString &key) const;
+    bool containsValue(const QString &key) const;
     void dumpSettingsTree() const;
     QStringList section() const;
     QLoaderTree *tree() const;
