@@ -20,6 +20,8 @@
 #define QLOADERSTORAGE_P_H
 
 class QLoaderTreePrivate;
+class QByteArray;
+class QUuid;
 
 class QLoaderStoragePrivate
 {
@@ -27,6 +29,8 @@ class QLoaderStoragePrivate
 
 public:
     QLoaderStoragePrivate(QLoaderTreePrivate &d);
+    QByteArray blob(const QUuid &id);
+    void saveBlob(const QUuid &id, const QByteArray &ba);
 };
 
 #endif // QLOADERSTORAGE_P_H

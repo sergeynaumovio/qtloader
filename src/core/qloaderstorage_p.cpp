@@ -18,7 +18,18 @@
 
 #include "qloaderstorage_p.h"
 #include "qloadertree_p.h"
+#include <QFile>
 
 QLoaderStoragePrivate::QLoaderStoragePrivate(QLoaderTreePrivate &d)
 :   d_ptr(&d)
 { }
+
+QByteArray QLoaderStoragePrivate::blob(const QUuid &/*id*/)
+{
+    return {};
+}
+
+void QLoaderStoragePrivate::saveBlob(const QUuid &/*id*/, const QByteArray &/*ba*/)
+{
+
+}
