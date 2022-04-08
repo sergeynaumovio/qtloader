@@ -1061,6 +1061,9 @@ QLoaderTree::Error QLoaderTreePrivate::save()
     {
         Saving saving(&d.saving);
 
+        if (file->isOpen())
+            file->close();
+
         if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
         {
             error.status = QLoaderTree::AccessError;
