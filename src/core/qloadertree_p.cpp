@@ -270,7 +270,7 @@ public:
 class StorageSettingsObject : public SettingsObject
 {
 public:
-    QLoaderStoragePrivate *d_ptr;
+    QLoaderStoragePrivate *d_ptr{};
 };
 
 class QLoaderTreePrivateData
@@ -300,6 +300,11 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
     d.~QLoaderTreePrivateData();
+}
+
+QByteArray QLoaderTreePrivate::blob(const QUuid &uuid)
+{
+    return d.storage.d_ptr->blob(uuid);
 }
 
 QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
@@ -1040,18 +1045,13 @@ void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &
         resources->save();
 }
 
-void QLoaderTreePrivate::saveRecursiveSettings(QLoaderSettings *settings, QTextStream &out)
+void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &out)
 {
     const QLoaderSettingsData &item = hash.data[settings];
     saveItem(item, out);
 
     for (QLoaderSettings *child : item.children)
-        saveRecursiveSettings(child, out);
-}
-
-void QLoaderTreePrivate::saveRecursiveBlobs(QLoaderSettings */*settings*/, QDataStream &/*out*/)
-{
-
+        saveRecursive(child, out);
 }
 
 QLoaderTree::Error QLoaderTreePrivate::save()
@@ -1070,26 +1070,14 @@ QLoaderTree::Error QLoaderTreePrivate::save()
             error.message = "read-only file";
             return error;
         }
-        else
-        {
-            QTextStream out(file);
-            if (d.execLine.size()) out << d.execLine;
-            saveRecursiveSettings(d.root.settings, out);
-            file->close();
-        }
 
-        if (!file->open(QIODevice::WriteOnly | QIODevice::Append))
-        {
-            error.status = QLoaderTree::AccessError;
-            error.message = "read-only file";
-            return error;
-        }
-        else
-        {
-            /// QDataStream out(file);
+        QTextStream out(file);
+        if (d.execLine.size()) out << d.execLine;
+        saveRecursive(d.root.settings, out);
+        file->close();
 
-            file->close();
-        }
+        if (d.storage.object)
+            d.storage.d_ptr->save(d.root.settings);
 
         modified = false;
     }
@@ -1105,4 +1093,12 @@ QLoaderTree::Error QLoaderTreePrivate::save()
 void QLoaderTreePrivate::setStorageData(QLoaderStoragePrivate &d_ref)
 {
     d.storage.d_ptr = &d_ref;
+}
+
+QUuid QLoaderTreePrivate::uuid() const
+{
+    if (d.storage.d_ptr)
+        return d.storage.d_ptr->uuid();
+
+    return {};
 }

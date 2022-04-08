@@ -20,16 +20,45 @@
 #include "qloadertree_p.h"
 #include <QFile>
 
+void QLoaderStoragePrivate::saveRecursive(QLoaderSettings */*settings*/, QDataStream &/*out*/)
+{
+
+}
+
 QLoaderStoragePrivate::QLoaderStoragePrivate(QLoaderTreePrivate &d)
 :   d_ptr(&d)
 { }
 
-QByteArray QLoaderStoragePrivate::blob(const QUuid &/*id*/)
+QByteArray QLoaderStoragePrivate::blob(const QUuid &uuid) const
 {
+    d_ptr->file->seek(seek[uuid]);
     return {};
 }
 
-void QLoaderStoragePrivate::saveBlob(const QUuid &/*id*/, const QByteArray &/*ba*/)
+QLoaderTree::Error QLoaderStoragePrivate::save(QLoaderSettings *root)
 {
+    QLoaderTree::Error error;
+    if (!d_ptr->file->open(QIODevice::WriteOnly | QIODevice::Append))
+    {
+        error.status = QLoaderTree::AccessError;
+        error.message = "read-only file";
+        return error;
+    }
 
+    QDataStream out(d_ptr->file);
+    saveRecursive(root, out);
+    d_ptr->file->close();
+
+    return error;
+}
+
+QUuid QLoaderStoragePrivate::uuid() const
+{
+    QUuid uuid = QUuid::createUuid();
+    d_ptr->mutex.lock();
+    while (seek.contains(uuid))
+        uuid = QUuid::createUuid();
+    d_ptr->mutex.unlock();
+
+    return uuid;
 }

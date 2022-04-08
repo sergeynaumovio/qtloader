@@ -51,9 +51,29 @@ QLoaderSettings::~QLoaderSettings()
     }
 }
 
-bool QLoaderSettings::addBlob(const QString &/*key*/)
+bool QLoaderSettings::addBlob(const QString &key)
 {
-    return {};
+    if (Key k = contains(key))
+    {
+        if (k == Value)
+            emitError("key \"" + key + "\" used by value");
+        else
+            emitError("key \"" + key + "\" used by blob");
+
+        return false;
+    }
+
+    QUuid uuid = d_ptr->uuid();
+    if (uuid.isNull())
+    {
+        emitError("storage object not found");
+        return false;
+    }
+    d_ptr->mutex.lock();
+    d_ptr->hash.data[q_ptr].blobs.insert(key, uuid);
+    d_ptr->mutex.unlock();
+
+    return true;
 }
 
 void QLoaderSettings::emitError(const QString &error) const
@@ -117,9 +137,16 @@ QString QLoaderSettings::fromVariant(const QVariant &variant) const
     return d_ptr->fromVariant(variant);
 }
 
-bool QLoaderSettings::removeBlob(const QString &/*key*/)
+bool QLoaderSettings::removeBlob(const QString &key)
 {
-    return {};
+    bool contains{};
+    d_ptr->mutex.lock();
+    contains = d_ptr->hash.data[q_ptr].blobs.contains(key);
+    if (contains)
+        d_ptr->hash.data[q_ptr].blobs.remove(key);
+    d_ptr->mutex.unlock();
+
+    return contains;
 }
 
 QLoaderBlob QLoaderSettings::saveBlob(const QString &/*key*/) const
@@ -134,22 +161,34 @@ bool QLoaderSettings::setValue(const QString &key, const QVariant &value)
     d_ptr->modified = true;
     d_ptr->mutex.unlock();
     emit d_ptr->q_ptr->settingsChanged();
+
     return true;
 }
 
-QLoaderBlob QLoaderSettings::blob(const QString &/*key*/) const
+QLoaderBlob QLoaderSettings::blob(const QString &key) const
 {
-    return {};
+    d_ptr->mutex.lock();
+    QByteArray blob;
+    if (d_ptr->hash.data[q_ptr].blobs.contains(key))
+        blob = d_ptr->blob(d_ptr->hash.data[q_ptr].blobs[key]);
+    d_ptr->mutex.unlock();
+
+    return blob;
 }
 
 QLoaderSettings::Key QLoaderSettings::contains(const QString &key) const
 {
     d_ptr->mutex.lock();
-    bool containsKeyValue = d_ptr->hash.data[q_ptr].properties.contains(key);
+    bool containsValue = d_ptr->hash.data[q_ptr].properties.contains(key);
     d_ptr->mutex.unlock();
-
-    if (containsKeyValue)
+    if (containsValue)
         return QLoaderSettings::Value;
+
+    d_ptr->mutex.lock();
+    bool containsBlob = d_ptr->hash.data[q_ptr].blobs.contains(key);
+    d_ptr->mutex.unlock();
+    if (containsBlob)
+        return QLoaderSettings::Blob;
 
     return QLoaderSettings::No;
 }

@@ -24,6 +24,7 @@
 #include <QMap>
 #include <QHash>
 #include <QMutex>
+#include <QUuid>
 
 class QLoaderSettings;
 class QLoaderTree;
@@ -44,6 +45,7 @@ struct QLoaderSettingsData
     QByteArray className;
     QObject *object{};
     QMap<QString, QString> properties;
+    QMap<QString, QUuid> blobs;
     std::vector<QLoaderSettings*> children;
 
     void clear();
@@ -64,8 +66,7 @@ class QLoaderTreePrivate
     QLoaderTree::Error readSettings();
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
-    void saveRecursiveSettings(QLoaderSettings *settings, QTextStream &out);
-    void saveRecursiveBlobs(QLoaderSettings *settings, QDataStream &out);
+    void saveRecursive(QLoaderSettings *settings, QTextStream &out);
     void setProperties(const QLoaderSettingsData &item, QObject *object);
 
 public:
@@ -89,17 +90,20 @@ public:
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
 
+    QByteArray blob(const QUuid &id);
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
-    QObject *external(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
+    QLoaderTree::Error copyOrMove(const QStringList &section, const QStringList &to, Action action);
     QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
+    QObject *external(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
     QVariant fromString(const QString &value) const;
     QString fromVariant(const QVariant &variant) const;
-    QLoaderTree::Error copyOrMove(const QStringList &section, const QStringList &to, Action action);
     bool isSaving() const;
     QLoaderTree::Error load();
+    bool removeBlob(const QUuid &id);
     QLoaderTree::Error save();
     void setStorageData(QLoaderStoragePrivate &d);
+    QUuid uuid() const;
 };
 
 #endif // QLOADERTREE_P_H
