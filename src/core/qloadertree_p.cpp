@@ -100,7 +100,7 @@ class KeyValueParser
     struct
     {
         const QRegularExpression sectionName{"^\\[(?<section>[^\\[\\]]*)\\]$"};
-        const QRegularExpression keyValue{"^(?<key>[^=]*[\\w]+)\\s*=\\s*(?<value>.+)$"};
+        const QRegularExpression keyValue{"^(?<key>[^=]*[\\w]+)\\s*=\\s*(?<value>.+)"};
         const QRegularExpression className{"^[A-Z]+[a-z,0-9]*"};
 
     } d;
@@ -553,7 +553,7 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
         }
         else if (object == q_ptr)
         {
-            error.message = "class not found";
+            error.message = "class \"" + itemClassName + "\" not found";
         }
         else if (!object->parent())
         {
@@ -623,7 +623,7 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
 QLoaderTree::Error QLoaderTreePrivate::readSettings()
 {
     QLoaderTree::Error error{};
-    if (!file->open(QIODevice::ReadOnly))
+    if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
         error.status = QLoaderTree::AccessError;
         error.message = "read error";
