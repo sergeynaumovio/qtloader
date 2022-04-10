@@ -22,7 +22,11 @@
 QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
-{ }
+{
+    d_ptr->mutex.lock();
+    d_ptr->hash.data[q_ptr].settings = this;
+    d_ptr->mutex.unlock();
+}
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)
 :   q_ptr(this),
@@ -53,24 +57,21 @@ QLoaderSettings::~QLoaderSettings()
 
 bool QLoaderSettings::addBlob(const QString &key)
 {
-    if (Key k = contains(key))
+    if (contains(key))
     {
-        if (k == Value)
-            emitError("key \"" + key + "\" used by value");
-        else
-            emitError("key \"" + key + "\" used by blob");
-
+        emitError("key \"" + key + "\" already set");
         return false;
     }
 
-    QUuid uuid = d_ptr->uuid();
+    QUuid uuid = d_ptr->createStorageUuid();
     if (uuid.isNull())
     {
-        emitError("storage object not found");
+        emitError("storage object not set");
         return false;
     }
     d_ptr->mutex.lock();
-    d_ptr->hash.data[q_ptr].blobs.insert(key, uuid);
+    d_ptr->hash.data[q_ptr].properties.insert(key, {.isBlob = true,
+                                                    .string = "QLoaderBlob(" + uuid.toString(QUuid::WithoutBraces) + ")"});
     d_ptr->mutex.unlock();
 
     return true;
@@ -139,11 +140,11 @@ QString QLoaderSettings::fromVariant(const QVariant &variant) const
 
 bool QLoaderSettings::removeBlob(const QString &key)
 {
-    bool contains{};
     d_ptr->mutex.lock();
-    contains = d_ptr->hash.data[q_ptr].blobs.contains(key);
-    if (contains)
-        d_ptr->hash.data[q_ptr].blobs.remove(key);
+    bool contains = d_ptr->hash.data[q_ptr].properties.contains(key);
+    if (contains && (contains = d_ptr->hash.data[q_ptr].properties[key].isBlob))
+         d_ptr->hash.data[q_ptr].properties.remove(key);
+
     d_ptr->mutex.unlock();
 
     return contains;
@@ -157,20 +158,33 @@ QLoaderBlob QLoaderSettings::saveBlob(const QString &/*key*/) const
 bool QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
     d_ptr->mutex.lock();
-    d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
-    d_ptr->modified = true;
+    if (d_ptr->hash.data[q_ptr].properties.contains(key) &&
+        d_ptr->hash.data[q_ptr].properties[key].isValue)
+    {
+        d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
+        d_ptr->mutex.unlock();
+        emit d_ptr->q_ptr->settingsChanged();
+        return true;
+    }
     d_ptr->mutex.unlock();
-    emit d_ptr->q_ptr->settingsChanged();
 
-    return true;
+    return false;
 }
 
 QLoaderBlob QLoaderSettings::blob(const QString &key) const
 {
     d_ptr->mutex.lock();
     QByteArray blob;
-    if (d_ptr->hash.data[q_ptr].blobs.contains(key))
-        blob = d_ptr->blob(d_ptr->hash.data[q_ptr].blobs[key]);
+    if (d_ptr->hash.data[q_ptr].properties.contains(key))
+    {
+        QLoaderProperty property = d_ptr->hash.data[q_ptr].properties[key];
+        if (property.isBlob)
+        {
+            QUuid uuid(fromString(property).toByteArray());
+            if (!uuid.isNull())
+                blob = d_ptr->blob(uuid);
+        }
+    }
     d_ptr->mutex.unlock();
 
     return blob;
@@ -178,19 +192,14 @@ QLoaderBlob QLoaderSettings::blob(const QString &key) const
 
 QLoaderSettings::Key QLoaderSettings::contains(const QString &key) const
 {
-    d_ptr->mutex.lock();
-    bool containsValue = d_ptr->hash.data[q_ptr].properties.contains(key);
-    d_ptr->mutex.unlock();
-    if (containsValue)
-        return QLoaderSettings::Value;
+    QMutexLocker locker(&d_ptr->mutex);
+    if (!d_ptr->hash.data[q_ptr].properties.contains(key))
+        return QLoaderSettings::No;
 
-    d_ptr->mutex.lock();
-    bool containsBlob = d_ptr->hash.data[q_ptr].blobs.contains(key);
-    d_ptr->mutex.unlock();
-    if (containsBlob)
+    if (d_ptr->hash.data[q_ptr].properties[key].isBlob)
         return QLoaderSettings::Blob;
 
-    return QLoaderSettings::No;
+    return QLoaderSettings::Value;
 }
 
 QByteArray QLoaderSettings::className() const
@@ -227,7 +236,7 @@ QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue
 {
     d_ptr->mutex.lock();
     QVariant variant = defaultValue;
-    const QMap<QString, QString> &properties = d_ptr->hash.data[q_ptr].properties;
+    const QMap<QString, QLoaderProperty> &properties = d_ptr->hash.data[q_ptr].properties;
     if (properties.contains(key))
         variant = fromString(properties[key]);
     d_ptr->mutex.unlock();

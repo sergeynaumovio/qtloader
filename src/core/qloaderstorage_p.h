@@ -20,25 +20,24 @@
 #define QLOADERSTORAGE_P_H
 
 #include "qloadertree.h"
-#include <QHash>
-#include <QUuid>
 
 class QLoaderTreePrivate;
 class QLoaderSettings;
 class QDataStream;
+class QFile;
 
 class QLoaderStoragePrivate
 {
     QLoaderTreePrivate *const d_ptr;
-    QHash<QUuid, qint64> seek;
+    QFile *ofile;
 
     void saveRecursive(QLoaderSettings *settings, QDataStream &out);
 
 public:
     QLoaderStoragePrivate(QLoaderTreePrivate &d);
     QByteArray blob(const QUuid &uuid) const;
-    QLoaderTree::Error save(QLoaderSettings *root);
-    QUuid uuid() const;
+    QLoaderTree::Error save(QFile *ofile, QLoaderSettings *root);
+    QUuid createUuid() const;
 };
 
 #endif // QLOADERSTORAGE_P_H

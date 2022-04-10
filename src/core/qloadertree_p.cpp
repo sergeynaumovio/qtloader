@@ -100,8 +100,9 @@ class KeyValueParser
     struct
     {
         const QRegularExpression sectionName{"^\\[(?<section>[^\\[\\]]*)\\]$"};
-        const QRegularExpression keyValue{"^(?<key>[^=]*[\\w]+)\\s*=\\s*(?<value>.+)"};
+        const QRegularExpression keyValue{"^(?<key>[^=]*[^\\s])\\s*=\\s*(?<value>.+)"};
         const QRegularExpression className{"^[A-Z]+[a-z,0-9]*"};
+        const QRegularExpression blobUuid{"^QLoaderBlob\\((?<uuid>[0-9a-f\\-]{36})\\)"};
 
     } d;
 
@@ -131,6 +132,18 @@ public:
         return false;
     }
 
+    bool matchBlobUuid(const QString &value, QString &uuid) const
+    {
+        QRegularExpressionMatch match;
+        if ((match = d.blobUuid.match(value)).hasMatch())
+        {
+            uuid = match.captured("uuid");
+            return true;
+        }
+
+        return false;
+    }
+
     bool matchClassName(const char *name, QString &libraryName) const
     {
         QRegularExpressionMatch match;
@@ -148,6 +161,7 @@ class StringVariantConverter
 {
     struct
     {
+        const QRegularExpression blob{"^QLoaderBlob\\s*\\(\\s*(?<bytearray>.*)\\)"};
         const QRegularExpression bytearray{"^QByteArray\\s*\\(\\s*(?<bytearray>.*)\\)"};
         const QRegularExpression chr{"^QChar\\s*\\(\\s*(?<char>.{1})\\s*\\)"};
         const QRegularExpression charlist{"^QCharList\\s*\\(\\s*(?<list>.*)\\)"};
@@ -160,6 +174,9 @@ public:
     QVariant fromString(const QString &value) const
     {
         QRegularExpressionMatch match;
+        if ((match = d.blob.match(value)).hasMatch())
+            return QVariant::fromValue(match.captured("bytearray").toLocal8Bit());
+
         if ((match = d.bytearray.match(value)).hasMatch())
             return QVariant::fromValue(QByteArray::fromBase64(match.captured("bytearray").toLocal8Bit()));
 
@@ -279,6 +296,7 @@ public:
     SettingsObject root;
     SettingsObject data;
     StorageSettingsObject storage;
+    QSet<QUuid> blobs;
 
     KeyValueParser parser;
     StringVariantConverter converter;
@@ -503,11 +521,11 @@ void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
     qDebug().noquote().nospace() << '[' << hash.data[settings].section.join('/') << ']';
     qDebug().noquote() << "class =" << hash.data[settings].className;
 
-    QMapIterator<QString, QString> i(hash.data[settings].properties);
+    QMapIterator<QString, QLoaderProperty> i(hash.data[settings].properties);
     while (i.hasNext())
     {
         i.next();
-        qDebug().noquote() << i.key() << '=' << i.value();
+        qDebug().noquote() << i.key() << '=' << i.value().string;
     }
 
     qDebug() << "";
@@ -526,7 +544,7 @@ void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
 
 QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
 {
-    QLoaderTree::Error error{};
+    QLoaderTree::Error error;
 
     mutex.lock();
     QByteArray itemClassName = hash.data[settings].className;
@@ -625,9 +643,58 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
     return error;
 }
 
+QLoaderTree::Error QLoaderTreePrivate::seekBlobs()
+{
+    QLoaderTree::Error error{.line = hash.data[d.storage.settings].sectionLine,
+                             .status = QLoaderTree::FormatError};
+    QDataStream in(file);
+    QUuid currentUuid;
+
+    auto errorMessage = [&error](const QUuid uuid)
+    {
+        error.message =  "blob uuid " + uuid.toString() + " not valid";
+        return error;
+    };
+
+    while (!file->atEnd())
+    {
+        QByteArray text = file->readLine(37);
+        QUuid uuid(text);
+
+        if (!uuid.isNull())
+            currentUuid = uuid;
+
+        text = file->readLine(16);
+        if (text != " = QLoaderBlob(")
+            return errorMessage(currentUuid);
+
+        qint64 pos = file->pos();
+        hash.blobs.insert(uuid, pos);
+        qint64 size;
+        in >> size;
+
+        pos = file->pos() + size;
+        if (pos > file->size())
+            return errorMessage(currentUuid);
+
+        if (!file->seek(file->pos() + size))
+            return errorMessage(currentUuid);
+    }
+
+    file->close();
+    if (!file->open(QIODevice::ReadOnly))
+    {
+        error.status = QLoaderTree::AccessError;
+        error.message = "read error";
+        return error;
+    }
+
+    return {};
+}
+
 QLoaderTree::Error QLoaderTreePrivate::readSettings()
 {
-    QLoaderTree::Error error{};
+    QLoaderTree::Error error;
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
         error.status = QLoaderTree::AccessError;
@@ -642,7 +709,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
 
     while (!file->atEnd())
     {
-        QByteArray line = file->readLine();
+        QString line = file->readLine();
         ++currentLine;
 
         if (currentLine == 1 && line.startsWith("#!"))
@@ -798,14 +865,46 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                     }
                 }
             }
-            else
+            else if (!item.properties.contains(key))
             {
                 item.properties[key] = value;
+
+                if (d.parser.matchBlobUuid(value, value))
+                {
+                    QUuid uuid(value);
+                    if (uuid.isNull())
+                    {
+                        error.line = item.sectionLine;
+                        error.status = QLoaderTree::FormatError;
+                        error.message = "blob uuid \"" + value + "\" not valid";
+                        break;
+                    }
+
+                    if (d.blobs.contains(uuid))
+                    {
+                        error.status = QLoaderTree::DesignError;
+                        error.message = "blob uuid\"" + uuid.toString() + "\" already set";
+                    }
+
+                    d.blobs.insert(uuid);
+                    item.properties[key].isBlob = true;
+                }
+                else
+                    item.properties[key].isValue = true;
+            }
+            else
+            {
+                error.status = QLoaderTree::DesignError;
+                error.message = "key \"" + key + "\" already set";
+                break;
             }
         }
     }
 
     hash.data[settings] = item;
+
+    if (d.storage.settings)
+        return seekBlobs();
 
     return error;
 }
@@ -1033,11 +1132,11 @@ void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &
     out << "\n[" << item.section.join('/') << "]\n" ;
     out << "class = " << item.className << '\n';
 
-    QMapIterator<QString, QString> i(item.properties);
+    QMapIterator<QString, QLoaderProperty> i(item.properties);
     while (i.hasNext())
     {
         i.next();
-        out << i.key() << " = " << i.value() << '\n';
+        out << i.key() << " = " << i.value().string << '\n';
     }
 
     QLoaderSaveInterface *resources = qobject_cast<QLoaderSaveInterface*>(item.object);
@@ -1056,28 +1155,40 @@ void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &o
 
 QLoaderTree::Error QLoaderTreePrivate::save()
 {
-    QLoaderTree::Error error;
+    QLoaderTree::Error error{.status = QLoaderTree::AccessError, .message = "read-only file"};
     if (loaded)
     {
         Saving saving(&d.saving);
 
-        if (file->isOpen())
-            file->close();
+        QFileDevice::Permissions permissions = file->permissions();
 
-        if (!file->open(QIODevice::WriteOnly | QIODevice::Text))
-        {
-            error.status = QLoaderTree::AccessError;
-            error.message = "read-only file";
+        QString fileName = file->fileName();
+        QString bakFileName = fileName + ".bak";
+
+        QFile ofile(bakFileName);
+
+        if (!ofile.open(QIODevice::WriteOnly | QIODevice::Text))
             return error;
-        }
 
-        QTextStream out(file);
+        QTextStream out(&ofile);
         if (d.execLine.size()) out << d.execLine;
         saveRecursive(d.root.settings, out);
-        file->close();
+        ofile.close();
 
         if (d.storage.object)
-            d.storage.d_ptr->save(d.root.settings);
+            if (QLoaderTree::Error e = d.storage.d_ptr->save(&ofile, d.root.settings))
+                return e;
+
+        file->close();
+        if (!file->remove())
+            return error;
+
+        ofile.rename(fileName);
+
+        if (!file->open(QIODevice::ReadOnly))
+            return error;
+
+        file->setPermissions(permissions);
 
         modified = false;
     }
@@ -1095,10 +1206,10 @@ void QLoaderTreePrivate::setStorageData(QLoaderStoragePrivate &d_ref)
     d.storage.d_ptr = &d_ref;
 }
 
-QUuid QLoaderTreePrivate::uuid() const
+QUuid QLoaderTreePrivate::createStorageUuid() const
 {
     if (d.storage.d_ptr)
-        return d.storage.d_ptr->uuid();
+        return d.storage.d_ptr->createUuid();
 
     return {};
 }

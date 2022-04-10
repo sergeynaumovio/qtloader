@@ -42,7 +42,6 @@ protected:
     virtual QVariant fromString(const QString &value) const;
     virtual QString fromVariant(const QVariant &variant) const;
     bool removeBlob(const QString &key);
-    virtual QLoaderBlob saveBlob(const QString &key) const;
     bool setValue(const QString &key, const QVariant &value);
 
 public:
@@ -60,6 +59,7 @@ public:
     QByteArray className() const;
     QLoaderSettings::Key contains(const QString &key) const;
     void dumpSettingsTree() const;
+    virtual QLoaderBlob saveBlob(const QString &key) const;
     QStringList section() const;
     QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;

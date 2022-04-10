@@ -18,11 +18,56 @@
 
 #include "qloaderstorage_p.h"
 #include "qloadertree_p.h"
+#include "qloadersettings.h"
 #include <QFile>
 
-void QLoaderStoragePrivate::saveRecursive(QLoaderSettings */*settings*/, QDataStream &/*out*/)
+void QLoaderStoragePrivate::saveRecursive(QLoaderSettings *settings, QDataStream &out)
 {
+    const QLoaderSettingsData &item = d_ptr->hash.data[settings];
+    QMapIterator<QString, QLoaderProperty> i(item.properties);
+    while (i.hasNext())
+    {
+        i.next();
 
+        QLoaderProperty property = i.value();
+        if (property.isValue)
+            continue;
+
+        QUuid uuid(d_ptr->fromString(property).toByteArray());
+        if (uuid.isNull())
+            continue;
+
+        QByteArray text = uuid.toByteArray(QUuid::WithoutBraces) + " = QLoaderBlob(";
+        out.writeRawData(text.data(), text.size());
+
+        struct
+        {
+            qint64 start;
+            qint64 end;
+
+        } pos;
+
+        pos.start = ofile->pos();
+        QByteArray data = item.settings->saveBlob(i.key());
+        if (data.isNull())
+            data = blob(uuid);
+
+        d_ptr->hash.blobs[uuid] = pos.start;
+
+        out << qint64(/*pos.next*/) << QByteArray(/*header*/) << data;
+
+        text = ")\n";
+        out.writeRawData(text.data(), text.size());
+
+        pos.end = ofile->pos();
+        ofile->seek(pos.start);
+        qint64 next = pos.end - pos.start - sizeof(qint64);
+        out << next;
+        ofile->seek(pos.end);
+    }
+
+    for (QLoaderSettings *child : item.children)
+        saveRecursive(child, out);
 }
 
 QLoaderStoragePrivate::QLoaderStoragePrivate(QLoaderTreePrivate &d)
@@ -31,33 +76,48 @@ QLoaderStoragePrivate::QLoaderStoragePrivate(QLoaderTreePrivate &d)
 
 QByteArray QLoaderStoragePrivate::blob(const QUuid &uuid) const
 {
-    d_ptr->file->seek(seek[uuid]);
+    if (d_ptr->hash.blobs.contains(uuid))
+    {
+        struct
+        {
+            qint64 start;
+            qint64 next;
+
+        } pos;
+
+        pos.start = d_ptr->hash.blobs[uuid];
+        d_ptr->file->seek(pos.start);
+        QDataStream in(d_ptr->file);
+        QByteArray header;
+        QByteArray data;
+        in >> pos.next >> header >> data;
+        return data;
+    }
+
     return {};
 }
 
-QLoaderTree::Error QLoaderStoragePrivate::save(QLoaderSettings *root)
+QLoaderTree::Error QLoaderStoragePrivate::save(QFile *outfile, QLoaderSettings *root)
 {
-    QLoaderTree::Error error;
-    if (!d_ptr->file->open(QIODevice::WriteOnly | QIODevice::Append))
-    {
-        error.status = QLoaderTree::AccessError;
-        error.message = "read-only file";
+    ofile = outfile;
+    QLoaderTree::Error error{.status = QLoaderTree::AccessError, .message = "read-only file"};
+    if (!ofile->open(QIODevice::ReadWrite))
         return error;
-    }
 
-    QDataStream out(d_ptr->file);
+    ofile->seek(ofile->size());
+
+    QDataStream out(ofile);
     saveRecursive(root, out);
-    d_ptr->file->close();
+    ofile->close();
 
-    return error;
+    return {};
 }
 
-QUuid QLoaderStoragePrivate::uuid() const
+QUuid QLoaderStoragePrivate::createUuid() const
 {
-    QUuid uuid = QUuid::createUuid();
     d_ptr->mutex.lock();
-    while (seek.contains(uuid))
-        uuid = QUuid::createUuid();
+    QUuid uuid;
+    do { uuid = QUuid::createUuid(); } while (d_ptr->hash.blobs.contains(uuid));
     d_ptr->mutex.unlock();
 
     return uuid;

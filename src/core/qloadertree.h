@@ -51,7 +51,7 @@ public:
     {
         int line{};
         Status status{};
-        QString message;
+        QString message{};
         operator bool() const { return status; }
     };
 

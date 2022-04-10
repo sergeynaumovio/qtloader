@@ -37,6 +37,15 @@ class QLoaderStoragePrivate;
 
 enum class Action { Copy, Move };
 
+struct QLoaderProperty
+{
+    bool isBlob{};
+    bool isValue{};
+    QString string;
+    void operator =(const QString &s) { string = s; }
+    operator const QString &() { return string; }
+};
+
 struct QLoaderSettingsData
 {
     QLoaderSettings *parent{};
@@ -44,8 +53,8 @@ struct QLoaderSettingsData
     int sectionLine{};
     QByteArray className;
     QObject *object{};
-    QMap<QString, QString> properties;
-    QMap<QString, QUuid> blobs;
+    QLoaderSettings *settings{};
+    QMap<QString, QLoaderProperty> properties;
     std::vector<QLoaderSettings*> children;
 
     void clear();
@@ -54,7 +63,7 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    std::aligned_storage_t<200, sizeof (ptrdiff_t)> d_storage;
+    std::aligned_storage_t<224, sizeof (ptrdiff_t)> d_storage;
 
     void copyOrMoveRecursive(QLoaderSettings *settings,
                              const QLoaderTreeSection &src,
@@ -63,6 +72,7 @@ class QLoaderTreePrivate
     void dumpRecursive(QLoaderSettings *settings) const;
     QLoaderTree::Error load(const QStringList &section);
     QLoaderTree::Error loadRecursive(QLoaderSettings *settings, QObject *parent);
+    QLoaderTree::Error seekBlobs();
     QLoaderTree::Error readSettings();
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
@@ -84,6 +94,7 @@ public:
     {
         QHash<QStringList, QLoaderSettings*> settings;
         QHash<QLoaderSettings*, QLoaderSettingsData> data;
+        QHash<QUuid, qint64> blobs;
 
     } hash;
 
@@ -103,7 +114,7 @@ public:
     bool removeBlob(const QUuid &id);
     QLoaderTree::Error save();
     void setStorageData(QLoaderStoragePrivate &d);
-    QUuid uuid() const;
+    QUuid createStorageUuid() const;
 };
 
 #endif // QLOADERTREE_P_H
