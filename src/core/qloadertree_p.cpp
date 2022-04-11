@@ -650,7 +650,7 @@ QLoaderTree::Error QLoaderTreePrivate::seekBlobs()
     QDataStream in(file);
     QUuid currentUuid;
 
-    auto errorMessage = [&error](const QUuid uuid)
+    auto errMessage = [&error](const QUuid uuid)
     {
         error.message =  "blob uuid " + uuid.toString() + " not valid";
         return error;
@@ -666,7 +666,7 @@ QLoaderTree::Error QLoaderTreePrivate::seekBlobs()
 
         text = file->readLine(16);
         if (text != " = QLoaderBlob(")
-            return errorMessage(currentUuid);
+            return errMessage(currentUuid);
 
         qint64 pos = file->pos();
         hash.blobs.insert(uuid, pos);
@@ -675,10 +675,10 @@ QLoaderTree::Error QLoaderTreePrivate::seekBlobs()
 
         pos = file->pos() + size;
         if (pos > file->size())
-            return errorMessage(currentUuid);
+            return errMessage(currentUuid);
 
         if (!file->seek(file->pos() + size))
-            return errorMessage(currentUuid);
+            return errMessage(currentUuid);
     }
 
     file->close();
