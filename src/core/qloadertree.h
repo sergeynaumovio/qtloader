@@ -66,6 +66,7 @@ public:
     explicit QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
+    QLoaderTree::Error backup();
     bool contains(const QStringList &section) const;
     QLoaderTree::Error copy(const QStringList &section, const QStringList &to);
     QLoaderData *data() const;

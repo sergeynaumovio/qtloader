@@ -33,6 +33,11 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
+QLoaderTree::Error QLoaderTree::backup()
+{
+    return {};
+}
+
 bool QLoaderTree::contains(const QStringList &section) const
 {
     d_ptr->mutex.lock();
