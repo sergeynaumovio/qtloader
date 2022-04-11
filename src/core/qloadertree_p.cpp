@@ -1176,7 +1176,7 @@ QLoaderTree::Error QLoaderTreePrivate::save()
         }
 
         QFile ofile(bakFileName);
-        if (!ofile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+        if (!ofile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
             return error;
 
         QTextStream out(&ofile);
