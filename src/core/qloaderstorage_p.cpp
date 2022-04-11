@@ -21,6 +21,15 @@
 #include "qloadersettings.h"
 #include <QFile>
 
+using Version = qint32;
+
+struct Position
+{
+    qint64 start{};
+    qint64 end{};
+    qint64 next{};
+};
+
 void QLoaderStoragePrivate::saveRecursive(QLoaderSettings *settings, QDataStream &out)
 {
     const QLoaderSettingsData &item = d_ptr->hash.data[settings];
@@ -40,29 +49,22 @@ void QLoaderStoragePrivate::saveRecursive(QLoaderSettings *settings, QDataStream
         QByteArray text = uuid.toByteArray(QUuid::WithoutBraces) + " = QLoaderBlob(";
         out.writeRawData(text.data(), text.size());
 
-        struct
-        {
-            qint64 start;
-            qint64 end;
-
-        } pos;
-
-        pos.start = ofile->pos();
-        QByteArray data = item.settings->saveBlob(i.key());
-        if (data.isNull())
-            data = blob(uuid);
+        Position pos{.start = ofile->pos()};
+        QLoaderBlob bo = item.settings->saveBlob(i.key());
+        if (bo.array.isNull())
+            bo = blob(uuid);
 
         d_ptr->hash.blobs[uuid] = pos.start;
 
-        out << qint64(/*pos.next*/) << QByteArray(/*header*/) << data;
+        out << pos.next << static_cast<Version>(bo.version) << QByteArray(/*header*/) << bo.array;
 
         text = ")\n";
         out.writeRawData(text.data(), text.size());
 
         pos.end = ofile->pos();
         ofile->seek(pos.start);
-        qint64 next = pos.end - pos.start - sizeof(qint64);
-        out << next;
+        pos.next = pos.end - pos.start - sizeof(qint64);
+        out << pos.next;
         ofile->seek(pos.end);
     }
 
@@ -74,24 +76,20 @@ QLoaderStoragePrivate::QLoaderStoragePrivate(QLoaderTreePrivate &d)
 :   d_ptr(&d)
 { }
 
-QByteArray QLoaderStoragePrivate::blob(const QUuid &uuid) const
+QLoaderBlob QLoaderStoragePrivate::blob(const QUuid &uuid) const
 {
     if (d_ptr->hash.blobs.contains(uuid))
     {
-        struct
-        {
-            qint64 start;
-            qint64 next;
-
-        } pos;
-
-        pos.start = d_ptr->hash.blobs[uuid];
+        Position pos{.start = d_ptr->hash.blobs[uuid]};
         d_ptr->file->seek(pos.start);
         QDataStream in(d_ptr->file);
+        Version version;
+        in >> pos.next >> version;
+        in.setVersion(static_cast<QDataStream::Version>(version));
         QByteArray header;
         QByteArray data;
-        in >> pos.next >> header >> data;
-        return data;
+        in >> header >> data;
+        return {data, static_cast<QDataStream::Version>(version)};
     }
 
     return {};

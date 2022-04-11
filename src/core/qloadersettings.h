@@ -22,10 +22,14 @@
 #include "qtloaderglobal.h"
 #include <QVariant>
 
-using QLoaderBlob = QByteArray;
-
 class QLoaderTreePrivate;
 class QLoaderTree;
+
+struct QLoaderBlob
+{
+    QByteArray array;
+    QDataStream::Version version{QDataStream::Qt_6_0};
+};
 
 class Q_LOADER_EXPORT QLoaderSettings
 {

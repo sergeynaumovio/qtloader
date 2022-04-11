@@ -320,7 +320,7 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
     d.~QLoaderTreePrivateData();
 }
 
-QByteArray QLoaderTreePrivate::blob(const QUuid &uuid)
+QLoaderBlob QLoaderTreePrivate::blob(const QUuid &uuid) const
 {
     return d.storage.d_ptr->blob(uuid);
 }

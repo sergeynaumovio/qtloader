@@ -25,6 +25,7 @@ class QLoaderTreePrivate;
 class QLoaderSettings;
 class QDataStream;
 class QFile;
+class QLoaderBlob;
 
 class QLoaderStoragePrivate
 {
@@ -35,7 +36,7 @@ class QLoaderStoragePrivate
 
 public:
     QLoaderStoragePrivate(QLoaderTreePrivate &d);
-    QByteArray blob(const QUuid &uuid) const;
+    QLoaderBlob blob(const QUuid &uuid) const;
     QLoaderTree::Error save(QFile *ofile, QLoaderSettings *root);
     QUuid createUuid() const;
 };

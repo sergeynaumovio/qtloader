@@ -34,6 +34,7 @@ class QLoaderTreePrivateData;
 class QLoaderTreeSection;
 class QLoaderData;
 class QLoaderStoragePrivate;
+class QLoaderBlob;
 
 enum class Action { Copy, Move };
 
@@ -101,7 +102,7 @@ public:
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
 
-    QByteArray blob(const QUuid &id);
+    QLoaderBlob blob(const QUuid &uuid) const;
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QLoaderTree::Error copyOrMove(const QStringList &section, const QStringList &to, Action action);
     QLoaderData *data() const;
