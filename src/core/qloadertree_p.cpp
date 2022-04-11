@@ -1165,21 +1165,14 @@ QLoaderTree::Error QLoaderTreePrivate::save()
         QString fileName = file->fileName();
         QString bakFileName = fileName + ".bak";
 
-        if (d.execLine.size())
-        {
-            QFile ofile(bakFileName);
-            if (!ofile.open(QIODevice::WriteOnly))
-                return error;
-
-            QDataStream out(&ofile);
-            out.writeRawData(d.execLine.toLocal8Bit().data(), d.execLine.size());
-        }
-
         QFile ofile(bakFileName);
-        if (!ofile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
+        if (!ofile.open(QIODevice::WriteOnly))
             return error;
 
         QTextStream out(&ofile);
+        if (d.execLine.size())
+            out << d.execLine;
+
         saveRecursive(d.root.settings, out);
         ofile.close();
 
