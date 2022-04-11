@@ -25,8 +25,9 @@
 class QLoaderTreePrivate;
 class QLoaderTree;
 
-struct QLoaderBlob
+class QLoaderBlob
 {
+public:
     QByteArray array;
     QDataStream::Version version{QDataStream::Qt_6_0};
 };
