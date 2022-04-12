@@ -49,7 +49,7 @@ bool QLoaderTree::contains(const QStringList &section) const
 
 QLoaderTree::Error QLoaderTree::copy(const QStringList &section, const QStringList &to)
 {
-    return d_ptr->copyOrMove(section, to, Action::Copy);
+    return d_ptr->copy(section, to);
 }
 
 QLoaderData *QLoaderTree::data() const
@@ -77,7 +77,7 @@ QLoaderTree::Error QLoaderTree::load() const
 
 QLoaderTree::Error QLoaderTree::move(const QStringList &section, const QStringList &to)
 {
-    return d_ptr->copyOrMove(section, to, Action::Move);
+    return d_ptr->move(section, to);
 }
 
 QObject *QLoaderTree::object(const QStringList &section) const

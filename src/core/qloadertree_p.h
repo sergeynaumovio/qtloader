@@ -31,12 +31,12 @@ class QLoaderTree;
 class QFile;
 class QTextStream;
 class QLoaderTreePrivateData;
-class QLoaderTreeSection;
+template<typename Interface> class QLoaderTreeSection;
+class QLoaderCopyInterface;
+class QLoaderMoveInterface;
 class QLoaderData;
 class QLoaderStoragePrivate;
 class QLoaderBlob;
-
-enum class Action { Copy, Move };
 
 struct QLoaderProperty
 {
@@ -65,14 +65,15 @@ class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
     std::aligned_storage_t<224, sizeof (ptrdiff_t)> d_storage;
-
-    void copyOrMoveRecursive(QLoaderSettings *settings,
-                             const QLoaderTreeSection &src,
-                             const QLoaderTreeSection &dst,
-                             Action action);
+    void copyRecursive(QLoaderSettings *settings,
+                       const QLoaderTreeSection<QLoaderCopyInterface> &src,
+                       const QLoaderTreeSection<QLoaderCopyInterface> &dst);
     void dumpRecursive(QLoaderSettings *settings) const;
     QLoaderTree::Error load(const QStringList &section);
     QLoaderTree::Error loadRecursive(QLoaderSettings *settings, QObject *parent);
+    void moveRecursive(QLoaderSettings *settings,
+                       const QLoaderTreeSection<QLoaderMoveInterface> &src,
+                       const QLoaderTreeSection<QLoaderMoveInterface> &dst);
     QLoaderTree::Error seekBlobs();
     QLoaderTree::Error readSettings();
     void removeRecursive(QLoaderSettings *settings);
@@ -104,14 +105,16 @@ public:
 
     QLoaderBlob blob(const QUuid &uuid) const;
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
-    QLoaderTree::Error copyOrMove(const QStringList &section, const QStringList &to, Action action);
+    QLoaderTree::Error copy(const QStringList &section, const QStringList &to);
     QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
+    void emitSettingsChanged();
     QObject *external(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
     QVariant fromString(const QString &value) const;
     QString fromVariant(const QVariant &variant) const;
     bool isSaving() const;
     QLoaderTree::Error load();
+    QLoaderTree::Error move(const QStringList &section, const QStringList &to);
     bool removeBlob(const QUuid &id);
     QLoaderTree::Error save();
     void setStorageData(QLoaderStoragePrivate &d);
