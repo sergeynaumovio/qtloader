@@ -22,29 +22,21 @@
 #include <QLoaderTree>
 #include <QMessageBox>
 
-namespace {
-
-QCoreApplication *application(int &argc, char *argv[])
-{
-    for (int i = 1; i < argc; ++i)
-    {
-        if (!qstrcmp(argv[i], "--no-gui"))
-        {
-            return new QCoreApplication(argc, argv);
-        }
-    }
-    return new QApplication(argc, argv);
-}
-
-}
-
 int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QCoreApplication::setApplicationName("Qt Loader");
 
-    QScopedPointer<QCoreApplication> app(application(argc, argv));
+    QScopedPointer<QCoreApplication> app([&]() -> QCoreApplication *
+    {
+        for (int i = 1; i < argc; ++i)
+            if (!qstrcmp(argv[i], "--no-gui"))
+                return new QCoreApplication(argc, argv);
+
+        return new QApplication(argc, argv);
+
+    }());
 
 #ifdef Q_OS_LINUX
     app->addLibraryPath("/usr/lib");
