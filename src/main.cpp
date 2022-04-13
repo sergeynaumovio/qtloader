@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
                 return new QCoreApplication(argc, argv);
 
         return new QApplication(argc, argv);
-
     }());
 
 #ifdef Q_OS_LINUX
