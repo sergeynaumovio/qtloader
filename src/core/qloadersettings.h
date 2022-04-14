@@ -34,6 +34,8 @@ public:
 
 class Q_LOADER_EXPORT QLoaderSettings
 {
+    Q_GADGET
+
     QLoaderSettings *const q_ptr;
     QLoaderTreePrivate *const d_ptr;
 
