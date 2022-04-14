@@ -55,6 +55,8 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadertree_p.h
             src/core/qloadertree_p.cpp
             src/widgets/qloadericoninterface.h
+            src/widgets/qloadershell.h
+            src/widgets/qloadershell.cpp
 )
 
 target_include_directories(${QT_LOADER_LIBRARY}
@@ -82,6 +84,8 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadertree.h
     src/widgets/QLoaderIconInterface
     src/widgets/qloadericoninterface.h
+    src/widgets/QLoaderShell
+    src/widgets/qloadershell.h
 )
 
 set_target_properties(${QT_LOADER_LIBRARY} PROPERTIES
