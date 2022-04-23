@@ -1,0 +1,425 @@
+/****************************************************************************
+**
+** Copyright (C) 2022 Sergey Naumov
+**
+** Permission to use, copy, modify, and/or distribute this
+** software for any purpose with or without fee is hereby granted.
+**
+** THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+** WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+** WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+** THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR
+** CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+** LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+** NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+** CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+**
+****************************************************************************/
+
+#include "qloaderterminal.h"
+#include <QKeyEvent>
+#include <QLayout>
+#include <QMenu>
+#include <QPainter>
+#include <QStack>
+#include <QTextBlock>
+#include <QTextCursor>
+
+static int position(const QTextCursor &textCursor)
+{
+    return textCursor.position() - textCursor.block().position();
+}
+
+class QLoaderTerminalPrivate
+{
+public:
+    QLoaderTerminal *const q_ptr;
+
+    QString path{"[Terminal] "};
+    int blockLength;
+
+    struct
+    {
+        QTextCursor value;
+        int position{-1};
+
+    } cursor;
+
+    struct
+    {
+        QStack<QString> up;
+        QStack<QString> down;
+        bool skip{};
+
+    } history;
+
+    struct
+    {
+        bool onFocus{};
+        bool onLeave{};
+
+    } updateViewport;
+
+    void clearLine()
+    {
+        QTextCursor cursor = q_ptr->textCursor();
+        cursor.select(QTextCursor::LineUnderCursor);
+        cursor.removeSelectedText();
+        q_ptr->insertPlainText(path);
+    }
+
+    void keyDown()
+    {
+        if (history.down.size() && history.skip)
+        {
+            history.up.push(history.down.pop());
+            history.skip = false;
+        }
+
+        if (history.down.size())
+        {
+            QString string = history.down.pop();
+            history.up.push(string);
+
+            clearLine();
+            q_ptr->insertPlainText(string);
+        }
+        else
+            clearLine();
+    }
+
+    void keyHome()
+    {
+        cursor.value = q_ptr->textCursor();
+        cursor.value.movePosition(QTextCursor::StartOfLine);
+        cursor.value.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.length());
+        q_ptr->setTextCursor(cursor.value);
+        cursor.position = cursor.value.position();
+    }
+
+    bool keyLeft()
+    {
+        if (position(q_ptr->textCursor()) > path.size())
+        {
+            cursor.value.movePosition(QTextCursor::Left);
+            --cursor.position;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void keyReturn()
+    {
+        QTextCursor c = q_ptr->textCursor();
+        c.select(QTextCursor::LineUnderCursor);
+
+        QString string = c.selectedText();
+        string.remove(0, path.length());
+
+        if (string.length() > 0)
+        {
+            while (history.down.count() > 0)
+                history.up.push(history.down.pop());
+
+            history.up.push(string);
+        }
+
+        q_ptr->moveCursor(QTextCursor::EndOfLine);
+
+        if(string.length() > 0)
+        {
+            q_ptr->setFocus();
+            q_ptr->insertPlainText("\n");
+
+            [&]() // exec command
+            {
+                q_ptr->insertPlainText(string);
+                q_ptr->insertPlainText("\n");
+                q_ptr->insertPlainText(path);
+            }();
+
+            cursor.value = q_ptr->textCursor();
+            cursor.position = cursor.value.position();
+        }
+        else
+        {
+            q_ptr->insertPlainText("\n");
+            q_ptr->insertPlainText(path);
+        }
+
+        q_ptr->ensureCursorVisible();
+    }
+
+    void keyUp()
+    {
+        if(history.up.count() > 0)
+        {
+            QString string = history.up.pop();
+            history.down.push(string);
+
+            clearLine();
+            q_ptr->insertPlainText(string);
+        }
+
+        history.skip = true;
+    }
+
+    QLoaderTerminalPrivate(QLoaderTerminal *q)
+    :   q_ptr(q)
+    { }
+};
+
+void QLoaderTerminal::contextMenuEvent(QContextMenuEvent *e)
+{
+    QMenu menu;
+    menu.addAction("&Copy")->setShortcut(QKeySequence("Ctrl+Shift+C"));
+    menu.addAction("&Paste")->setShortcut(QKeySequence("Ctrl+Shift+V"));
+    menu.addSeparator();
+    menu.addAction("Select &All")->setShortcut(QKeySequence("Ctrl+Shift+A"));
+    menu.exec(e->globalPos());
+}
+
+void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
+{
+    bool control{};
+    bool shift{};
+
+    if (e->modifiers() & Qt::ControlModifier)
+        control = true;
+
+    if (e->modifiers() & Qt::ShiftModifier)
+        shift = true;
+
+    if (control && shift && e->key() == Qt::Key_C)
+    {
+        copy();
+
+        return;
+    }
+
+    auto setTextEditorInteraction = [&]
+    {
+        QTextCursor cursor = textCursor();
+        cursor.setPosition(d_ptr->cursor.position);
+        setTextCursor(cursor);
+    };
+
+    if (!control && !shift && textInteractionFlags().testFlag(Qt::TextBrowserInteraction))
+    {
+        setTextInteractionFlags(Qt::TextEditorInteraction);
+        setTextEditorInteraction();
+    }
+
+    if (e->key() == Qt::Key_Backspace)
+    {
+        if (d_ptr->keyLeft())
+            QPlainTextEdit::keyPressEvent(e);
+
+        return;
+    }
+
+    if (e->key() == Qt::Key_Down)
+    {
+        if(shift)
+            setTextEditorInteraction();
+
+        d_ptr->keyDown();
+
+        return;
+    }
+
+    if (e->key() == Qt::Key_End)
+    {
+        if (shift)
+        {
+            setTextEditorInteraction();
+
+            QTextCursor cursor = textCursor();
+            cursor.movePosition(QTextCursor::EndOfBlock);
+            d_ptr->cursor.value = cursor;
+            setTextCursor(cursor);
+        }
+        else
+            QPlainTextEdit::keyPressEvent(e);
+
+        d_ptr->cursor.value = textCursor();
+        d_ptr->cursor.position = textCursor().position();
+
+        return;
+    }
+
+    if (e->key() == Qt::Key_Home)
+    {
+        if (shift)
+            setTextEditorInteraction();
+
+        d_ptr->keyHome();
+
+        return;
+    }
+
+    if (e->key() == Qt::Key_Left)
+    {
+        if (shift)
+        {
+            setTextEditorInteraction();
+            d_ptr->keyHome();
+        }
+        else if (d_ptr->keyLeft())
+            QPlainTextEdit::keyPressEvent(e);
+
+        return;
+    }
+
+    if (e->key() == Qt::Key_Return)
+    {
+        d_ptr->keyReturn();
+
+        return;
+    }
+
+    if (e->key() == Qt::Key_Right)
+    {
+        if (shift)
+        {
+            setTextEditorInteraction();
+            QTextCursor cursor = textCursor();
+            cursor.movePosition(QTextCursor::EndOfBlock);
+            d_ptr->cursor.value = cursor;
+            d_ptr->cursor.position = cursor.position();
+            setTextCursor(cursor);
+        }
+        else if (position(textCursor()) < d_ptr->blockLength - 1)
+            ++d_ptr->cursor.position;
+
+        d_ptr->cursor.value.movePosition(QTextCursor::Right);
+
+        return QPlainTextEdit::keyPressEvent(e);
+    }
+
+    if (e->key() == Qt::Key_Up)
+    {
+        if(shift)
+            setTextEditorInteraction();
+
+        d_ptr->keyUp();
+
+        return;
+    }
+
+    QPlainTextEdit::keyPressEvent(e);
+}
+
+void QLoaderTerminal::mousePressEvent(QMouseEvent *e)
+{
+    setTextInteractionFlags(Qt::TextBrowserInteraction);
+    QPlainTextEdit::mousePressEvent(e);
+}
+
+void QLoaderTerminal::paintEvent(QPaintEvent *e)
+{
+    QPlainTextEdit::paintEvent(e);
+    QTextCursor cursor = d_ptr->cursor.value;
+    QString string = cursor.block().text();
+    QRect rect = cursorRect(cursor);
+    rect.setWidth(rect.width() - 1);
+    rect.setHeight(rect.height() - 1);
+    QPainter painter(viewport());
+
+    if (hasFocus())
+    {
+        if (d_ptr->updateViewport.onFocus)
+        {
+            viewport()->update();
+            d_ptr->updateViewport.onFocus = false;
+        }
+
+        painter.fillRect(cursorRect(cursor), Qt::white);
+        painter.setPen(Qt::white);
+
+        if (position(cursor) >= 0 && position(cursor) < string.size())
+        {
+            painter.setPen(Qt::black);
+            QChar chr = cursor.block().text().at(position(cursor));
+            painter.drawText(rect, chr);
+        }
+
+        d_ptr->updateViewport.onLeave = true;
+    }
+    else
+    {
+        if (d_ptr->updateViewport.onLeave)
+        {
+            viewport()->update();
+            d_ptr->updateViewport.onLeave = false;
+        }
+
+        painter.fillRect(cursorRect(cursor), Qt::black);
+        painter.setPen(Qt::white);
+        painter.drawRect(rect);
+
+        QChar chr = ' ';
+        if (position(cursor) >= 0 && position(cursor) < string.size())
+            chr = cursor.block().text().at(position(cursor));
+        painter.drawText(rect, chr);
+
+        d_ptr->updateViewport.onFocus = true;
+    }
+}
+
+QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
+:   QPlainTextEdit(parent),
+    QLoaderSettings(settings),
+    d_ptr(new QLoaderTerminalPrivate(this))
+{
+    QPalette p = palette();
+    p.setColor(QPalette::Active, QPalette::Base, Qt::black);
+    p.setColor(QPalette::Inactive, QPalette::Base, Qt::black);
+    p.setColor(QPalette::Active, QPalette::Text, Qt::white);
+    p.setColor(QPalette::Inactive, QPalette::Text, Qt::white);
+    p.setColor(QPalette::Highlight, QColor(Qt::white));
+    p.setColor(QPalette::HighlightedText, QColor(Qt::black));
+    setPalette(p);
+
+    QFont f;
+#ifdef Q_OS_LINUX
+    f.setFamily("Monospace");
+#else
+    f.setFamily("Lucida Console");
+#endif
+    f.setPointSize(11);
+    f.setFixedPitch(true);
+    setFont(f);
+
+    setCursorWidth(QFontMetrics(font()).boundingRect(QChar('o')).width());
+    setFrameStyle(QFrame::NoFrame);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setTextInteractionFlags(Qt::TextEditorInteraction);
+    setUndoRedoEnabled(false);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setWordWrapMode(QTextOption::WrapAnywhere);
+
+    insertPlainText(d_ptr->path);
+
+    connect(this, &QPlainTextEdit::textChanged, [this]
+    {
+        QTextCursor cursor = textCursor();
+        d_ptr->cursor.value = cursor;
+        d_ptr->cursor.position = cursor.position();
+        d_ptr->blockLength = cursor.block().length();
+    });
+
+    emit textChanged();
+
+    if (parent)
+        parent->layout()->addWidget(this);
+    else
+         show();
+
+    setFocus();
+}
+
+QLoaderTerminal::~QLoaderTerminal()
+{ }
