@@ -28,7 +28,8 @@ class Q_LOADER_EXPORT QLoaderTerminal : public QPlainTextEdit, public QLoaderSet
 {
     Q_OBJECT
 
-    QScopedPointer<QLoaderTerminalPrivate> d_ptr;
+    friend class QLoaderTerminalPrivate;
+    const QScopedPointer<QLoaderTerminalPrivate> d_ptr;
 
 protected:
     void contextMenuEvent(QContextMenuEvent *e) override;

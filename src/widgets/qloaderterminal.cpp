@@ -17,6 +17,7 @@
 ****************************************************************************/
 
 #include "qloaderterminal.h"
+#include "qloadertree.h"
 #include <QKeyEvent>
 #include <QLayout>
 #include <QMenu>
@@ -166,9 +167,22 @@ public:
         history.skip = true;
     }
 
+    void setPath(const QStringList &section)
+    {
+        if (!q_ptr->tree()->contains(section))
+        {
+            q_ptr->emitError("section \"" + section.join('/') + "\" not found");
+            return;
+        }
+
+        path = "[" + section.join('/') + "] ";
+    }
+
     QLoaderTerminalPrivate(QLoaderTerminal *q)
     :   q_ptr(q)
-    { }
+    {
+        setPath(q->value("home", q->section()).toStringList());
+    }
 };
 
 void QLoaderTerminal::contextMenuEvent(QContextMenuEvent *e)

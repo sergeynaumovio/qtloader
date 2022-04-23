@@ -2,7 +2,7 @@
 
 [Terminal]
 class = QLoaderTerminal
-home = 
+home = QStringList(Terminal, Shell)
 
 [Terminal/Shell]
 class = QLoaderShell
