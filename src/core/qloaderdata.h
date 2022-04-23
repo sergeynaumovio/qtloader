@@ -19,7 +19,6 @@
 #ifndef QLOADERDATA_H
 #define QLOADERDATA_H
 
-#include "qtloaderglobal.h"
 #include "qloadersettings.h"
 
 class QLoaderDataPrivate;

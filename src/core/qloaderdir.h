@@ -19,7 +19,6 @@
 #ifndef QLOADERDIR_H
 #define QLOADERDIR_H
 
-#include "qtloaderglobal.h"
 #include "qloadersettings.h"
 #include "qloadericoninterface.h"
 
