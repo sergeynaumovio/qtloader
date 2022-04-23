@@ -62,9 +62,9 @@ public:
 
     void clearLine()
     {
-        QTextCursor cursor = q_ptr->textCursor();
-        cursor.select(QTextCursor::LineUnderCursor);
-        cursor.removeSelectedText();
+        QTextCursor c = q_ptr->textCursor();
+        c.select(QTextCursor::LineUnderCursor);
+        c.removeSelectedText();
         q_ptr->insertPlainText(path);
     }
 
@@ -386,10 +386,11 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
     QFont f;
 #ifdef Q_OS_LINUX
     f.setFamily("Monospace");
+    f.setPointSize(11);
 #else
     f.setFamily("Lucida Console");
+    f.setPointSize(10);
 #endif
-    f.setPointSize(11);
     f.setFixedPitch(true);
     setFont(f);
 
