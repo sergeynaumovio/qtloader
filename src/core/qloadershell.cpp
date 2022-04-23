@@ -17,6 +17,7 @@
 ****************************************************************************/
 
 #include "qloadershell.h"
+#include "qloadercommandinterface.h"
 
 class QLoaderShellPrivate
 {

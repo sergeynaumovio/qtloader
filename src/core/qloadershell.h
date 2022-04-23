@@ -20,9 +20,9 @@
 #define QLOADERSHELL_H
 
 #include "qloadersettings.h"
-#include "qloadercommandinterface.h"
 
 class QLoaderShellPrivate;
+class QLoaderCommandInterface;
 
 class Q_LOADER_EXPORT QLoaderShell : public QObject, public QLoaderSettings
 {
