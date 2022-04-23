@@ -25,8 +25,10 @@
 #include "qloadersaveinterface.h"
 #include "qloaderdata.h"
 #include "qloaderdir.h"
+#include "qloadershell.h"
 #include "qloaderstorage.h"
 #include "qloaderstorage_p.h"
+#include "qloaderterminal.h"
 #include <QRegularExpression>
 #include <QFile>
 #include <QPluginLoader>
@@ -393,6 +395,7 @@ class QLoaderTreePrivateData
 public:
     SettingsObject root;
     SettingsObject data;
+    SettingsObject shell;
     StorageSettingsObject storage;
     QSet<QUuid> blobs;
 
@@ -450,6 +453,15 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         return parent;
     }
 
+    if (!qstrcmp(shortName, "Shell"))
+    {
+        if (!d.shell.object)
+            return d.shell.object = new QLoaderShell(settings, parent);
+
+        d.shell.object->setParent(parent);
+        return nullptr;
+     }
+
     if (!qstrcmp(shortName, "Storage"))
     {
         if (!d.storage.object)
@@ -458,6 +470,19 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         d.storage.object->setParent(parent);
         return nullptr;
      }
+
+    if (!qstrcmp(shortName, "Terminal"))
+    {
+        bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
+        if (coreApp)
+            return nullptr;
+
+        QWidget *widget = qobject_cast<QWidget*>(parent);
+        if (!parent || (parent && widget))
+            return new QLoaderTerminal(settings, widget);
+
+        return parent;
+    }
 
     return q_ptr;
 }
@@ -502,6 +527,14 @@ QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,
 
     mutex.unlock();
     return nullptr;
+}
+
+QUuid QLoaderTreePrivate::createStorageUuid() const
+{
+    if (d.storage.d_ptr)
+        return d.storage.d_ptr->createUuid();
+
+    return {};
 }
 
 QLoaderData *QLoaderTreePrivate::data() const
@@ -959,9 +992,12 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                 }
 
                 bool isData{};
+                bool isShell{};
                 bool isStorage{};
                 const char *shortName = item.className.data() + qstrlen("QLoader");
-                if ((isData = !qstrcmp(shortName, "Data")) || (isStorage = !qstrcmp(shortName, "Storage")))
+                if ((isData = !qstrcmp(shortName, "Data")) ||
+                    (isShell = !qstrcmp(shortName, "Shell")) ||
+                    (isStorage = !qstrcmp(shortName, "Storage")))
                 {
                     if (item.section.size() > 2)
                     {
@@ -971,17 +1007,24 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                         break;
                     }
 
-                    if ((isData && d.data.settings) || (isStorage && d.storage.settings))
+                    if ((isData && d.data.settings) ||
+                        (isShell && d.shell.settings) ||
+                        (isStorage && d.storage.settings))
                     {
                         error.line = item.sectionLine;
                         error.status = QLoaderTree::DesignError;
-                        error.message = isData ? "data object already set" : "storage object already set";
+                        error.message = (isData ? "data" :
+                                         isShell ? "shell" :
+                                         isStorage ? "storage" : "");
+                        error.message += " object already set";
                         break;
                     }
 
                     if (isData)
                         d.data.settings = settings;
-                    else
+                    else if (isShell)
+                        d.shell.settings = settings;
+                    else if (isStorage)
                     {
                         d.storage.settings = settings;
                         break;
@@ -1051,6 +1094,9 @@ QLoaderTree::Error QLoaderTreePrivate::load()
         if (d.storage.settings && (error = loadRecursive(d.storage.settings, q_ptr)))
             break;
 
+        if (d.shell.settings && (error = loadRecursive(d.shell.settings, q_ptr)))
+            break;
+
         if (d.data.settings && (error = loadRecursive(d.data.settings, q_ptr)))
             break;
 
@@ -1067,6 +1113,7 @@ QLoaderTree::Error QLoaderTreePrivate::load()
     {
         file->close();
         if (d.storage.object) delete d.storage.object;
+        if (d.shell.object) delete d.shell.object;
         if (d.data.object) delete d.data.object;
         if (d.root.object) delete d.root.object;
     }
@@ -1267,10 +1314,7 @@ void QLoaderTreePrivate::setStorageData(QLoaderStoragePrivate &d_ref)
     d.storage.d_ptr = &d_ref;
 }
 
-QUuid QLoaderTreePrivate::createStorageUuid() const
+QLoaderShell *QLoaderTreePrivate::shell() const
 {
-    if (d.storage.d_ptr)
-        return d.storage.d_ptr->createUuid();
-
-    return {};
+    return static_cast<QLoaderShell*>(d.shell.object);
 }

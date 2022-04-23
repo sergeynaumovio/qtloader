@@ -24,6 +24,7 @@
 
 class QLoaderTreePrivate;
 class QLoaderData;
+class QLoaderShell;
 
 class Q_LOADER_EXPORT QLoaderTree : public QObject
 {
@@ -76,6 +77,7 @@ public:
     QLoaderTree::Error move(const QStringList &section, const QStringList &to);
     QObject *object(const QStringList &section) const;
     QLoaderTree::Error save() const;
+    QLoaderShell *shell() const;
 };
 
 #endif // QLOADERTREE_H

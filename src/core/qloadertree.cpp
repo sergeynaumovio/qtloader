@@ -108,3 +108,8 @@ QLoaderTree::Error QLoaderTree::save() const
 
     return error;
 }
+
+QLoaderShell *QLoaderTree::shell() const
+{
+    return d_ptr->shell();
+}

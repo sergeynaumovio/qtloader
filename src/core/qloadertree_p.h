@@ -64,7 +64,7 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    std::aligned_storage_t<224, sizeof (ptrdiff_t)> d_storage;
+    std::aligned_storage_t<240, sizeof (ptrdiff_t)> d_storage;
     void copyRecursive(QLoaderSettings *settings,
                        const QLoaderTreeSection<QLoaderCopyInterface> &src,
                        const QLoaderTreeSection<QLoaderCopyInterface> &dst);
@@ -106,6 +106,7 @@ public:
     QLoaderBlob blob(const QUuid &uuid) const;
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QLoaderTree::Error copy(const QStringList &section, const QStringList &to);
+    QUuid createStorageUuid() const;
     QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
     void emitSettingsChanged();
@@ -118,7 +119,7 @@ public:
     bool removeBlob(const QUuid &id);
     QLoaderTree::Error save();
     void setStorageData(QLoaderStoragePrivate &d);
-    QUuid createStorageUuid() const;
+    QLoaderShell *shell() const;
 };
 
 #endif // QLOADERTREE_P_H

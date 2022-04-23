@@ -18,7 +18,25 @@
 
 #include "qloadershell.h"
 
-QLoaderShell::QLoaderShell(QLoaderSettings *settings, QWidget *parent)
-:   QWidget(parent),
+class QLoaderShellPrivate
+{
+
+};
+
+QLoaderShell::QLoaderShell(QLoaderSettings *settings, QObject *parent)
+:   QObject(parent),
     QLoaderSettings(settings)
 { }
+
+QLoaderShell::~QLoaderShell()
+{ }
+
+void QLoaderShell::addCommand(QLoaderCommandInterface */*commnad*/)
+{
+
+}
+
+int QLoaderShell::exec(const QString &/*command*/, const QStringList &/*arguments*/)
+{
+    return 0;
+}
