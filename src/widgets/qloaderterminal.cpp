@@ -273,7 +273,7 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
         return;
     }
 
-    if (e->key() == Qt::Key_Return)
+    if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)
     {
         d_ptr->keyReturn();
 
