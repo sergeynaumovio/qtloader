@@ -1,0 +1,9 @@
+#!/usr/bin/qtloader6
+
+[Terminal]
+class = QLoaderTerminal
+home = 
+
+[Terminal/Shell]
+class = QLoaderShell
+
