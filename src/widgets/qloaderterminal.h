@@ -38,7 +38,7 @@ protected:
     void paintEvent(QPaintEvent *e) override;
 
 public:
-    QLoaderTerminal(QLoaderSettings *settings, QWidget *parent);
+    Q_INVOKABLE QLoaderTerminal(QLoaderSettings *settings, QWidget *parent);
     ~QLoaderTerminal();
 };
 
