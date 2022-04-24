@@ -37,14 +37,7 @@ public:
     QLoaderTerminal *const q_ptr;
 
     QString path{"[Terminal] "};
-    int blockLength;
-
-    struct
-    {
-        QTextCursor value;
-        int position{-1};
-
-    } cursor;
+    QTextCursor cursor;
 
     struct
     {
@@ -91,19 +84,17 @@ public:
 
     void keyHome()
     {
-        cursor.value = q_ptr->textCursor();
-        cursor.value.movePosition(QTextCursor::StartOfLine);
-        cursor.value.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.length());
-        q_ptr->setTextCursor(cursor.value);
-        cursor.position = cursor.value.position();
+        cursor = q_ptr->textCursor();
+        cursor.movePosition(QTextCursor::StartOfLine);
+        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.length());
+        q_ptr->setTextCursor(cursor);
     }
 
     bool keyLeft()
     {
         if (position(q_ptr->textCursor()) > path.size())
         {
-            cursor.value.movePosition(QTextCursor::Left);
-            --cursor.position;
+            cursor.movePosition(QTextCursor::Left);
 
             return true;
         }
@@ -129,7 +120,7 @@ public:
 
         q_ptr->moveCursor(QTextCursor::EndOfLine);
 
-        if(string.length() > 0)
+        if (string.length() > 0)
         {
             q_ptr->setFocus();
             q_ptr->insertPlainText("\n");
@@ -141,8 +132,7 @@ public:
                 q_ptr->insertPlainText(path);
             }();
 
-            cursor.value = q_ptr->textCursor();
-            cursor.position = cursor.value.position();
+            cursor = q_ptr->textCursor();
         }
         else
         {
@@ -155,7 +145,7 @@ public:
 
     void keyUp()
     {
-        if(history.up.count() > 0)
+        if (history.up.count() > 0)
         {
             QString string = history.up.pop();
             history.down.push(string);
@@ -198,13 +188,19 @@ void QLoaderTerminal::contextMenuEvent(QContextMenuEvent *e)
 void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
 {
     bool control{};
+    bool alt{};
     bool shift{};
 
     if (e->modifiers() & Qt::ControlModifier)
         control = true;
 
+    if (e->modifiers() & Qt::AltModifier)
+        alt = true;
+
     if (e->modifiers() & Qt::ShiftModifier)
         shift = true;
+
+    bool modifier = control || alt || shift;
 
     if (control && shift && e->key() == Qt::Key_C)
     {
@@ -216,11 +212,11 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
     auto setTextEditorInteraction = [&]
     {
         QTextCursor cursor = textCursor();
-        cursor.setPosition(d_ptr->cursor.position);
+        cursor.setPosition(d_ptr->cursor.position());
         setTextCursor(cursor);
     };
 
-    if (!control && !shift && textInteractionFlags().testFlag(Qt::TextBrowserInteraction))
+    if (!modifier && textInteractionFlags().testFlag(Qt::TextBrowserInteraction))
     {
         setTextInteractionFlags(Qt::TextEditorInteraction);
         setTextEditorInteraction();
@@ -236,7 +232,7 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
 
     if (e->key() == Qt::Key_Down)
     {
-        if(shift)
+        if (modifier)
             setTextEditorInteraction();
 
         d_ptr->keyDown();
@@ -246,27 +242,26 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
 
     if (e->key() == Qt::Key_End)
     {
-        if (shift)
+        if (modifier)
         {
             setTextEditorInteraction();
 
             QTextCursor cursor = textCursor();
             cursor.movePosition(QTextCursor::EndOfBlock);
-            d_ptr->cursor.value = cursor;
+            d_ptr->cursor = cursor;
             setTextCursor(cursor);
         }
         else
             QPlainTextEdit::keyPressEvent(e);
 
-        d_ptr->cursor.value = textCursor();
-        d_ptr->cursor.position = textCursor().position();
+        d_ptr->cursor = textCursor();
 
         return;
     }
 
     if (e->key() == Qt::Key_Home)
     {
-        if (shift)
+        if (modifier)
             setTextEditorInteraction();
 
         d_ptr->keyHome();
@@ -276,7 +271,7 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
 
     if (e->key() == Qt::Key_Left)
     {
-        if (shift)
+        if (modifier)
         {
             setTextEditorInteraction();
             d_ptr->keyHome();
@@ -289,6 +284,9 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
 
     if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)
     {
+        if (modifier)
+            setTextEditorInteraction();
+
         d_ptr->keyReturn();
 
         return;
@@ -296,26 +294,26 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
 
     if (e->key() == Qt::Key_Right)
     {
-        if (shift)
+        if (modifier)
         {
             setTextEditorInteraction();
             QTextCursor cursor = textCursor();
             cursor.movePosition(QTextCursor::EndOfBlock);
-            d_ptr->cursor.value = cursor;
-            d_ptr->cursor.position = cursor.position();
+            d_ptr->cursor = cursor;
             setTextCursor(cursor);
         }
-        else if (position(textCursor()) < d_ptr->blockLength - 1)
-            ++d_ptr->cursor.position;
+        else
+        {
+            QPlainTextEdit::keyPressEvent(e);
+            d_ptr->cursor = textCursor();
+        }
 
-        d_ptr->cursor.value.movePosition(QTextCursor::Right);
-
-        return QPlainTextEdit::keyPressEvent(e);
+        return;
     }
 
     if (e->key() == Qt::Key_Up)
     {
-        if(shift)
+        if (modifier)
             setTextEditorInteraction();
 
         d_ptr->keyUp();
@@ -335,7 +333,7 @@ void QLoaderTerminal::mousePressEvent(QMouseEvent *e)
 void QLoaderTerminal::paintEvent(QPaintEvent *e)
 {
     QPlainTextEdit::paintEvent(e);
-    QTextCursor cursor = d_ptr->cursor.value;
+    QTextCursor cursor = d_ptr->cursor;
     QString string = cursor.block().text();
     QRect rect = cursorRect(cursor);
     rect.setWidth(rect.width() - 1);
@@ -421,9 +419,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
     connect(this, &QPlainTextEdit::textChanged, [this]
     {
         QTextCursor cursor = textCursor();
-        d_ptr->cursor.value = cursor;
-        d_ptr->cursor.position = cursor.position();
-        d_ptr->blockLength = cursor.block().length();
+        d_ptr->cursor = cursor;
     });
 
     emit textChanged();
