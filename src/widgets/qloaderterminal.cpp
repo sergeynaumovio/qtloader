@@ -56,9 +56,8 @@ public:
 
     void clearLine()
     {
-        QTextCursor c = q_ptr->textCursor();
-        c.select(QTextCursor::LineUnderCursor);
-        c.removeSelectedText();
+        cursor.select(QTextCursor::LineUnderCursor);
+        cursor.removeSelectedText();
         q_ptr->insertPlainText(path);
     }
 
@@ -104,10 +103,8 @@ public:
 
     void keyReturn()
     {
-        QTextCursor c = q_ptr->textCursor();
-        c.select(QTextCursor::LineUnderCursor);
-
-        QString string = c.selectedText();
+        cursor.select(QTextCursor::LineUnderCursor);
+        QString string = cursor.selectedText();
         string.remove(0, path.length());
 
         if (string.length() > 0)
@@ -408,7 +405,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 
     setCursorWidth(QFontMetrics(font()).boundingRect(QChar('o')).width());
     setFrameStyle(QFrame::NoFrame);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setTextInteractionFlags(Qt::TextEditorInteraction);
     setUndoRedoEnabled(false);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
