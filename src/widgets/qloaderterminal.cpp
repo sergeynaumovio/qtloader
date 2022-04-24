@@ -85,7 +85,7 @@ public:
     {
         cursor = q_ptr->textCursor();
         cursor.movePosition(QTextCursor::StartOfLine);
-        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.length());
+        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.size());
         q_ptr->setTextCursor(cursor);
     }
 
@@ -105,11 +105,11 @@ public:
     {
         cursor.select(QTextCursor::LineUnderCursor);
         QString string = cursor.selectedText();
-        string.remove(0, path.length());
+        string.remove(0, path.size());
 
-        if (string.length() > 0)
+        if (string.size() > 0)
         {
-            while (history.down.count() > 0)
+            while (history.down.size() > 0)
                 history.up.push(history.down.pop());
 
             history.up.push(string);
@@ -117,7 +117,7 @@ public:
 
         q_ptr->moveCursor(QTextCursor::EndOfLine);
 
-        if (string.length() > 0)
+        if (string.size() > 0)
         {
             q_ptr->setFocus();
             q_ptr->insertPlainText("\n");
@@ -142,7 +142,7 @@ public:
 
     void keyUp()
     {
-        if (history.up.count() > 0)
+        if (history.up.size() > 0)
         {
             QString string = history.up.pop();
             history.down.push(string);
