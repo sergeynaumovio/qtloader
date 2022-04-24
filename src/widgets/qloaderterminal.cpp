@@ -36,7 +36,7 @@ class QLoaderTerminalPrivate
 public:
     QLoaderTerminal *const q_ptr;
 
-    QString path{"[Terminal] "};
+    QString path;
     QTextCursor cursor;
 
     struct
