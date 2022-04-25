@@ -413,11 +413,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 
     insertPlainText(d_ptr->path);
 
-    connect(this, &QPlainTextEdit::textChanged, [this]
-    {
-        QTextCursor cursor = textCursor();
-        d_ptr->cursor = cursor;
-    });
+    connect(this, &QPlainTextEdit::textChanged, [this]{ d_ptr->cursor = textCursor(); });
 
     emit textChanged();
 
