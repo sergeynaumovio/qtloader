@@ -27,6 +27,7 @@ class QLoaderCommandInterface
 public:
     virtual QLoaderError exec(const QStringList &arguments) = 0;
     virtual QString name() const = 0;
+    virtual QStringList tab(const QString &arguments) = 0;
 };
 Q_DECLARE_INTERFACE(QLoaderCommandInterface, "QLoaderCommandInterface")
 
