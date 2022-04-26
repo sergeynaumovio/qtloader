@@ -18,10 +18,12 @@
 
 #include "qloaderterminal.h"
 #include "qloadertree.h"
+#include "qloadershell.h"
 #include <QKeyEvent>
 #include <QLayout>
 #include <QMenu>
 #include <QPainter>
+#include <QRegularExpression>
 #include <QStack>
 #include <QTextBlock>
 #include <QTextCursor>
@@ -53,6 +55,13 @@ public:
         bool onLeave{};
 
     } updateViewport;
+
+    struct
+    {
+        QRegularExpression regex{"[^\\s]+"};
+        QString string;
+
+    } command;
 
     void clearLine()
     {
@@ -103,8 +112,7 @@ public:
 
     void keyReturn()
     {
-        cursor.select(QTextCursor::LineUnderCursor);
-        QString string = cursor.selectedText();
+        QString string = cursor.block().text();
         string.remove(0, path.size());
 
         if (string.size())
@@ -119,16 +127,18 @@ public:
 
         if (string.size())
         {
-            q_ptr->setFocus();
-            q_ptr->insertPlainText("\n");
-
-            [&]() // exec command
+            QRegularExpressionMatch match;
+            if ((match = command.regex.match(string)).hasMatch())
             {
-                q_ptr->insertPlainText(string);
+                command.string = match.captured();
+                QLoaderError error = q_ptr->tree()->shell()->exec(command.string, {});
                 q_ptr->insertPlainText("\n");
-                q_ptr->insertPlainText(path);
-            }();
+                if (error)
+                    q_ptr->insertPlainText("shell: " + command.string + ": " + error.message);
+            }
 
+            q_ptr->insertPlainText("\n");
+            q_ptr->insertPlainText(path);
             cursor = q_ptr->textCursor();
         }
         else
