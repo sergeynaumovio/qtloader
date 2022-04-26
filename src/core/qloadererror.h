@@ -16,18 +16,32 @@
 **
 ****************************************************************************/
 
-#ifndef QLOADERCOMMANDINTERFACE_H
-#define QLOADERCOMMANDINTERFACE_H
+#ifndef QLOADERERROR_H
+#define QLOADERERROR_H
 
-#include "qloadererror.h"
-#include <QObject>
+#include "qtloaderglobal.h"
+#include <QtCore/qmetatype.h>
 
-class QLoaderCommandInterface
+class Q_LOADER_EXPORT QLoaderError
 {
-public:
-    virtual QLoaderError exec(const QStringList &arguments) = 0;
-    virtual QString name() const = 0;
-};
-Q_DECLARE_INTERFACE(QLoaderCommandInterface, "QLoaderCommandInterface")
+    Q_GADGET
 
-#endif // QLOADERCOMMANDINTERFACE_H
+public:
+    enum Status
+    {
+        No,
+        Access,
+        Format,
+        Design,
+        Plugin,
+        Object
+    };
+    Q_ENUM(Status)
+
+    int line{};
+    Status status{};
+    QString message{};
+    operator bool() const { return status; }
+};
+
+#endif // QLOADERERROR_H

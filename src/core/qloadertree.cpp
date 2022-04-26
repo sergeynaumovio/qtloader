@@ -33,7 +33,7 @@ QLoaderTree::QLoaderTree(const QString &fileName, QObject *parent)
 QLoaderTree::~QLoaderTree()
 { }
 
-QLoaderTree::Error QLoaderTree::backup()
+QLoaderError QLoaderTree::backup()
 {
     return {};
 }
@@ -47,7 +47,7 @@ bool QLoaderTree::contains(const QStringList &section) const
     return containsSection;
 }
 
-QLoaderTree::Error QLoaderTree::copy(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTree::copy(const QStringList &section, const QStringList &to)
 {
     return d_ptr->copy(section, to);
 }
@@ -70,12 +70,12 @@ bool QLoaderTree::isModified() const
     return d_ptr->modified;
 }
 
-QLoaderTree::Error QLoaderTree::load() const
+QLoaderError QLoaderTree::load() const
 {
     return d_ptr->load();
 }
 
-QLoaderTree::Error QLoaderTree::move(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTree::move(const QStringList &section, const QStringList &to)
 {
     return d_ptr->move(section, to);
 }
@@ -91,12 +91,12 @@ QObject *QLoaderTree::object(const QStringList &section) const
     return object;
 }
 
-QLoaderTree::Error QLoaderTree::save() const
+QLoaderError QLoaderTree::save() const
 {
-    QLoaderTree::Error error;
+    QLoaderError error;
     if (d_ptr->isSaving())
     {
-        error.status = QLoaderTree::AccessError;
+        error.status = QLoaderError::Access;
         error.message = "saving in progress";
     }
     else

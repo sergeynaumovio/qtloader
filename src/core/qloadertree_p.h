@@ -69,13 +69,13 @@ class QLoaderTreePrivate
                        const QLoaderTreeSection<QLoaderCopyInterface> &src,
                        const QLoaderTreeSection<QLoaderCopyInterface> &dst);
     void dumpRecursive(QLoaderSettings *settings) const;
-    QLoaderTree::Error load(const QStringList &section);
-    QLoaderTree::Error loadRecursive(QLoaderSettings *settings, QObject *parent);
+    QLoaderError load(const QStringList &section);
+    QLoaderError loadRecursive(QLoaderSettings *settings, QObject *parent);
     void moveRecursive(QLoaderSettings *settings,
                        const QLoaderTreeSection<QLoaderMoveInterface> &src,
                        const QLoaderTreeSection<QLoaderMoveInterface> &dst);
-    QLoaderTree::Error seekBlobs();
-    QLoaderTree::Error readSettings();
+    QLoaderError seekBlobs();
+    QLoaderError readSettings();
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
     void saveRecursive(QLoaderSettings *settings, QTextStream &out);
@@ -105,19 +105,19 @@ public:
 
     QLoaderBlob blob(const QUuid &uuid) const;
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
-    QLoaderTree::Error copy(const QStringList &section, const QStringList &to);
+    QLoaderError copy(const QStringList &section, const QStringList &to);
     QUuid createStorageUuid() const;
     QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
     void emitSettingsChanged();
-    QObject *external(QLoaderTree::Error &error, QLoaderSettings *settings, QObject *parent);
+    QObject *external(QLoaderError &error, QLoaderSettings *settings, QObject *parent);
     QVariant fromString(const QString &value) const;
     QString fromVariant(const QVariant &variant) const;
     bool isSaving() const;
-    QLoaderTree::Error load();
-    QLoaderTree::Error move(const QStringList &section, const QStringList &to);
+    QLoaderError load();
+    QLoaderError move(const QStringList &section, const QStringList &to);
     bool removeBlob(const QUuid &id);
-    QLoaderTree::Error save();
+    QLoaderError save();
     void setStorageData(QLoaderStoragePrivate &d);
     QLoaderShell *shell() const;
 };

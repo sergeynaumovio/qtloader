@@ -124,27 +124,27 @@ public:
         d_ptr->emitSettingsChanged();
     }
 
-    QLoaderTree::Error error()
+    QLoaderError error()
     {
         d_ptr->mutex.lock();
         bool loaded = d_ptr->loaded;
         d_ptr->mutex.unlock();
         if (!loaded)
-            return {.status = QLoaderTree::ObjectError, .message = "tree not loaded"};
+            return {.status = QLoaderError::Object, .message = "tree not loaded"};
 
         if (!src.valid || !dst.valid)
-            return {.status = QLoaderTree::DesignError, .message = "section not valid"};
+            return {.status = QLoaderError::Design, .message = "section not valid"};
 
         src.interface = qobject_cast<Interface*>(src.object);
         if (!src.interface || !interface())
         {
-            QLoaderTree::Error err;
+            QLoaderError err;
             if (!src.interface)
                 err.message = "object interface not valid";
             else
                 err.message = "parent object not valid";
 
-            err.status = QLoaderTree::ObjectError;
+            err.status = QLoaderError::Object;
             emit d_ptr->q_ptr->errorChanged(src.object, err.message);
 
             return err;
@@ -487,7 +487,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     return q_ptr;
 }
 
-QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,
+QObject *QLoaderTreePrivate::external(QLoaderError &error,
                                       QLoaderSettings *settings,
                                       QObject *parent)
 {
@@ -500,7 +500,7 @@ QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,
         {
             mutex.lock();
             error.line = hash.data[settings].sectionLine;
-            error.status = QLoaderTree::PluginError;
+            error.status = QLoaderError::Plugin;
             error.message = "library \"" + libraryName + "\" not loaded";
             mutex.unlock();
             return nullptr;
@@ -511,7 +511,7 @@ QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,
         {
             mutex.lock();
             error.line = hash.data[settings].sectionLine;
-            error.status = QLoaderTree::PluginError;
+            error.status = QLoaderError::Plugin;
             error.message = "interface not valid";
             mutex.unlock();
             return nullptr;
@@ -522,7 +522,7 @@ QObject *QLoaderTreePrivate::external(QLoaderTree::Error &error,
 
     mutex.lock();
     error.line = hash.data[settings].sectionLine;
-    error.status = QLoaderTree::PluginError;
+    error.status = QLoaderError::Plugin;
     error.message = "class name \"" + hash.data[settings].className + "\" not valid";
 
     mutex.unlock();
@@ -682,9 +682,9 @@ void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
     dumpRecursive(settings);
 }
 
-QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
+QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObject *parent)
 {
-    QLoaderTree::Error error;
+    QLoaderError error;
 
     mutex.lock();
     QByteArray itemClassName = hash.data[settings].className;
@@ -709,7 +709,7 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
                                !object->isWidgetType())))
     {
         error.line = itemSectionLine;
-        error.status = QLoaderTree::ObjectError;
+        error.status = QLoaderError::Object;
         if (object != q_ptr && object == parent)
         {
             error.message = "parent object not valid";
@@ -738,7 +738,7 @@ QLoaderTree::Error QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, 
     if (errorMessage.has_value())
     {
         error.line = itemSectionLine;
-        error.status = QLoaderTree::ObjectError;
+        error.status = QLoaderError::Object;
         error.message = errorMessage.value();
         mutex.unlock();
         return error;
@@ -799,10 +799,10 @@ void QLoaderTreePrivate::moveRecursive(QLoaderSettings *settings,
         moveRecursive(child, src, dst);
 }
 
-QLoaderTree::Error QLoaderTreePrivate::seekBlobs()
+QLoaderError QLoaderTreePrivate::seekBlobs()
 {
-    QLoaderTree::Error error{.line = hash.data[d.storage.settings].sectionLine,
-                             .status = QLoaderTree::FormatError};
+    QLoaderError error{.line = hash.data[d.storage.settings].sectionLine,
+                       .status = QLoaderError::Format};
     QDataStream in(file);
     QUuid currentUuid;
 
@@ -840,7 +840,7 @@ QLoaderTree::Error QLoaderTreePrivate::seekBlobs()
     file->close();
     if (!file->open(QIODevice::ReadOnly))
     {
-        error.status = QLoaderTree::AccessError;
+        error.status = QLoaderError::Access;
         error.message = "read error";
         return error;
     }
@@ -848,12 +848,12 @@ QLoaderTree::Error QLoaderTreePrivate::seekBlobs()
     return {};
 }
 
-QLoaderTree::Error QLoaderTreePrivate::readSettings()
+QLoaderError QLoaderTreePrivate::readSettings()
 {
-    QLoaderTree::Error error;
+    QLoaderError error;
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        error.status = QLoaderTree::AccessError;
+        error.status = QLoaderError::Access;
         error.message = "read error";
         return error;
     }
@@ -888,7 +888,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                 if (item.className.isEmpty())
                 {
                     error.line = item.sectionLine;
-                    error.status = QLoaderTree::DesignError;
+                    error.status = QLoaderError::Design;
                     error.message = "class name not set";
                     break;
                 }
@@ -946,7 +946,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
             if (!valid)
             {
                 error.line = currentLine;
-                error.status = QLoaderTree::DesignError;
+                error.status = QLoaderError::Design;
                 if (error.message.isEmpty())
                     error.message = "section not valid";
 
@@ -962,7 +962,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
             if (item.section.isEmpty())
             {
                 error.line = item.sectionLine;
-                error.status = QLoaderTree::FormatError;
+                error.status = QLoaderError::Format;
                 error.message = "section not set";
                 break;
             }
@@ -972,7 +972,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                 if (item.className.size())
                 {
                     error.line = item.sectionLine;
-                    error.status = QLoaderTree::FormatError;
+                    error.status = QLoaderError::Format;
                     error.message = "class already set";
                     break;
                 }
@@ -986,7 +986,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                 if (!qstrncmp(item.className, "Loader", 6))
                 {
                     error.line = item.sectionLine;
-                    error.status = QLoaderTree::ObjectError;
+                    error.status = QLoaderError::Object;
                     error.message = "class not found";
                     break;
                 }
@@ -1002,7 +1002,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                     if (item.section.size() > 2)
                     {
                         error.line = item.sectionLine;
-                        error.status = QLoaderTree::DesignError;
+                        error.status = QLoaderError::Design;
                         error.message = "parent object not valid";
                         break;
                     }
@@ -1012,7 +1012,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                         (isStorage && d.storage.settings))
                     {
                         error.line = item.sectionLine;
-                        error.status = QLoaderTree::DesignError;
+                        error.status = QLoaderError::Design;
                         error.message = (isData ? "data" :
                                          isShell ? "shell" :
                                          isStorage ? "storage" : "");
@@ -1041,14 +1041,14 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
                     if (uuid.isNull())
                     {
                         error.line = item.sectionLine;
-                        error.status = QLoaderTree::FormatError;
+                        error.status = QLoaderError::Format;
                         error.message = "blob uuid \"" + value + "\" not valid";
                         break;
                     }
 
                     if (d.blobs.contains(uuid))
                     {
-                        error.status = QLoaderTree::DesignError;
+                        error.status = QLoaderError::Design;
                         error.message = "blob uuid\"" + uuid.toString() + "\" already set";
                     }
 
@@ -1060,7 +1060,7 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
             }
             else
             {
-                error.status = QLoaderTree::DesignError;
+                error.status = QLoaderError::Design;
                 error.message = "key \"" + key + "\" already set";
                 break;
             }
@@ -1075,15 +1075,15 @@ QLoaderTree::Error QLoaderTreePrivate::readSettings()
     return error;
 }
 
-QLoaderTree::Error QLoaderTreePrivate::load()
+QLoaderError QLoaderTreePrivate::load()
 {
-    QLoaderTree::Error error;
+    QLoaderError error;
     d.loading.lock();
     do
     {
         if (loaded)
         {
-            error.status = QLoaderTree::ObjectError;
+            error.status = QLoaderError::Object;
             error.message = "already loaded";
             break;
         }
@@ -1128,11 +1128,11 @@ QLoaderTree::Error QLoaderTreePrivate::load()
     return error;
 }
 
-QLoaderTree::Error QLoaderTreePrivate::move(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTreePrivate::move(const QStringList &section, const QStringList &to)
 {
     QLoaderTreeSectionAction<QLoaderMoveInterface> mv(section, to, this);
 
-    QLoaderTree::Error error;
+    QLoaderError error;
     if ((error = mv.error()))
         return error;
 
@@ -1145,7 +1145,7 @@ QLoaderTree::Error QLoaderTreePrivate::move(const QStringList &section, const QS
     return {};
 }
 
-QLoaderTree::Error QLoaderTreePrivate::load(const QStringList &/*section*/)
+QLoaderError QLoaderTreePrivate::load(const QStringList &/*section*/)
 {
     if (loaded)
         return {};
@@ -1191,11 +1191,11 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
         copyRecursive(child, src, dst);
 }
 
-QLoaderTree::Error QLoaderTreePrivate::copy(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTreePrivate::copy(const QStringList &section, const QStringList &to)
 {
     QLoaderTreeSectionAction<QLoaderCopyInterface> cp(section, to, this);
 
-    QLoaderTree::Error error;
+    QLoaderError error;
     if ((error = cp.error()))
         return error;
 
@@ -1260,9 +1260,9 @@ void QLoaderTreePrivate::saveRecursive(QLoaderSettings *settings, QTextStream &o
         saveRecursive(child, out);
 }
 
-QLoaderTree::Error QLoaderTreePrivate::save()
+QLoaderError QLoaderTreePrivate::save()
 {
-    QLoaderTree::Error error{.status = QLoaderTree::AccessError, .message = "read-only file"};
+    QLoaderError error{.status = QLoaderError::Access, .message = "read-only file"};
     if (loaded)
     {
         Saving saving(&d.saving);
@@ -1284,7 +1284,7 @@ QLoaderTree::Error QLoaderTreePrivate::save()
         ofile.close();
 
         if (d.storage.object)
-            if (QLoaderTree::Error e = d.storage.d_ptr->save(&ofile, d.root.settings))
+            if (QLoaderError e = d.storage.d_ptr->save(&ofile, d.root.settings))
                 return e;
 
         file->close();
@@ -1302,7 +1302,7 @@ QLoaderTree::Error QLoaderTreePrivate::save()
     }
     else
     {
-        error.status = QLoaderTree::ObjectError;
+        error.status = QLoaderError::Object;
         error.message = "tree not loaded";
     }
 

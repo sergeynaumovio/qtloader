@@ -37,7 +37,7 @@ class QLoaderStoragePrivate
 public:
     QLoaderStoragePrivate(QLoaderTreePrivate &d);
     QLoaderBlob blob(const QUuid &uuid) const;
-    QLoaderTree::Error save(QFile *ofile, QLoaderSettings *root);
+    QLoaderError save(QFile *ofile, QLoaderSettings *root);
     QUuid createUuid() const;
 };
 

@@ -95,10 +95,10 @@ QLoaderBlob QLoaderStoragePrivate::blob(const QUuid &uuid) const
     return {};
 }
 
-QLoaderTree::Error QLoaderStoragePrivate::save(QFile *outfile, QLoaderSettings *root)
+QLoaderError QLoaderStoragePrivate::save(QFile *outfile, QLoaderSettings *root)
 {
     ofile = outfile;
-    QLoaderTree::Error error{.status = QLoaderTree::AccessError, .message = "read-only file"};
+    QLoaderError error{.status = QLoaderError::Access, .message = "read-only file"};
     if (!ofile->open(QIODevice::ReadWrite))
         return error;
 

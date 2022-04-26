@@ -20,6 +20,7 @@
 #define QLOADERTREE_H
 
 #include "qtloaderglobal.h"
+#include "qloadererror.h"
 #include <QObject>
 
 class QLoaderTreePrivate;
@@ -36,26 +37,6 @@ protected:
 
     QLoaderTree(QLoaderTreePrivate &d, QObject *parent = nullptr);
 
-public:
-    enum Status
-    {
-        NoError,
-        AccessError,
-        FormatError,
-        DesignError,
-        PluginError,
-        ObjectError
-    };
-    Q_ENUM(Status)
-
-    struct Error
-    {
-        int line{};
-        Status status{};
-        QString message{};
-        operator bool() const { return status; }
-    };
-
 Q_SIGNALS:
     void errorChanged(QObject *sender, QString message);
     void infoChanged(QObject *sender, QString message);
@@ -67,16 +48,16 @@ public:
     explicit QLoaderTree(const QString &fileName, QObject *parent = nullptr);
     ~QLoaderTree();
 
-    QLoaderTree::Error backup();
+    QLoaderError backup();
     bool contains(const QStringList &section) const;
-    QLoaderTree::Error copy(const QStringList &section, const QStringList &to);
+    QLoaderError copy(const QStringList &section, const QStringList &to);
     QLoaderData *data() const;
     QString fileName() const;
     bool isModified() const;
-    QLoaderTree::Error load() const;
-    QLoaderTree::Error move(const QStringList &section, const QStringList &to);
+    QLoaderError load() const;
+    QLoaderError move(const QStringList &section, const QStringList &to);
     QObject *object(const QStringList &section) const;
-    QLoaderTree::Error save() const;
+    QLoaderError save() const;
     QLoaderShell *shell() const;
 };
 

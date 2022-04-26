@@ -16,10 +16,10 @@
 **
 ****************************************************************************/
 
+#include "qloadertree.h"
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QFileDialog>
-#include <QLoaderTree>
 #include <QMessageBox>
 
 int main(int argc, char *argv[])
@@ -80,9 +80,9 @@ int main(int argc, char *argv[])
         fileName = arguments.first();
 
     QLoaderTree loaderTree(fileName);
-    if (QLoaderTree::Error error = loaderTree.load())
+    if (QLoaderError error = loaderTree.load())
     {
-        if (error.status == QLoaderTree::AccessError)
+        if (error.status == QLoaderError::Access)
         {
             if (coreApp)
             {
@@ -98,10 +98,8 @@ int main(int argc, char *argv[])
             }
         }
         QString message = fileName + ":" + QString::number(error.line) + ": " +
-                          QVariant::fromValue(error.status).toString().toLower();
-
-        message.insert(message.size() - QString("error").size(), ' ');
-        message += ": " + error.message;
+                          QVariant::fromValue(error.status).toString().toLower() +
+                          " error: " + error.message;;
 
         if (coreApp)
         {
