@@ -16,26 +16,25 @@
 **
 ****************************************************************************/
 
-#include "qloadershell.h"
-#include "qloadershell_p.h"
-#include "qloadercommands.h"
-#include "qloadercommandinterface.h"
+#ifndef QLOADERSHELL_P_H
+#define QLOADERSHELL_P_H
 
-QLoaderShell::QLoaderShell(QLoaderSettings *settings, QObject *parent)
-:   QObject(parent),
-    QLoaderSettings(settings),
-    d_ptr(new QLoaderShellPrivate(this))
-{ }
+#include <QScopedPointer>
 
-QLoaderShell::~QLoaderShell()
-{ }
+class QLoaderShell;
+class QLoaderCommands;
+class QLoaderCommandInterface;
 
-void QLoaderShell::addCommand(QObject *object)
+class QLoaderShellPrivate
 {
-    d_ptr->commands->addCommand(object);
-}
+public:
+    QLoaderShell *const q_ptr;
+    const QScopedPointer<QLoaderCommands> commands;
 
-QLoaderError QLoaderShell::exec(const QString &command, const QStringList &arguments)
-{
-    return d_ptr->commands->exec(command, arguments);
-}
+    QLoaderShellPrivate(QLoaderShell *q);
+    ~QLoaderShellPrivate();
+
+    void emitError(const QString &error) const;
+};
+
+#endif // QLOADERSHELL_P_H

@@ -20,22 +20,23 @@
 #define QLOADERSHELL_H
 
 #include "qloadersettings.h"
+#include "qloadererror.h"
 
 class QLoaderShellPrivate;
-class QLoaderCommandInterface;
 
 class Q_LOADER_EXPORT QLoaderShell : public QObject, public QLoaderSettings
 {
     Q_OBJECT
 
+    friend class QLoaderShellPrivate;
     QScopedPointer<QLoaderShellPrivate> d_ptr;
 
 public:
     QLoaderShell(QLoaderSettings *settings, QObject *parent);
     ~QLoaderShell();
 
-    void addCommand(QLoaderCommandInterface *command);
-    int exec(const QString &command, const QStringList &arguments);
+    void addCommand(QObject *command);
+    QLoaderError exec(const QString &command, const QStringList &arguments);
 };
 
 #endif // QLOADERSHELL_H
