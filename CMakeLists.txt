@@ -45,6 +45,7 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloaderdata.cpp
             src/core/qloaderdir.h
             src/core/qloaderdir.cpp
+            src/core/qloadererror.h
             src/core/qloaderstorage.h
             src/core/qloaderstorage.cpp
             src/core/qloaderstorage_p.h
@@ -53,10 +54,16 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadersettings.cpp
             src/core/qloadershell.h
             src/core/qloadershell.cpp
+            src/core/qloadershell_p.h
+            src/core/qloadershell_p.cpp
             src/core/qloadertree.h
             src/core/qloadertree.cpp
             src/core/qloadertree_p.h
             src/core/qloadertree_p.cpp
+            src/core/commands/qloadercommands.h
+            src/core/commands/qloadercommands.cpp
+            src/core/commands/qloaderclear.h
+            src/core/commands/qloaderclear.cpp
             src/widgets/qloadericoninterface.h
             src/widgets/qloaderterminal.h
             src/widgets/qloaderterminal.cpp
@@ -64,6 +71,7 @@ target_sources(${QT_LOADER_LIBRARY}
 
 target_include_directories(${QT_LOADER_LIBRARY}
     PRIVATE src/core
+            src/core/commands
             src/widgets
 )
 
@@ -83,6 +91,8 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloaderdata.h
     src/core/QLoaderDir
     src/core/qloaderdir.h
+    src/core/QLoaderError
+    src/core/qloadererror.h
     src/core/QLoaderSettings
     src/core/qloadersettings.h
     src/core/QLoaderShell
