@@ -27,6 +27,7 @@
 #include <QStack>
 #include <QTextBlock>
 #include <QTextCursor>
+#include <QThread>
 
 static int position(const QTextCursor &textCursor)
 {
@@ -37,9 +38,17 @@ class QLoaderTerminalPrivate
 {
 public:
     QLoaderTerminal *const q_ptr;
-
-    QString path;
     QTextCursor cursor;
+
+    const QScopedPointer<QLoaderShell> shell;
+    QThread thread;
+
+    struct
+    {
+        QStringList section;
+        QString name;
+
+    } path;
 
     struct
     {
@@ -59,15 +68,24 @@ public:
     struct
     {
         QRegularExpression regex{"[^\\s]+"};
-        QString string;
+        QString name;
 
     } command;
+
+    QLoaderTerminalPrivate(QLoaderTerminal *q)
+    :   q_ptr(q),
+        shell(q->tree()->createShell())
+    {
+        shell->setTerminal(q);
+        shell->moveToThread(&thread);
+        setPath(q->value("home", q->section()).toStringList());
+    }
 
     void clearLine()
     {
         cursor.select(QTextCursor::LineUnderCursor);
         cursor.removeSelectedText();
-        q_ptr->insertPlainText(path);
+        q_ptr->insertPlainText(path.name);
     }
 
     void keyDown()
@@ -94,13 +112,13 @@ public:
     {
         cursor = q_ptr->textCursor();
         cursor.movePosition(QTextCursor::StartOfLine);
-        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.size());
+        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.name.size());
         q_ptr->setTextCursor(cursor);
     }
 
     bool keyLeft()
     {
-        if (position(q_ptr->textCursor()) > path.size())
+        if (position(q_ptr->textCursor()) > path.name.size())
         {
             cursor.movePosition(QTextCursor::Left);
 
@@ -113,7 +131,7 @@ public:
     void keyReturn()
     {
         QString string = cursor.block().text();
-        string.remove(0, path.size());
+        string.remove(0, path.name.size());
 
         if (string.size())
         {
@@ -127,27 +145,23 @@ public:
 
         if (string.size())
         {
+            QStringList pipeline = string.split('|');
+            QString cmd = pipeline.first();
+
             QRegularExpressionMatch match;
-            if ((match = command.regex.match(string)).hasMatch())
+            if ((match = command.regex.match(cmd)).hasMatch())
             {
-                command.string = match.captured();
-                QLoaderError error = q_ptr->tree()->shell()->exec(command.string, {});
-                q_ptr->insertPlainText("\n");
-                if (error)
-                    q_ptr->insertPlainText("shell: " + command.string + ": " + error.message);
+                command.name = match.captured();
+                shell->exec(command.name, {});
             }
-
-            q_ptr->insertPlainText("\n");
-            q_ptr->insertPlainText(path);
-            cursor = q_ptr->textCursor();
-        }
-        else
-        {
-            q_ptr->insertPlainText("\n");
-            q_ptr->insertPlainText(path);
         }
 
+        if (q_ptr->toPlainText().size())
+            q_ptr->insertPlainText("\n");
+
+        q_ptr->insertPlainText(path.name);
         q_ptr->ensureCursorVisible();
+        cursor = q_ptr->textCursor();
     }
 
     void keyUp()
@@ -172,13 +186,8 @@ public:
             return;
         }
 
-        path = "[" + section.join('/') + "] ";
-    }
-
-    QLoaderTerminalPrivate(QLoaderTerminal *q)
-    :   q_ptr(q)
-    {
-        setPath(q->value("home", q->section()).toStringList());
+        path.section = section;
+        path.name = "[" + section.join('/') + "] ";
     }
 };
 
@@ -421,7 +430,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setWordWrapMode(QTextOption::WrapAnywhere);
 
-    insertPlainText(d_ptr->path);
+    insertPlainText(d_ptr->path.name);
 
     connect(this, &QPlainTextEdit::textChanged, [this]{ d_ptr->cursor = textCursor(); });
 
@@ -437,3 +446,13 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 
 QLoaderTerminal::~QLoaderTerminal()
 { }
+
+QPlainTextEdit *QLoaderTerminal::out()
+{
+    return this;
+}
+
+void QLoaderTerminal::setCurrentSection(const QStringList &/*section*/)
+{
+
+}

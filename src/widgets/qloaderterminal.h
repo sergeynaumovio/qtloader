@@ -20,11 +20,13 @@
 #define QLOADERTERMINAL_H
 
 #include "qloadersettings.h"
+#include "qloaderterminalinterface.h"
 #include <QPlainTextEdit>
 
 class QLoaderTerminalPrivate;
 
-class Q_LOADER_EXPORT QLoaderTerminal : public QPlainTextEdit, public QLoaderSettings
+class Q_LOADER_EXPORT QLoaderTerminal : public QPlainTextEdit, public QLoaderSettings,
+                                                               public QLoaderTerminalInterface
 {
     Q_OBJECT
 
@@ -40,6 +42,9 @@ protected:
 public:
     Q_INVOKABLE QLoaderTerminal(QLoaderSettings *settings, QWidget *parent);
     ~QLoaderTerminal();
+
+    QPlainTextEdit *out() override;
+    void setCurrentSection(const QStringList &section) override;
 };
 
 #endif // QLOADERTERMINAL_H
