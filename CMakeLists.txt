@@ -36,7 +36,6 @@ add_library(${QT_LOADER_LIBRARY} SHARED)
 
 target_sources(${QT_LOADER_LIBRARY}
     PRIVATE src/core/qtloaderglobal.h
-            src/core/qloadercommandinterface.h
             src/core/qloadercopyinterface.h
             src/core/qloadermoveinterface.h
             src/core/qloaderplugininterface.h
@@ -52,33 +51,29 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloaderstorage_p.cpp
             src/core/qloadersettings.h
             src/core/qloadersettings.cpp
-            src/core/qloadershell.h
-            src/core/qloadershell.cpp
-            src/core/qloadershell_p.h
-            src/core/qloadershell_p.cpp
             src/core/qloadertree.h
             src/core/qloadertree.cpp
             src/core/qloadertree_p.h
             src/core/qloadertree_p.cpp
-            src/core/commands/qloadercommands.h
-            src/core/commands/qloadercommands.cpp
-            src/core/commands/qloaderclear.h
-            src/core/commands/qloaderclear.cpp
+            src/shell/qloadercommandinterface.h
+            src/shell/qloadershell.h
+            src/shell/qloadershell.cpp
+            src/shell/qloaderclear.h
+            src/shell/qloaderclear.cpp
             src/widgets/qloadericoninterface.h
             src/widgets/qloaderterminal.h
             src/widgets/qloaderterminal.cpp
+            src/widgets/qloaderterminalinterface.h
 )
 
 target_include_directories(${QT_LOADER_LIBRARY}
     PRIVATE src/core
-            src/core/commands
+            src/shell
             src/widgets
 )
 
 set(QT_LOADER_PUBLIC_HEADERS
     src/core/qtloaderglobal.h
-    src/core/QLoaderCommandInterface
-    src/core/qloadercommandinterface.h
     src/core/QLoaderCopyInterface
     src/core/qloadercopyinterface.h
     src/core/QLoaderMoveInterface
@@ -95,12 +90,16 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadererror.h
     src/core/QLoaderSettings
     src/core/qloadersettings.h
-    src/core/QLoaderShell
-    src/core/qloadershell.h
     src/core/QLoaderTree
     src/core/qloadertree.h
+    src/shell/QLoaderCommandInterface
+    src/shell/qloadercommandinterface.h
+    src/shell/QLoaderShell
+    src/shell/qloadershell.h
     src/widgets/QLoaderIconInterface
     src/widgets/qloadericoninterface.h
+    src/widgets/QLoaderTerminalInterface
+    src/widgets/qloaderterminalinterface.h
     src/widgets/QLoaderTerminal
     src/widgets/qloaderterminal.h
 )
