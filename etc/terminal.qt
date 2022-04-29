@@ -7,3 +7,5 @@ home = QStringList(Terminal, Shell)
 [Terminal/Shell]
 class = QLoaderShell
 
+[Terminal/Shell/Clear]
+class = QLoaderClear
