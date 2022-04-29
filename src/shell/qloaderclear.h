@@ -16,25 +16,29 @@
 **
 ****************************************************************************/
 
-#include "qloaderclear.h"
+#ifndef QLOADERCLEAR_H
+#define QLOADERCLEAR_H
 
-QLoaderClear::QLoaderClear(QObject *parent)
-:   QObject(parent)
-{ }
+#include "qloadersettings.h"
+#include "qloadercommandinterface.h"
 
-QLoaderError QLoaderClear::exec(const QStringList &/*arguments*/)
+class QLoaderShell;
+class QLoaderTerminalInterface;
+
+class QLoaderClear : public QObject, public QLoaderSettings,
+                                     public QLoaderCommandInterface
 {
-    return {};
-}
+    Q_OBJECT
+    Q_INTERFACES(QLoaderCommandInterface)
 
-QString QLoaderClear::name() const
-{
-    return "clear";
-}
+    QLoaderShell *const shell;
 
-QStringList QLoaderClear::tab(const QString &/*arguments*/)
-{
-    return {};
-}
+public:
+    Q_INVOKABLE QLoaderClear(QLoaderSettings *settings, QLoaderShell *parent);
 
+    QLoaderError exec(const QStringList &arguments) override;
+    QString name() const override;
+    QStringList tab(const QStringList &arguments) override;
+};
 
+#endif // QLOADERCLEAR_H

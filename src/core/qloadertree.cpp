@@ -52,6 +52,11 @@ QLoaderError QLoaderTree::copy(const QStringList &section, const QStringList &to
     return d_ptr->copy(section, to);
 }
 
+QLoaderShell *QLoaderTree::createShell() const
+{
+    return d_ptr->shell();
+}
+
 QLoaderData *QLoaderTree::data() const
 {
     return d_ptr->data();
@@ -107,9 +112,4 @@ QLoaderError QLoaderTree::save() const
     }
 
     return error;
-}
-
-QLoaderShell *QLoaderTree::shell() const
-{
-    return d_ptr->shell();
 }

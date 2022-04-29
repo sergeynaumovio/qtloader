@@ -16,27 +16,19 @@
 **
 ****************************************************************************/
 
-#ifndef QLOADERCOMMANDS_H
-#define QLOADERCOMMANDS_H
+#ifndef QLOADERCOMMANDINTERFACE_H
+#define QLOADERCOMMANDINTERFACE_H
 
 #include "qloadererror.h"
-#include <QHash>
+#include <QObject>
 
-class QString;
-class QObject;
-class QLoaderCommandInterface;
-class QLoaderShellPrivate;
-
-class QLoaderCommands
+class QLoaderCommandInterface
 {
-    QLoaderShellPrivate *const d_ptr;
-    QHash<QString, QObject *> commands;
-
 public:
-    QLoaderCommands(QLoaderShellPrivate &d);
-
-    void addCommand(QObject *command);
-    QLoaderError exec(const QString &command, const QStringList &arguments);
+    virtual QLoaderError exec(const QStringList &arguments) = 0;
+    virtual QString name() const = 0;
+    virtual QStringList tab(const QStringList &arguments) = 0;
 };
+Q_DECLARE_INTERFACE(QLoaderCommandInterface, "QLoaderCommandInterface")
 
-#endif // QLOADERCOMMANDS_H
+#endif // QLOADERCOMMANDINTERFACE_H

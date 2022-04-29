@@ -23,6 +23,7 @@
 #include "qloadercopyinterface.h"
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
+#include "qloaderclear.h"
 #include "qloaderdata.h"
 #include "qloaderdir.h"
 #include "qloadershell.h"
@@ -405,6 +406,11 @@ public:
     QString execLine;
     QList<QLoaderSettings*> copied;
     Saving saving;
+
+    ~QLoaderTreePrivateData()
+    {
+        if (shell.object) delete shell.object;
+    }
 };
 
 QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
@@ -431,6 +437,15 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     QByteArray className = settings->className();
     const char *shortName = className.data() + qstrlen("QLoader");
 
+    if (!qstrcmp(shortName, "Clear"))
+    {
+        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        if (shell)
+            return new QLoaderClear(settings, shell);
+
+        return parent;
+     }
+
     if (!qstrcmp(shortName, "Data"))
     {
         if (!d.data.object)
@@ -456,9 +471,8 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     if (!qstrcmp(shortName, "Shell"))
     {
         if (!d.shell.object)
-            return d.shell.object = new QLoaderShell(settings, parent);
+            return d.shell.object = new QLoaderShell(settings);
 
-        d.shell.object->setParent(parent);
         return nullptr;
      }
 
@@ -705,8 +719,8 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
     mutex.unlock();
 
     if (object == parent || object == q_ptr ||
-        (!object->parent() && ((object->isWidgetType() && itemSectionSize > 1) ||
-                               !object->isWidgetType())))
+        (object != d.shell.object && !object->parent() &&
+         ((object->isWidgetType() && itemSectionSize > 1) || !object->isWidgetType())))
     {
         error.line = itemSectionLine;
         error.status = QLoaderError::Object;
@@ -718,7 +732,7 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
         {
             error.message = "class \"" + itemClassName + "\" not found";
         }
-        else if (!object->parent())
+        else if (object != d.shell.object && !object->parent())
         {
             error.message = "parent object not set";
             delete object;
@@ -1113,7 +1127,7 @@ QLoaderError QLoaderTreePrivate::load()
     {
         file->close();
         if (d.storage.object) delete d.storage.object;
-        if (d.shell.object) delete d.shell.object;
+        if (d.shell.object) { delete d.shell.object; d.shell.object = nullptr; }
         if (d.data.object) delete d.data.object;
         if (d.root.object) delete d.root.object;
     }

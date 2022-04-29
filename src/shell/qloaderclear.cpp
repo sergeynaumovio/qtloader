@@ -16,19 +16,35 @@
 **
 ****************************************************************************/
 
-#include "qloadershell_p.h"
+#include "qloaderclear.h"
 #include "qloadershell.h"
-#include "qloadercommands.h"
+#include "qloaderterminalinterface.h"
+#include <QPlainTextEdit>
 
-QLoaderShellPrivate::QLoaderShellPrivate(QLoaderShell *q)
-:   q_ptr(q),
-    commands(new QLoaderCommands(*this))
-{ }
-
-QLoaderShellPrivate::~QLoaderShellPrivate()
-{ }
-
-void QLoaderShellPrivate::emitError(const QString &error) const
+QLoaderClear::QLoaderClear(QLoaderSettings *settings, QLoaderShell *parent)
+:   QObject(parent),
+    QLoaderSettings(settings),
+    shell(parent)
 {
-    q_ptr->emitError(error);
+    parent->addCommand(this);
 }
+
+QLoaderError QLoaderClear::exec(const QStringList &/*arguments*/)
+{
+    if (shell->terminal())
+        shell->terminal()->out()->clear();
+
+    return {};
+}
+
+QString QLoaderClear::name() const
+{
+    return "clear";
+}
+
+QStringList QLoaderClear::tab(const QStringList &/*arguments*/)
+{
+    return {};
+}
+
+

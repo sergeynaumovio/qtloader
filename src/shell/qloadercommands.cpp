@@ -39,7 +39,9 @@ void QLoaderCommands::addCommand(QObject *object)
         commands.insert(command->name(), object);
 }
 
-QLoaderError QLoaderCommands::exec(const QString &command, const QStringList &arguments)
+QLoaderError QLoaderCommands::exec(const QString &command,
+                                   const QStringList &section,
+                                   const QStringList &arguments)
 {
     if (commands.contains(command) && d_ptr->q_ptr->children().contains(commands[command]))
         return qobject_cast<QLoaderCommandInterface *>(commands[command])->exec(arguments);

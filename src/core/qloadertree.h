@@ -51,6 +51,7 @@ public:
     QLoaderError backup();
     bool contains(const QStringList &section) const;
     QLoaderError copy(const QStringList &section, const QStringList &to);
+    QLoaderShell *createShell() const;
     QLoaderData *data() const;
     QString fileName() const;
     bool isModified() const;
@@ -58,7 +59,6 @@ public:
     QLoaderError move(const QStringList &section, const QStringList &to);
     QObject *object(const QStringList &section) const;
     QLoaderError save() const;
-    QLoaderShell *shell() const;
 };
 
 #endif // QLOADERTREE_H
