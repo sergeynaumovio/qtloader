@@ -24,7 +24,8 @@ QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
     d_ptr(settings->d_ptr)
 {
     d_ptr->mutex.lock();
-    d_ptr->hash.data[q_ptr].settings = this;
+    if (!d_ptr->hash.data[q_ptr].settings)
+        d_ptr->hash.data[q_ptr].settings = this;
     d_ptr->mutex.unlock();
 }
 
