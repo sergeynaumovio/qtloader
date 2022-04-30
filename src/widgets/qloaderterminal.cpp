@@ -83,7 +83,8 @@ public:
 
         QObject::connect(shell, &QObject::destroyed, q, [=, this]
         {
-            thread.exit();
+            thread.quit();
+            thread.wait();
             shell = nullptr;
             q->deleteLater();
         });
