@@ -51,7 +51,7 @@ public:
     QLoaderError backup();
     bool contains(const QStringList &section) const;
     QLoaderError copy(const QStringList &section, const QStringList &to);
-    QLoaderShell *createShell() const;
+    QLoaderShell *newShellInstance() const;
     QLoaderData *data() const;
     QString fileName() const;
     bool isModified() const;

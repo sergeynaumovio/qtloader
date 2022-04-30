@@ -74,7 +74,7 @@ public:
 
     QLoaderTerminalPrivate(QLoaderTerminal *q)
     :   q_ptr(q),
-        shell(q->tree()->createShell())
+        shell(q->tree()->newShellInstance())
     {
         shell->setTerminal(q);
         setPath(shell->section());

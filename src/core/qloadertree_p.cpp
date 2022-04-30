@@ -565,7 +565,7 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
     return nullptr;
 }
 
-QLoaderShell *QLoaderTreePrivate::createShell()
+QLoaderShell *QLoaderTreePrivate::newShellInstance()
 {
     QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
 
