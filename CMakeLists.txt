@@ -55,11 +55,15 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadertree.cpp
             src/core/qloadertree_p.h
             src/core/qloadertree_p.cpp
+
             src/shell/qloadercommandinterface.h
-            src/shell/qloadershell.h
-            src/shell/qloadershell.cpp
             src/shell/qloaderclear.h
             src/shell/qloaderclear.cpp
+            src/shell/qloadersave.h
+            src/shell/qloadersave.cpp
+            src/shell/qloadershell.h
+            src/shell/qloadershell.cpp
+
             src/widgets/qloadericoninterface.h
             src/widgets/qloaderterminal.h
             src/widgets/qloaderterminal.cpp
@@ -92,10 +96,12 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadersettings.h
     src/core/QLoaderTree
     src/core/qloadertree.h
+
     src/shell/QLoaderCommandInterface
     src/shell/qloadercommandinterface.h
     src/shell/QLoaderShell
     src/shell/qloadershell.h
+
     src/widgets/QLoaderIconInterface
     src/widgets/qloadericoninterface.h
     src/widgets/QLoaderTerminalInterface

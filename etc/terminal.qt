@@ -9,3 +9,6 @@ class = QLoaderShell
 
 [Terminal/Shell/Clear]
 class = QLoaderClear
+
+[Terminal/Shell/Save]
+class = QLoaderSave

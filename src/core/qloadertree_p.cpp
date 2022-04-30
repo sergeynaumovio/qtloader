@@ -26,6 +26,7 @@
 #include "qloaderclear.h"
 #include "qloaderdata.h"
 #include "qloaderdir.h"
+#include "qloadersave.h"
 #include "qloadershell.h"
 #include "qloaderstorage.h"
 #include "qloaderstorage_p.h"
@@ -320,18 +321,19 @@ public:
 
     QString fromVariant(const QVariant &variant) const
     {
-        if (variant.canConvert<QByteArray>())
+        QMetaType::Type type = static_cast<QMetaType::Type>(variant.metaType().id());
+        if (type == QMetaType::QByteArray)
         {
             QByteArray bytearray = variant.toByteArray();
             return QString("QByteArray(" + bytearray.toBase64() + ')');
         }
 
-        if (variant.canConvert<QChar>())
+        if (type == QMetaType::QChar)
         {
             return QString(QLatin1String("QChar(") + variant.toChar() + ')');
         }
 
-        if (variant.canConvert<QSize>())
+        if (type == QMetaType::QSize)
         {
             QSize size = variant.toSize();
             return QString("QSize(" + QString::number(size.width()) + ", "
@@ -468,6 +470,15 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
         return parent;
     }
+
+    if (!qstrcmp(shortName, "Save"))
+    {
+        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        if (shell)
+            return new QLoaderSave(settings, shell);
+
+        return parent;
+     }
 
     if (!qstrcmp(shortName, "Shell"))
     {
