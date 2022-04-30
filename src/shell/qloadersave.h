@@ -23,7 +23,6 @@
 #include "qloadercommandinterface.h"
 
 class QLoaderShell;
-class QLoaderTerminalInterface;
 
 class QLoaderSave : public QObject, public QLoaderSettings,
                                     public QLoaderCommandInterface
