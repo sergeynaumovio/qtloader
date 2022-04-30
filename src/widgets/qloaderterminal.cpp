@@ -40,7 +40,7 @@ public:
     QLoaderTerminal *const q_ptr;
     QTextCursor cursor;
 
-    const QScopedPointer<QLoaderShell> shell;
+    QLoaderShell *shell;
     QThread thread;
 
     struct
@@ -78,7 +78,20 @@ public:
     {
         shell->setTerminal(q);
         shell->moveToThread(&thread);
+        thread.start();
         setPath(q->value("home", q->section()).toStringList());
+
+        QObject::connect(shell, &QObject::destroyed, q, [=, this]
+        {
+            thread.exit();
+            shell = nullptr;
+            q->deleteLater();
+        });
+    }
+
+    ~QLoaderTerminalPrivate()
+    {
+        if (shell) delete shell;
     }
 
     void clearLine()

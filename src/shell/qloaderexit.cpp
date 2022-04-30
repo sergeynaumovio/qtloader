@@ -18,8 +18,6 @@
 
 #include "qloaderexit.h"
 #include "qloadershell.h"
-#include "qloaderterminalinterface.h"
-#include <QPlainTextEdit>
 
 QLoaderExit::QLoaderExit(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
@@ -31,8 +29,7 @@ QLoaderExit::QLoaderExit(QLoaderSettings *settings, QLoaderShell *parent)
 
 QLoaderError QLoaderExit::exec(const QStringList &/*arguments*/)
 {
-    if (shell->terminal())
-        shell->terminal()->out()->deleteLater();
+    shell->deleteLater();
 
     return {};
 }
