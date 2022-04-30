@@ -414,6 +414,7 @@ public:
     ~QLoaderTreePrivateData()
     {
         if (shell.object) delete shell.object;
+        else if (shell.settings) delete shell.settings;
     }
 };
 
@@ -837,14 +838,18 @@ void QLoaderTreePrivate::moveRecursive(QLoaderSettings *settings,
 
 QLoaderShell *QLoaderTreePrivate::newShellInstance()
 {
-    QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
-
-    if (!d.shell.settings)
+    if (!d.shell.object)
     {
+        if (!d.shell.settings)
+        {
+            d.shell.settings = new QLoaderSettings(*this);
+            hash.data[d.shell.settings] = {};
+        }
         emit q_ptr->warningChanged(d.root.object, "shell not loaded");
-        return shell;
+        return new QLoaderShell(d.shell.settings);
     }
 
+    QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
     mutex.lock();
     const int settings_size = int(hash.data[d.shell.settings].children.size());
     mutex.unlock();

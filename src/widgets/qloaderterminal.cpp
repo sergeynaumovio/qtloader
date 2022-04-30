@@ -194,14 +194,18 @@ public:
 
     void setPath(const QStringList &section)
     {
-        if (!q_ptr->tree()->contains(section))
+        if (!section.isEmpty() && !q_ptr->tree()->contains(section))
         {
             q_ptr->emitError("section \"" + section.join('/') + "\" not found");
             return;
         }
 
-        path.section = section;
-        path.name = "[" + section.join('/') + "] ";
+        if (section.isEmpty())
+            path.section = q_ptr->section();
+        else if (q_ptr->tree()->contains(section))
+            path.section = section;
+
+        path.name = "[" + path.section.join('/') + "] ";
     }
 };
 
