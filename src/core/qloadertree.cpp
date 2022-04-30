@@ -52,11 +52,6 @@ QLoaderError QLoaderTree::copy(const QStringList &section, const QStringList &to
     return d_ptr->copy(section, to);
 }
 
-QLoaderShell *QLoaderTree::newShellInstance() const
-{
-    return d_ptr->newShellInstance();
-}
-
 QLoaderData *QLoaderTree::data() const
 {
     return d_ptr->data();
@@ -83,6 +78,11 @@ QLoaderError QLoaderTree::load() const
 QLoaderError QLoaderTree::move(const QStringList &section, const QStringList &to)
 {
     return d_ptr->move(section, to);
+}
+
+QLoaderShell *QLoaderTree::newShellInstance() const
+{
+    return d_ptr->newShellInstance();
 }
 
 QObject *QLoaderTree::object(const QStringList &section) const

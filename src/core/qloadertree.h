@@ -51,12 +51,12 @@ public:
     QLoaderError backup();
     bool contains(const QStringList &section) const;
     QLoaderError copy(const QStringList &section, const QStringList &to);
-    QLoaderShell *newShellInstance() const;
     QLoaderData *data() const;
     QString fileName() const;
     bool isModified() const;
     QLoaderError load() const;
     QLoaderError move(const QStringList &section, const QStringList &to);
+    QLoaderShell *newShellInstance() const;
     QObject *object(const QStringList &section) const;
     QLoaderError save() const;
 };

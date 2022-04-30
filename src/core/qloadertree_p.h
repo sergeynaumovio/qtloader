@@ -106,7 +106,6 @@ public:
     QLoaderBlob blob(const QUuid &uuid) const;
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QLoaderError copy(const QStringList &section, const QStringList &to);
-    QLoaderShell *newShellInstance();
     QUuid createStorageUuid() const;
     QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
@@ -117,6 +116,7 @@ public:
     bool isSaving() const;
     QLoaderError load();
     QLoaderError move(const QStringList &section, const QStringList &to);
+    QLoaderShell *newShellInstance();
     bool removeBlob(const QUuid &id);
     QLoaderError save();
     void setStorageData(QLoaderStoragePrivate &d);

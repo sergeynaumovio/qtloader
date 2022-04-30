@@ -565,28 +565,6 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
     return nullptr;
 }
 
-QLoaderShell *QLoaderTreePrivate::newShellInstance()
-{
-    QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
-
-    mutex.lock();
-    const int settings_size = int(hash.data[d.shell.settings].children.size());
-    mutex.unlock();
-
-    for (int o = 0, s = 0; s < settings_size; ++o, ++s)
-    {
-        mutex.lock();
-        QObject *object = d.shell.object->children()[o];
-        QLoaderSettings *settings = hash.data[d.shell.settings].children[s];
-        mutex.unlock();
-
-        if (qobject_cast<QLoaderCommandInterface *>(object))
-            object->metaObject()->newInstance(Q_ARG(QLoaderSettings*, settings), Q_ARG(QLoaderShell*, shell));
-    }
-
-    return shell;
-}
-
 QUuid QLoaderTreePrivate::createStorageUuid() const
 {
     if (d.storage.d_ptr)
@@ -855,6 +833,28 @@ void QLoaderTreePrivate::moveRecursive(QLoaderSettings *settings,
 
     for (QLoaderSettings *child : hash.data[settings].children)
         moveRecursive(child, src, dst);
+}
+
+QLoaderShell *QLoaderTreePrivate::newShellInstance()
+{
+    QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
+
+    mutex.lock();
+    const int settings_size = int(hash.data[d.shell.settings].children.size());
+    mutex.unlock();
+
+    for (int o = 0, s = 0; s < settings_size; ++o, ++s)
+    {
+        mutex.lock();
+        QObject *object = d.shell.object->children()[o];
+        QLoaderSettings *settings = hash.data[d.shell.settings].children[s];
+        mutex.unlock();
+
+        if (qobject_cast<QLoaderCommandInterface *>(object))
+            object->metaObject()->newInstance(Q_ARG(QLoaderSettings*, settings), Q_ARG(QLoaderShell*, shell));
+    }
+
+    return shell;
 }
 
 QLoaderError QLoaderTreePrivate::seekBlobs()
