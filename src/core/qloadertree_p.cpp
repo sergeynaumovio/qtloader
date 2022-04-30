@@ -839,6 +839,12 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
 {
     QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
 
+    if (!d.shell.settings)
+    {
+        emit q_ptr->warningChanged(d.root.object, "shell not loaded");
+        return shell;
+    }
+
     mutex.lock();
     const int settings_size = int(hash.data[d.shell.settings].children.size());
     mutex.unlock();
