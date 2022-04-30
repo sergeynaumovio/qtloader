@@ -10,5 +10,8 @@ class = QLoaderShell
 [Terminal/Shell/Clear]
 class = QLoaderClear
 
+[Terminal/Shell/Exit]
+class = QLoaderExit
+
 [Terminal/Shell/Save]
 class = QLoaderSave

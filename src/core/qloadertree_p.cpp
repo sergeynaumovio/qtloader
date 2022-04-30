@@ -24,6 +24,7 @@
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
 #include "qloaderclear.h"
+#include "qloaderexit.h"
 #include "qloaderdata.h"
 #include "qloaderdir.h"
 #include "qloadersave.h"
@@ -470,6 +471,15 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
         return parent;
     }
+
+    if (!qstrcmp(shortName, "Exit"))
+    {
+        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        if (shell)
+            return new QLoaderExit(settings, shell);
+
+        return parent;
+     }
 
     if (!qstrcmp(shortName, "Save"))
     {
