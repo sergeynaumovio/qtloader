@@ -2,10 +2,10 @@
 
 [Terminal]
 class = QLoaderTerminal
-home = QStringList(Terminal, Shell)
 
 [Terminal/Shell]
 class = QLoaderShell
+home = QStringList(Terminal)
 
 [Terminal/Shell/Clear]
 class = QLoaderClear

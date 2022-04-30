@@ -77,9 +77,9 @@ public:
         shell(q->tree()->createShell())
     {
         shell->setTerminal(q);
+        setPath(shell->section());
         shell->moveToThread(&thread);
         thread.start();
-        setPath(q->value("home", q->section()).toStringList());
 
         QObject::connect(shell, &QObject::destroyed, q, [=, this]
         {
@@ -466,7 +466,7 @@ QPlainTextEdit *QLoaderTerminal::out()
     return this;
 }
 
-void QLoaderTerminal::setCurrentSection(const QStringList &/*section*/)
+void QLoaderTerminal::setCurrentSection(const QStringList &section)
 {
-
+    d_ptr->setPath(section);
 }

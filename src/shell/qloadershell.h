@@ -52,6 +52,7 @@ public:
 
     void addCommand(QObject *command);
     bool cd(const QString &objectName);
+    bool cdHome();
     bool cdUp();
     QLoaderError error() const;
     QLoaderError exec(const QLoaderCommand &command);

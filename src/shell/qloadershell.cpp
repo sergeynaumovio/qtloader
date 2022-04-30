@@ -27,12 +27,15 @@ class QLoaderShellPrivate
 public:
     QHash<QString, QObject *> commands;
     QLoaderTerminalInterface *terminal{};
+    QStringList section;
 };
 
 QLoaderShell::QLoaderShell(QLoaderSettings *settings)
 :   QLoaderSettings(settings),
     d_ptr(new QLoaderShellPrivate)
-{ }
+{
+    d_ptr->section = value("home", section()).toStringList();
+}
 
 QLoaderShell::~QLoaderShell()
 { }
@@ -60,6 +63,11 @@ QLoaderError QLoaderShell::exec(const QString &name, const QStringList &argument
         d_ptr->terminal->out()->insertPlainText("\nshell: " + name + ": " + error.message);
 
     return error;
+}
+
+QStringList QLoaderShell::section() const
+{
+    return d_ptr->section;
 }
 
 void QLoaderShell::setTerminal(QLoaderTerminalInterface *terminal)
