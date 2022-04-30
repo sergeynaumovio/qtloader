@@ -29,6 +29,7 @@ class Q_LOADER_EXPORT QLoaderTerminal : public QPlainTextEdit, public QLoaderSet
                                                                public QLoaderTerminalInterface
 {
     Q_OBJECT
+    Q_INTERFACES(QLoaderTerminalInterface)
 
     friend class QLoaderTerminalPrivate;
     const QScopedPointer<QLoaderTerminalPrivate> d_ptr;
