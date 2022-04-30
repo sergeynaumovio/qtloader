@@ -156,7 +156,7 @@ public:
             }
         }
 
-        if (q_ptr->toPlainText().size())
+        if (!q_ptr->document()->isEmpty())
             q_ptr->insertPlainText("\n");
 
         q_ptr->insertPlainText(path.name);
