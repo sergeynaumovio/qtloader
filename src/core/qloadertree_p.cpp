@@ -30,14 +30,15 @@
 #include "qloaderstorage.h"
 #include "qloaderstorage_p.h"
 #include "qloaderterminal.h"
-#include <QRegularExpression>
+#include <QAction>
+#include <QApplication>
 #include <QFile>
-#include <QPluginLoader>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
-#include <QAction>
-#include <QApplication>
+#include <QMetaMethod>
+#include <QPluginLoader>
+#include <QRegularExpression>
 #include <QTextStream>
 
 void QLoaderSettingsData::clear()
@@ -541,6 +542,28 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
 
     mutex.unlock();
     return nullptr;
+}
+
+QLoaderShell *QLoaderTreePrivate::createShell()
+{
+    QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
+
+    mutex.lock();
+    const int settings_size = int(hash.data[d.shell.settings].children.size());
+    mutex.unlock();
+
+    for (int o = 0, s = 0; s < settings_size; ++o, ++s)
+    {
+        mutex.lock();
+        QObject *object = d.shell.object->children()[o];
+        QLoaderSettings *settings = hash.data[d.shell.settings].children[s];
+        mutex.unlock();
+
+        if (qobject_cast<QLoaderCommandInterface *>(object))
+            object->metaObject()->newInstance(Q_ARG(QLoaderSettings*, settings), Q_ARG(QLoaderShell*, shell));
+    }
+
+    return shell;
 }
 
 QUuid QLoaderTreePrivate::createStorageUuid() const
@@ -1326,9 +1349,4 @@ QLoaderError QLoaderTreePrivate::save()
 void QLoaderTreePrivate::setStorageData(QLoaderStoragePrivate &d_ref)
 {
     d.storage.d_ptr = &d_ref;
-}
-
-QLoaderShell *QLoaderTreePrivate::shell() const
-{
-    return static_cast<QLoaderShell*>(d.shell.object);
 }

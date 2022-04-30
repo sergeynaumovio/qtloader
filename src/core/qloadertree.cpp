@@ -54,7 +54,7 @@ QLoaderError QLoaderTree::copy(const QStringList &section, const QStringList &to
 
 QLoaderShell *QLoaderTree::createShell() const
 {
-    return d_ptr->shell();
+    return d_ptr->createShell();
 }
 
 QLoaderData *QLoaderTree::data() const

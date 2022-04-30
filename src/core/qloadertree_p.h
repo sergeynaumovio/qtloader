@@ -106,6 +106,7 @@ public:
     QLoaderBlob blob(const QUuid &uuid) const;
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QLoaderError copy(const QStringList &section, const QStringList &to);
+    QLoaderShell *createShell();
     QUuid createStorageUuid() const;
     QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
@@ -119,7 +120,6 @@ public:
     bool removeBlob(const QUuid &id);
     QLoaderError save();
     void setStorageData(QLoaderStoragePrivate &d);
-    QLoaderShell *shell() const;
 };
 
 #endif // QLOADERTREE_P_H
