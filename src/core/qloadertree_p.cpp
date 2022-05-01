@@ -1198,7 +1198,6 @@ QLoaderError QLoaderTreePrivate::load()
     {
         file->close();
         if (d.storage.object) delete d.storage.object;
-        if (d.shell.object) { delete d.shell.object; d.shell.object = nullptr; }
         if (d.data.object) delete d.data.object;
         if (d.root.object) delete d.root.object;
     }
