@@ -845,8 +845,9 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
             d.shell.settings = new QLoaderSettings(*this);
             hash.data[d.shell.settings] = {};
         }
-        emit q_ptr->warningChanged(d.root.object, "shell not loaded");
-        return new QLoaderShell(d.shell.settings);
+        QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
+        emit q_ptr->errorChanged(shell, "shell not loaded");
+        return shell;
     }
 
     QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
@@ -862,7 +863,12 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
         mutex.unlock();
 
         if (qobject_cast<QLoaderCommandInterface *>(object))
-            object->metaObject()->newInstance(Q_ARG(QLoaderSettings*, settings), Q_ARG(QLoaderShell*, shell));
+        {
+            if (!object->metaObject()->newInstance(Q_ARG(QLoaderSettings*, settings), Q_ARG(QLoaderShell*, shell)))
+                emit q_ptr->errorChanged(object, "constructor not invokable");
+        }
+        else
+            emit q_ptr->errorChanged(object, "interface not found");
     }
 
     return shell;
