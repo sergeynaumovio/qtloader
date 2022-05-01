@@ -46,5 +46,3 @@ QStringList QLoaderClear::tab(const QStringList &/*arguments*/)
 {
     return {};
 }
-
-

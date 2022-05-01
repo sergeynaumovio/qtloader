@@ -44,5 +44,3 @@ QStringList QLoaderSave::tab(const QStringList &/*arguments*/)
 {
     return {};
 }
-
-

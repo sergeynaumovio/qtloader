@@ -43,5 +43,3 @@ QStringList QLoaderExit::tab(const QStringList &/*arguments*/)
 {
     return {};
 }
-
-
