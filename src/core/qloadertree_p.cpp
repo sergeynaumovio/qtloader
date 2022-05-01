@@ -23,6 +23,7 @@
 #include "qloadercopyinterface.h"
 #include "qloadermoveinterface.h"
 #include "qloadersaveinterface.h"
+#include "qloadercd.h"
 #include "qloaderclear.h"
 #include "qloaderexit.h"
 #include "qloaderdata.h"
@@ -441,6 +442,15 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 {
     QByteArray className = settings->className();
     const char *shortName = className.data() + qstrlen("QLoader");
+
+    if (!qstrcmp(shortName, "Cd"))
+    {
+        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        if (shell)
+            return new QLoaderCd(settings, shell);
+
+        return parent;
+     }
 
     if (!qstrcmp(shortName, "Clear"))
     {

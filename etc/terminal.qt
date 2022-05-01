@@ -7,6 +7,9 @@ class = QLoaderTerminal
 class = QLoaderShell
 home = QStringList(Terminal)
 
+[Terminal/Shell/Cd]
+class = QLoaderCd
+
 [Terminal/Shell/Clear]
 class = QLoaderClear
 

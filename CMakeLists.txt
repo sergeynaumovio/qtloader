@@ -57,6 +57,8 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadertree_p.cpp
 
             src/shell/qloadercommandinterface.h
+            src/shell/qloadercd.h
+            src/shell/qloadercd.cpp
             src/shell/qloaderclear.h
             src/shell/qloaderclear.cpp
             src/shell/qloaderexit.h
