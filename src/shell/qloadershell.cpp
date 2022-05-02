@@ -56,13 +56,15 @@ void QLoaderShell::addCommand(QObject *object)
     }
 }
 
-bool QLoaderShell::cd(const QString &objectName)
+bool QLoaderShell::cd(const QString &relative)
 {
-    QStringList section = d_ptr->section;
-    section.append(objectName);
-    if (tree()->contains(section))
+    QStringList absolute = d_ptr->section;
+    for (const QString &name : relative.split('/'))
+        absolute.append(name);
+
+    if (tree()->contains(absolute))
     {
-        d_ptr->section = section;
+        d_ptr->section = absolute;
         if (d_ptr->terminal)
             d_ptr->terminal->setCurrentSection(d_ptr->section);
 
