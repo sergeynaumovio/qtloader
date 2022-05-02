@@ -20,21 +20,24 @@
 #include "qloaderterminalinterface.h"
 #include "qloadercommandinterface.h"
 #include "qloaderclear.h"
+#include "qloadertree.h"
 #include <QPlainTextEdit>
 
 class QLoaderShellPrivate
 {
 public:
     QHash<QString, QObject *> commands;
-    QLoaderTerminalInterface *terminal{};
+    QStringList home;
     QStringList section;
+    QLoaderTerminalInterface *terminal{};
 };
 
 QLoaderShell::QLoaderShell(QLoaderSettings *settings)
 :   QLoaderSettings(settings),
     d_ptr(new QLoaderShellPrivate)
 {
-    d_ptr->section = value("home", section()).toStringList();
+    d_ptr->home = value("home", section()).toStringList();
+    d_ptr->section = d_ptr->home;
 }
 
 QLoaderShell::~QLoaderShell()
@@ -53,10 +56,53 @@ void QLoaderShell::addCommand(QObject *object)
     }
 }
 
+bool QLoaderShell::cd(const QString &objectName)
+{
+    QStringList section = d_ptr->section;
+    section.append(objectName);
+    if (tree()->contains(section))
+    {
+        d_ptr->section = section;
+        if (d_ptr->terminal)
+            d_ptr->terminal->setCurrentSection(d_ptr->section);
+
+        return true;
+    }
+
+    return false;
+}
+
+void QLoaderShell::cdHome()
+{
+    d_ptr->section = d_ptr->home;
+    if (d_ptr->terminal)
+        d_ptr->terminal->setCurrentSection(d_ptr->section);
+}
+
+bool QLoaderShell::cdUp()
+{
+    if (d_ptr->section.size() > 1)
+    {
+        d_ptr->section.removeLast();
+        if (d_ptr->terminal)
+            d_ptr->terminal->setCurrentSection(d_ptr->section);
+
+        return true;
+    }
+
+    return false;
+}
+
 QLoaderError QLoaderShell::exec(const QString &name, const QStringList &arguments)
 {
     if (d_ptr->commands.contains(name))
-        return qobject_cast<QLoaderCommandInterface *>(d_ptr->commands[name])->exec(arguments);
+    {
+        QLoaderError error = qobject_cast<QLoaderCommandInterface *>(d_ptr->commands[name])->exec(arguments);
+        if (error && d_ptr->terminal)
+            d_ptr->terminal->out()->insertPlainText("\nshell: " + name + ": " + error.message);
+
+        return error;
+    }
 
     QLoaderError error{.status = QLoaderError::Object, .message = "command not found"};
     if (d_ptr->terminal)

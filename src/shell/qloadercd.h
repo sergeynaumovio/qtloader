@@ -22,6 +22,7 @@
 #include "qloadersettings.h"
 #include "qloadercommandinterface.h"
 
+class QLoaderCdPrivate;
 class QLoaderShell;
 
 class QLoaderCd : public QObject, public QLoaderSettings,
@@ -30,10 +31,11 @@ class QLoaderCd : public QObject, public QLoaderSettings,
     Q_OBJECT
     Q_INTERFACES(QLoaderCommandInterface)
 
-    QLoaderShell *const shell;
+    const QScopedPointer<QLoaderCdPrivate> d_ptr;
 
 public:
     Q_INVOKABLE QLoaderCd(QLoaderSettings *settings, QLoaderShell *parent);
+    ~QLoaderCd();
 
     QLoaderError exec(const QStringList &arguments) override;
     QString name() const override;
