@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     parser.addOption(QCommandLineOption({"s", "section"}, "Root section."));
     parser.addOption(QCommandLineOption("no-gui", "Start console application."));
 
-    parser.addPositionalArgument("file", "Set .qt file");
+    parser.addPositionalArgument("file", "Set .qt file.");
     parser.process(*app);
     QString fileName;
 
