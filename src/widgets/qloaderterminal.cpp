@@ -23,6 +23,7 @@
 #include <QLayout>
 #include <QMenu>
 #include <QPainter>
+#include <QProcess>
 #include <QRegularExpression>
 #include <QStack>
 #include <QTextBlock>
@@ -166,7 +167,7 @@ public:
             if ((match = command.regex.match(cmd)).hasMatch())
             {
                 command.name = match.captured();
-                shell->exec(command.name, {});
+                shell->exec(command.name, QProcess::splitCommand(cmd));
             }
         }
 
