@@ -47,7 +47,7 @@ public:
     struct
     {
         QStringList section;
-        QString name;
+        QString string;
 
     } path;
 
@@ -69,7 +69,7 @@ public:
     struct
     {
         QRegularExpression regex{"[^\\s]+"};
-        QString name;
+        QString string;
 
     } command;
 
@@ -100,7 +100,7 @@ public:
     {
         cursor.select(QTextCursor::LineUnderCursor);
         cursor.removeSelectedText();
-        q_ptr->insertPlainText(path.name);
+        q_ptr->insertPlainText(path.string);
     }
 
     void keyDown()
@@ -127,13 +127,13 @@ public:
     {
         cursor = q_ptr->textCursor();
         cursor.movePosition(QTextCursor::StartOfLine);
-        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.name.size());
+        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, path.string.size());
         q_ptr->setTextCursor(cursor);
     }
 
     bool keyLeft()
     {
-        if (position(q_ptr->textCursor()) > path.name.size())
+        if (position(q_ptr->textCursor()) > path.string.size())
         {
             cursor.movePosition(QTextCursor::Left);
 
@@ -146,7 +146,7 @@ public:
     void keyReturn()
     {
         QString string = cursor.block().text();
-        string.remove(0, path.name.size());
+        string.remove(0, path.string.size());
 
         if (string.size())
         {
@@ -166,15 +166,15 @@ public:
             QRegularExpressionMatch match;
             if ((match = command.regex.match(cmd)).hasMatch())
             {
-                command.name = match.captured();
-                shell->exec(command.name, QProcess::splitCommand(cmd));
+                command.string = match.captured();
+                shell->exec(command.string, QProcess::splitCommand(cmd));
             }
         }
 
         if (!q_ptr->document()->isEmpty())
             q_ptr->insertPlainText("\n");
 
-        q_ptr->insertPlainText(path.name);
+        q_ptr->insertPlainText(path.string);
         q_ptr->ensureCursorVisible();
         cursor = q_ptr->textCursor();
     }
@@ -206,7 +206,7 @@ public:
         else if (q_ptr->tree()->contains(section))
             path.section = section;
 
-        path.name = "[" + path.section.join('/') + "] ";
+        path.string = "[" + path.section.join('/') + "] ";
     }
 };
 
@@ -449,7 +449,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setWordWrapMode(QTextOption::WrapAnywhere);
 
-    insertPlainText(d_ptr->path.name);
+    insertPlainText(d_ptr->path.string);
 
     connect(this, &QPlainTextEdit::textChanged, [this]{ d_ptr->cursor = textCursor(); });
 
