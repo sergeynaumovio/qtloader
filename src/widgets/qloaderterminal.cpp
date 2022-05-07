@@ -346,6 +346,9 @@ void QLoaderTerminal::keyPressEvent(QKeyEvent *e)
         return;
     }
 
+    if (e->key() == Qt::Key_Tab)
+        return;
+
     if (e->key() == Qt::Key_Up)
     {
         if (modifier)
