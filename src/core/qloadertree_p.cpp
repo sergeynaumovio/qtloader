@@ -890,6 +890,8 @@ QLoaderError QLoaderTreePrivate::seekBlobs()
                        .status = QLoaderError::Format};
     QDataStream in(file);
     QUuid currentUuid;
+    const int uuidStringSize = currentUuid.toString(QUuid::WithoutBraces).size();
+    const QString format(" = QLoaderBlob(");
 
     auto errMessage = [&error](const QUuid uuid)
     {
@@ -899,14 +901,15 @@ QLoaderError QLoaderTreePrivate::seekBlobs()
 
     while (!file->atEnd())
     {
-        QByteArray text = file->readLine(37);
-        QUuid uuid(text);
+        QByteArray array = file->read(uuidStringSize);
+        QUuid uuid(array);
 
         if (!uuid.isNull())
             currentUuid = uuid;
 
-        text = file->readLine(16);
-        if (text != " = QLoaderBlob(")
+        array = file->read(format.size());
+
+        if (array != format)
             return errMessage(currentUuid);
 
         qint64 pos = file->pos();
