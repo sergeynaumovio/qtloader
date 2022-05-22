@@ -17,6 +17,7 @@
 ****************************************************************************/
 
 #include "qloaderterminal.h"
+#include "qloadercommandline.h"
 #include "qloadertree.h"
 #include "qloadershell.h"
 #include <QKeyEvent>
@@ -35,11 +36,16 @@ static int position(const QTextCursor &textCursor)
     return textCursor.position() - textCursor.block().position();
 }
 
+
+
 class QLoaderTerminalPrivate
 {
 public:
     QLoaderTerminal *const q_ptr;
+    QLoaderCommandLine *const commandLine;
+
     QTextCursor cursor;
+
 
     QLoaderShell *shell;
     QThread thread;
@@ -75,6 +81,7 @@ public:
 
     QLoaderTerminalPrivate(QLoaderTerminal *q)
     :   q_ptr(q),
+        commandLine(new QLoaderCommandLine(q)),
         shell(q->tree()->newShellInstance())
     {
         shell->setTerminal(q);
@@ -101,6 +108,13 @@ public:
         cursor.select(QTextCursor::LineUnderCursor);
         cursor.removeSelectedText();
         q_ptr->insertPlainText(path.string);
+    }
+
+    QString currentCommandLine() const
+    {
+        QString string = cursor.block().text();
+        string.remove(0, path.string.size());
+        return string;
     }
 
     void keyDown()
@@ -145,9 +159,7 @@ public:
 
     void keyReturn()
     {
-        QString string = cursor.block().text();
-        string.remove(0, path.string.size());
-
+        QString string = currentCommandLine();
         if (string.size())
         {
             while (history.down.size())
