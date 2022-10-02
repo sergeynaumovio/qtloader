@@ -67,19 +67,20 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/shell/qloadersave.cpp
             src/core/shell/qloadershell.h
             src/core/shell/qloadershell.cpp
+            src/core/shell/qloaderterminalinterface.h
 
-            src/terminal/qloaderterminal.h
-            src/terminal/qloaderterminal.cpp
-            src/terminal/qloaderterminalinterface.h
 
             src/widgets/qloadericoninterface.h
+
+            src/widgets/terminal/qloaderterminal.h
+            src/widgets/terminal/qloaderterminal.cpp
 )
 
 target_include_directories(${QT_LOADER_LIBRARY}
     PRIVATE src/core
             src/core/shell
-            src/terminal
             src/widgets
+            src/widgets/terminal
 )
 
 set(QT_LOADER_PUBLIC_HEADERS
@@ -107,14 +108,14 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/shell/qloadercommandinterface.h
     src/core/shell/QLoaderShell
     src/core/shell/qloadershell.h
-
-    src/terminal/QLoaderTerminalInterface
-    src/terminal/qloaderterminalinterface.h
-    src/terminal/QLoaderTerminal
-    src/terminal/qloaderterminal.h
+    src/core/shell/QLoaderTerminalInterface
+    src/core/shell/qloaderterminalinterface.h
 
     src/widgets/QLoaderIconInterface
     src/widgets/qloadericoninterface.h
+
+    src/widgets/terminal/QLoaderTerminal
+    src/widgets/terminal/qloaderterminal.h
 )
 
 set_target_properties(${QT_LOADER_LIBRARY} PROPERTIES
