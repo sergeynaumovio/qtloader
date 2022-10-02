@@ -56,17 +56,17 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadertree_p.h
             src/core/qloadertree_p.cpp
 
-            src/shell/qloadercommandinterface.h
-            src/shell/qloadercd.h
-            src/shell/qloadercd.cpp
-            src/shell/qloaderclear.h
-            src/shell/qloaderclear.cpp
-            src/shell/qloaderexit.h
-            src/shell/qloaderexit.cpp
-            src/shell/qloadersave.h
-            src/shell/qloadersave.cpp
-            src/shell/qloadershell.h
-            src/shell/qloadershell.cpp
+            src/core/shell/qloadercommandinterface.h
+            src/core/shell/qloadercd.h
+            src/core/shell/qloadercd.cpp
+            src/core/shell/qloaderclear.h
+            src/core/shell/qloaderclear.cpp
+            src/core/shell/qloaderexit.h
+            src/core/shell/qloaderexit.cpp
+            src/core/shell/qloadersave.h
+            src/core/shell/qloadersave.cpp
+            src/core/shell/qloadershell.h
+            src/core/shell/qloadershell.cpp
 
             src/terminal/qloaderterminal.h
             src/terminal/qloaderterminal.cpp
@@ -77,7 +77,7 @@ target_sources(${QT_LOADER_LIBRARY}
 
 target_include_directories(${QT_LOADER_LIBRARY}
     PRIVATE src/core
-            src/shell
+            src/core/shell
             src/terminal
             src/widgets
 )
@@ -103,10 +103,10 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/QLoaderTree
     src/core/qloadertree.h
 
-    src/shell/QLoaderCommandInterface
-    src/shell/qloadercommandinterface.h
-    src/shell/QLoaderShell
-    src/shell/qloadershell.h
+    src/core/shell/QLoaderCommandInterface
+    src/core/shell/qloadercommandinterface.h
+    src/core/shell/QLoaderShell
+    src/core/shell/qloadershell.h
 
     src/terminal/QLoaderTerminalInterface
     src/terminal/qloaderterminalinterface.h
