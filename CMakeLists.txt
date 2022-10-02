@@ -68,8 +68,6 @@ target_sources(${QT_LOADER_LIBRARY}
             src/shell/qloadershell.h
             src/shell/qloadershell.cpp
 
-            src/terminal/qloadercommandline.h
-            src/terminal/qloadercommandline.cpp
             src/terminal/qloaderterminal.h
             src/terminal/qloaderterminal.cpp
             src/terminal/qloaderterminalinterface.h

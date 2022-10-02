@@ -17,7 +17,6 @@
 ****************************************************************************/
 
 #include "qloaderterminal.h"
-#include "qloadercommandline.h"
 #include "qloadertree.h"
 #include "qloadershell.h"
 #include <QKeyEvent>
@@ -31,19 +30,34 @@
 #include <QTextCursor>
 #include <QThread>
 
+class QLoaderTerminalHistory
+{
+    QLoaderTerminal *const q_ptr;
+
+    QStack<QString> up;
+    QStack<QString> down;
+    bool skip{};
+
+public:
+    QLoaderTerminalHistory(QLoaderTerminal *q)
+    :   q_ptr(q)
+    { }
+};
+
+class QLoaderTerminalPromt
+{
+
+};
+
 static int position(const QTextCursor &textCursor)
 {
     return textCursor.position() - textCursor.block().position();
 }
 
-
-
 class QLoaderTerminalPrivate
 {
 public:
     QLoaderTerminal *const q_ptr;
-    QLoaderCommandLine *const commandLine;
-
     QTextCursor cursor;
 
 
@@ -81,7 +95,6 @@ public:
 
     QLoaderTerminalPrivate(QLoaderTerminal *q)
     :   q_ptr(q),
-        commandLine(new QLoaderCommandLine(q)),
         shell(q->tree()->newShellInstance())
     {
         shell->setTerminal(q);
