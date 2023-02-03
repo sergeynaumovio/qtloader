@@ -35,87 +35,80 @@ set(QT_LOADER_LIBRARY Qt${QT_VERSION_MAJOR}Loader)
 add_library(${QT_LOADER_LIBRARY} SHARED)
 
 target_sources(${QT_LOADER_LIBRARY}
-    PRIVATE src/core/qtloaderglobal.h
+    PRIVATE src/core/shell/qloadercd.cpp
+            src/core/shell/qloadercd.h
+            src/core/shell/qloaderclear.cpp
+            src/core/shell/qloaderclear.h
+            src/core/shell/qloadercommandinterface.h
+            src/core/shell/qloaderexit.cpp
+            src/core/shell/qloaderexit.h
+            src/core/shell/qloadersave.cpp
+            src/core/shell/qloadersave.h
+            src/core/shell/qloadershell.cpp
+            src/core/shell/qloadershell.h
+            src/core/shell/qloaderterminalinterface.h
             src/core/qloadercopyinterface.h
+            src/core/qloaderdata.cpp
+            src/core/qloaderdata.h
+            src/core/qloaderdir.cpp
+            src/core/qloaderdir.h
+            src/core/qloadererror.h
             src/core/qloadermoveinterface.h
             src/core/qloaderplugininterface.h
             src/core/qloadersaveinterface.h
-            src/core/qloaderdata.h
-            src/core/qloaderdata.cpp
-            src/core/qloaderdir.h
-            src/core/qloaderdir.cpp
-            src/core/qloadererror.h
-            src/core/qloaderstorage.h
-            src/core/qloaderstorage.cpp
-            src/core/qloaderstorage_p.h
-            src/core/qloaderstorage_p.cpp
-            src/core/qloadersettings.h
             src/core/qloadersettings.cpp
-            src/core/qloadertree.h
+            src/core/qloadersettings.h
+            src/core/qloaderstorage.cpp
+            src/core/qloaderstorage.h
+            src/core/qloaderstorage_p.cpp
+            src/core/qloaderstorage_p.h
             src/core/qloadertree.cpp
-            src/core/qloadertree_p.h
+            src/core/qloadertree.h
             src/core/qloadertree_p.cpp
-
-            src/core/shell/qloadercommandinterface.h
-            src/core/shell/qloadercd.h
-            src/core/shell/qloadercd.cpp
-            src/core/shell/qloaderclear.h
-            src/core/shell/qloaderclear.cpp
-            src/core/shell/qloaderexit.h
-            src/core/shell/qloaderexit.cpp
-            src/core/shell/qloadersave.h
-            src/core/shell/qloadersave.cpp
-            src/core/shell/qloadershell.h
-            src/core/shell/qloadershell.cpp
-            src/core/shell/qloaderterminalinterface.h
-
-
-            src/widgets/qloadericoninterface.h
-
-            src/widgets/terminal/qloaderterminal.h
+            src/core/qloadertree_p.h
+            src/core/qtloaderglobal.h
             src/widgets/terminal/qloaderterminal.cpp
+            src/widgets/terminal/qloaderterminal.h
+            src/widgets/qloadericoninterface.h
 )
 
 target_include_directories(${QT_LOADER_LIBRARY}
-    PRIVATE src/core
-            src/core/shell
-            src/widgets
+    PRIVATE src/core/shell
+            src/core
             src/widgets/terminal
+            src/widgets
 )
 
 set(QT_LOADER_PUBLIC_HEADERS
-    src/core/qtloaderglobal.h
-    src/core/QLoaderCopyInterface
-    src/core/qloadercopyinterface.h
-    src/core/QLoaderMoveInterface
-    src/core/qloadermoveinterface.h
-    src/core/QLoaderPluginInterface
-    src/core/qloaderplugininterface.h
-    src/core/QLoaderSaveInterface
-    src/core/qloadersaveinterface.h
-    src/core/QLoaderData
-    src/core/qloaderdata.h
-    src/core/QLoaderDir
-    src/core/qloaderdir.h
-    src/core/QLoaderError
-    src/core/qloadererror.h
-    src/core/QLoaderSettings
-    src/core/qloadersettings.h
-    src/core/QLoaderTree
-    src/core/qloadertree.h
-
     src/core/shell/QLoaderCommandInterface
-    src/core/shell/qloadercommandinterface.h
     src/core/shell/QLoaderShell
-    src/core/shell/qloadershell.h
     src/core/shell/QLoaderTerminalInterface
+    src/core/shell/qloadercommandinterface.h
+    src/core/shell/qloadershell.h
     src/core/shell/qloaderterminalinterface.h
-
-    src/widgets/QLoaderIconInterface
-    src/widgets/qloadericoninterface.h
-
+    src/core/QLoaderCopyInterface
+    src/core/QLoaderData
+    src/core/QLoaderDir
+    src/core/QLoaderError
+    src/core/QLoaderMoveInterface
+    src/core/QLoaderPluginInterface
+    src/core/QLoaderSaveInterface
+    src/core/QLoaderSettings
+    src/core/QLoaderTree
+    src/core/qloadercopyinterface.h
+    src/core/qloaderdata.h
+    src/core/qloaderdir.h
+    src/core/qloadererror.h
+    src/core/qloadermoveinterface.h
+    src/core/qloaderplugininterface.h
+    src/core/qloadersaveinterface.h
+    src/core/qloadersettings.h
+    src/core/qloadertree.h
+    src/core/qtloaderglobal.h
     src/widgets/terminal/QLoaderTerminal
     src/widgets/terminal/qloaderterminal.h
+    src/widgets/QLoaderIconInterface
+    src/widgets/qloadericoninterface.h
 )
 
 set_target_properties(${QT_LOADER_LIBRARY} PROPERTIES
