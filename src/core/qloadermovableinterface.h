@@ -9,7 +9,7 @@
 class QLoaderMovableInterface
 {
 public:
-    virtual bool isMovable(const QStringList &to) = 0;
+    virtual bool isMovable(const QStringList &to) const = 0;
 };
 Q_DECLARE_INTERFACE(QLoaderMovableInterface, "QLoaderMovableInterface")
 
