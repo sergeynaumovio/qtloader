@@ -1,12 +1,12 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadertree_p.h"
 #include "qloadertree.h"
 #include "qloadersettings.h"
 #include "qloaderplugininterface.h"
-#include "qloadercopyinterface.h"
-#include "qloadermoveinterface.h"
+#include "qloadercopyableinterface.h"
+#include "qloadermovableinterface.h"
 #include "qloadersaveinterface.h"
 #include "qloadercd.h"
 #include "qloaderclear.h"
@@ -94,7 +94,7 @@ class QLoaderTreeSectionAction
 {
     QLoaderTreePrivate *const d_ptr;
 
-    bool interface();
+    bool able();
 
 public:
     QLoaderTreeSection<Interface> src;
@@ -108,12 +108,6 @@ public:
         dst(dstPath, d)
     { }
 
-    ~QLoaderTreeSectionAction()
-    {
-        from();
-        d_ptr->emitSettingsChanged();
-    }
-
     QLoaderError error()
     {
         d_ptr->mutex.lock();
@@ -126,7 +120,7 @@ public:
             return {.status = QLoaderError::Design, .message = "section not valid"};
 
         src.interface = qobject_cast<Interface*>(src.object);
-        if (!src.interface || !interface())
+        if (!src.interface || !able())
         {
             QLoaderError err;
             if (!src.interface)
@@ -142,8 +136,6 @@ public:
 
         return {};
     }
-
-    void from();
 
     static QStringList section(const QStringList &itemSection,
                                const QStringList &srcSection,
@@ -161,29 +153,16 @@ public:
 };
 
 template<>
-bool QLoaderTreeSectionAction<QLoaderCopyInterface>::interface()
+bool QLoaderTreeSectionAction<QLoaderCopyableInterface>::able()
 {
-    return src.interface->copy(dst.section);
+    return src.interface->isCopyable(dst.section);
 }
 
 template<>
-bool QLoaderTreeSectionAction<QLoaderMoveInterface>::interface()
+bool QLoaderTreeSectionAction<QLoaderMovableInterface>::able()
 {
-    return src.interface->move(dst.section);
+    return src.interface->isMovable(dst.section);
 }
-
-template<>
-void QLoaderTreeSectionAction<QLoaderCopyInterface>::from()
-{
-    d_ptr->mutex.lock();
-    dst.object = d_ptr->hash.data[src.settings].object;
-    dst.interface = qobject_cast<QLoaderCopyInterface*>(src.object);
-    dst.interface->copy(src.object);
-    d_ptr->mutex.unlock();
-}
-
-template<>
-void QLoaderTreeSectionAction<QLoaderMoveInterface>::from() { }
 
 class KeyValueParser
 {
@@ -816,12 +795,12 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
 }
 
 void QLoaderTreePrivate::moveRecursive(QLoaderSettings *settings,
-                                       const QLoaderTreeSection<QLoaderMoveInterface> &src,
-                                       const QLoaderTreeSection<QLoaderMoveInterface> &dst)
+                                       const QLoaderTreeSection<QLoaderMovableInterface> &src,
+                                       const QLoaderTreeSection<QLoaderMovableInterface> &dst)
 {
     QLoaderSettingsData &item = hash.data[settings];
 
-    QStringList section = QLoaderTreeSectionAction<QLoaderMoveInterface>::section(item.section, src.section, dst.section);
+    QStringList section = QLoaderTreeSectionAction<QLoaderMovableInterface>::section(item.section, src.section, dst.section);
 
     hash.settings.remove(item.section);
     hash.settings[section] = settings;
@@ -1202,7 +1181,7 @@ QLoaderError QLoaderTreePrivate::load()
 
 QLoaderError QLoaderTreePrivate::move(const QStringList &section, const QStringList &to)
 {
-    QLoaderTreeSectionAction<QLoaderMoveInterface> mv(section, to, this);
+    QLoaderTreeSectionAction<QLoaderMovableInterface> mv(section, to, this);
 
     QLoaderError error;
     if ((error = mv.error()))
@@ -1213,6 +1192,8 @@ QLoaderError QLoaderTreePrivate::move(const QStringList &section, const QStringL
     hash.data[mv.dst.parent.settings].children.push_back(mv.src.settings);
     moveRecursive(mv.src.settings, mv.src, mv.dst);
     mutex.unlock();
+
+    emitSettingsChanged();
 
     return {};
 }
@@ -1235,12 +1216,12 @@ QString QLoaderTreePrivate::fromVariant(const QVariant &variant) const
 }
 
 void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
-                                       const QLoaderTreeSection<QLoaderCopyInterface> &src,
-                                       const QLoaderTreeSection<QLoaderCopyInterface> &dst)
+                                       const QLoaderTreeSection<QLoaderCopyableInterface> &src,
+                                       const QLoaderTreeSection<QLoaderCopyableInterface> &dst)
 {
     QLoaderSettingsData &item = hash.data[settings];
 
-    QStringList section = QLoaderTreeSectionAction<QLoaderCopyInterface>::section(item.section, src.section, dst.section);
+    QStringList section = QLoaderTreeSectionAction<QLoaderCopyableInterface>::section(item.section, src.section, dst.section);
 
     QLoaderSettings *copySettings = new QLoaderSettings(*this);
     d.copied.append(copySettings);
@@ -1265,7 +1246,7 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
 
 QLoaderError QLoaderTreePrivate::copy(const QStringList &section, const QStringList &to)
 {
-    QLoaderTreeSectionAction<QLoaderCopyInterface> cp(section, to, this);
+    QLoaderTreeSectionAction<QLoaderCopyableInterface> cp(section, to, this);
 
     QLoaderError error;
     if ((error = cp.error()))
@@ -1292,6 +1273,8 @@ QLoaderError QLoaderTreePrivate::copy(const QStringList &section, const QStringL
 
         return error;
     }
+
+    emitSettingsChanged();
 
     return {};
 }

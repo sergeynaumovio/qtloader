@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #ifndef QLOADERTREE_P_H
@@ -17,8 +17,8 @@ class QFile;
 class QTextStream;
 class QLoaderTreePrivateData;
 template<typename Interface> class QLoaderTreeSection;
-class QLoaderCopyInterface;
-class QLoaderMoveInterface;
+class QLoaderCopyableInterface;
+class QLoaderMovableInterface;
 class QLoaderData;
 class QLoaderStoragePrivate;
 class QLoaderBlob;
@@ -51,14 +51,14 @@ class QLoaderTreePrivate
     QLoaderTreePrivateData &d;
     std::aligned_storage_t<240, sizeof (ptrdiff_t)> d_storage;
     void copyRecursive(QLoaderSettings *settings,
-                       const QLoaderTreeSection<QLoaderCopyInterface> &src,
-                       const QLoaderTreeSection<QLoaderCopyInterface> &dst);
+                       const QLoaderTreeSection<QLoaderCopyableInterface> &src,
+                       const QLoaderTreeSection<QLoaderCopyableInterface> &dst);
     void dumpRecursive(QLoaderSettings *settings) const;
     QLoaderError load(const QStringList &section);
     QLoaderError loadRecursive(QLoaderSettings *settings, QObject *parent);
     void moveRecursive(QLoaderSettings *settings,
-                       const QLoaderTreeSection<QLoaderMoveInterface> &src,
-                       const QLoaderTreeSection<QLoaderMoveInterface> &dst);
+                       const QLoaderTreeSection<QLoaderMovableInterface> &src,
+                       const QLoaderTreeSection<QLoaderMovableInterface> &dst);
     QLoaderError seekBlobs();
     QLoaderError readSettings();
     void removeRecursive(QLoaderSettings *settings);
