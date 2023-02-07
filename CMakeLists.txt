@@ -47,13 +47,11 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/shell/qloadershell.cpp
             src/core/shell/qloadershell.h
             src/core/shell/qloaderterminalinterface.h
-            src/core/qloadercopyableinterface.h
             src/core/qloaderdata.cpp
             src/core/qloaderdata.h
             src/core/qloaderdir.cpp
             src/core/qloaderdir.h
             src/core/qloadererror.h
-            src/core/qloadermovableinterface.h
             src/core/qloaderplugininterface.h
             src/core/qloadersaveinterface.h
             src/core/qloadersettings.cpp
@@ -86,20 +84,16 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/shell/qloadercommandinterface.h
     src/core/shell/qloadershell.h
     src/core/shell/qloaderterminalinterface.h
-    src/core/QLoaderCopyableInterface
     src/core/QLoaderData
     src/core/QLoaderDir
     src/core/QLoaderError
-    src/core/QLoaderMovableInterface
     src/core/QLoaderPluginInterface
     src/core/QLoaderSaveInterface
     src/core/QLoaderSettings
     src/core/QLoaderTree
-    src/core/qloadercopyableinterface.h
     src/core/qloaderdata.h
     src/core/qloaderdir.h
     src/core/qloadererror.h
-    src/core/qloadermovableinterface.h
     src/core/qloaderplugininterface.h
     src/core/qloadersaveinterface.h
     src/core/qloadersettings.h

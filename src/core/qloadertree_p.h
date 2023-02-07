@@ -16,9 +16,7 @@ class QLoaderTree;
 class QFile;
 class QTextStream;
 class QLoaderTreePrivateData;
-template<typename Interface> class QLoaderTreeSection;
-class QLoaderCopyableInterface;
-class QLoaderMovableInterface;
+class QLoaderTreeSection;
 class QLoaderData;
 class QLoaderStoragePrivate;
 class QLoaderBlob;
@@ -51,14 +49,14 @@ class QLoaderTreePrivate
     QLoaderTreePrivateData &d;
     std::aligned_storage_t<240, sizeof (ptrdiff_t)> d_storage;
     void copyRecursive(QLoaderSettings *settings,
-                       const QLoaderTreeSection<QLoaderCopyableInterface> &src,
-                       const QLoaderTreeSection<QLoaderCopyableInterface> &dst);
+                       const QLoaderTreeSection &src,
+                       const QLoaderTreeSection &dst);
     void dumpRecursive(QLoaderSettings *settings) const;
     QLoaderError load(const QStringList &section);
     QLoaderError loadRecursive(QLoaderSettings *settings, QObject *parent);
     void moveRecursive(QLoaderSettings *settings,
-                       const QLoaderTreeSection<QLoaderMovableInterface> &src,
-                       const QLoaderTreeSection<QLoaderMovableInterface> &dst);
+                       const QLoaderTreeSection &src,
+                       const QLoaderTreeSection &dst);
     QLoaderError seekBlobs();
     QLoaderError readSettings();
     void removeRecursive(QLoaderSettings *settings);

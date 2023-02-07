@@ -51,6 +51,8 @@ public:
     QByteArray className() const;
     QLoaderSettings::Key contains(const QString &key) const;
     void dumpSettingsTree() const;
+    virtual bool isCopyable(const QStringList &to) const;
+    virtual bool isMovable(const QStringList &to) const;
     virtual QLoaderBlob saveBlob(const QString &key) const;
     QStringList section() const;
     QLoaderTree *tree() const;

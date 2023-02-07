@@ -199,6 +199,16 @@ void QLoaderSettings::dumpSettingsTree() const
     d_ptr->mutex.unlock();
 }
 
+bool QLoaderSettings::isCopyable(const QStringList &) const
+{
+    return {};
+}
+
+bool QLoaderSettings::isMovable(const QStringList &) const
+{
+    return {};
+}
+
 QLoaderBlob QLoaderSettings::saveBlob(const QString &/*key*/) const
 {
     return {};
