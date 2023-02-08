@@ -65,6 +65,8 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadertree_p.cpp
             src/core/qloadertree_p.h
             src/core/qtloaderglobal.h
+            src/widgets/markupcommander/qloadermarkupcommander.cpp
+            src/widgets/markupcommander/qloadermarkupcommander.h
             src/widgets/terminal/qloaderterminal.cpp
             src/widgets/terminal/qloaderterminal.h
             src/widgets/qloadericoninterface.h
@@ -99,6 +101,8 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadersettings.h
     src/core/qloadertree.h
     src/core/qtloaderglobal.h
+    src/widgets/markupcommander/QLoaderMarkupCommander
+    src/widgets/markupcommander/qloadermarkupcommander.h
     src/widgets/terminal/QLoaderTerminal
     src/widgets/terminal/qloaderterminal.h
     src/widgets/QLoaderIconInterface
