@@ -9,12 +9,7 @@ QLoaderSettings::QLoaderSettings(QLoaderSettings *&settings)
     d_ptr(settings->d_ptr)
 {
     d_ptr->mutex.lock();
-    {
-        if (!d_ptr->hash.data[q_ptr].settings)
-            d_ptr->hash.data[q_ptr].settings = this;
-
-        ++d_ptr->hash.data[q_ptr].useCount;
-    }
+    d_ptr->hash.data[q_ptr].settings.push_back(this);
     d_ptr->mutex.unlock();
 
     settings = this;
@@ -34,8 +29,9 @@ QLoaderSettings::~QLoaderSettings()
         {
             QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
             QLoaderSettingsData &item = data[q_ptr];
+            item.settings.removeOne(this);
 
-            if ((removeLastInstance = (--item.useCount == 0)))
+            if ((removeLastInstance = (item.settings.size() == 0)))
             {
                 if (data.contains(item.parent))
                     std::erase(data[item.parent].children, q_ptr);

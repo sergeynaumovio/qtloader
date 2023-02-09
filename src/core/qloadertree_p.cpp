@@ -148,13 +148,13 @@ public:
 template<>
 bool QLoaderTreeSectionAction<Copy>::allow() const
 {
-    return d_ptr->hash.data[src.settings].settings->isCopyable(dst.section);
+    return d_ptr->hash.data[src.settings].settings.front()->isCopyable(dst.section);
 }
 
 template<>
 bool QLoaderTreeSectionAction<Move>::allow() const
 {
-    return d_ptr->hash.data[src.settings].settings->isMovable(dst.section);
+    return d_ptr->hash.data[src.settings].settings.front()->isMovable(dst.section);
 }
 
 class KeyValueParser
@@ -817,7 +817,7 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
         return shell;
     }
 
-    QLoaderShell *const shell = new QLoaderShell(hash.data[d.shell.settings].settings);
+    QLoaderShell *const shell = new QLoaderShell(hash.data[d.shell.settings].settings.front());
     mutex.lock();
     const int settings_size = int(hash.data[d.shell.settings].children.size());
     mutex.unlock();
@@ -826,7 +826,7 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
     {
         mutex.lock();
         QObject *object = d.shell.object->children()[o];
-        QLoaderSettings *settings = hash.data[hash.data[d.shell.settings].children[s]].settings;
+        QLoaderSettings *settings = hash.data[hash.data[d.shell.settings].children[s]].settings.front();
         mutex.unlock();
 
         if (qobject_cast<QLoaderCommandInterface *>(object))

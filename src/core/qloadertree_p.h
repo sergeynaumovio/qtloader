@@ -37,8 +37,7 @@ struct QLoaderSettingsData
     int sectionLine{};
     QByteArray className;
     QObject *object{};
-    QLoaderSettings *settings{};
-    int useCount{};
+    QList<QLoaderSettings *> settings;
     QMap<QString, QLoaderProperty> properties;
     std::vector<QLoaderSettings*> children;
 

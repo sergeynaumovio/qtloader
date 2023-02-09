@@ -35,7 +35,7 @@ void QLoaderStoragePrivate::saveRecursive(QLoaderSettings *settings, QDataStream
         out.writeRawData(array.data(), array.size());
 
         Position pos{.start = ofile->pos()};
-        QLoaderBlob bo = item.settings->saveBlob(i.key());
+        QLoaderBlob bo = item.settings.front()->saveBlob(i.key());
         if (bo.array.isNull())
             bo = blob(uuid);
 
