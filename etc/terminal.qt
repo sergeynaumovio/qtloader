@@ -2,6 +2,7 @@
 
 [Terminal]
 class = QLoaderTerminal
+visible = true
 
 [Terminal/Shell]
 class = QLoaderShell

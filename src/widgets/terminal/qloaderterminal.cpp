@@ -470,8 +470,6 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 
     if (parent)
         parent->layout()->addWidget(this);
-    else
-         show();
 
     setFocus();
 }
