@@ -817,7 +817,7 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
         return shell;
     }
 
-    QLoaderShell *const shell = new QLoaderShell(d.shell.settings);
+    QLoaderShell *const shell = new QLoaderShell(hash.data[d.shell.settings].settings);
     mutex.lock();
     const int settings_size = int(hash.data[d.shell.settings].children.size());
     mutex.unlock();
@@ -826,7 +826,7 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
     {
         mutex.lock();
         QObject *object = d.shell.object->children()[o];
-        QLoaderSettings *settings = hash.data[d.shell.settings].children[s];
+        QLoaderSettings *settings = hash.data[hash.data[d.shell.settings].children[s]].settings;
         mutex.unlock();
 
         if (qobject_cast<QLoaderCommandInterface *>(object))
