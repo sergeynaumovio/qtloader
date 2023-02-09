@@ -38,6 +38,7 @@ struct QLoaderSettingsData
     QByteArray className;
     QObject *object{};
     QLoaderSettings *settings{};
+    int useCount{};
     QMap<QString, QLoaderProperty> properties;
     std::vector<QLoaderSettings*> children;
 

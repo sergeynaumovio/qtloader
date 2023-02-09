@@ -4,14 +4,20 @@
 #include "qloadersettings.h"
 #include "qloadertree_p.h"
 
-QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
+QLoaderSettings::QLoaderSettings(QLoaderSettings *&settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
 {
     d_ptr->mutex.lock();
-    if (!d_ptr->hash.data[q_ptr].settings)
-        d_ptr->hash.data[q_ptr].settings = this;
+    {
+        if (!d_ptr->hash.data[q_ptr].settings)
+            d_ptr->hash.data[q_ptr].settings = this;
+
+        ++d_ptr->hash.data[q_ptr].useCount;
+    }
     d_ptr->mutex.unlock();
+
+    settings = this;
 }
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)
@@ -23,21 +29,28 @@ QLoaderSettings::~QLoaderSettings()
 {
     if (q_ptr != this)
     {
+        bool removeLastInstance{};
         d_ptr->mutex.lock();
         {
             QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
-            const QLoaderSettingsData &item = data[q_ptr];
+            QLoaderSettingsData &item = data[q_ptr];
 
-            if (data.contains(item.parent))
-                std::erase(data[item.parent].children, q_ptr);
+            if ((removeLastInstance = (--item.useCount == 0)))
+            {
+                if (data.contains(item.parent))
+                    std::erase(data[item.parent].children, q_ptr);
 
-            d_ptr->hash.settings.remove(item.section);
-            data.remove(q_ptr);
+                d_ptr->hash.settings.remove(item.section);
 
-            d_ptr->modified = true;
+                data.remove(q_ptr);
+
+                d_ptr->modified = true;
+            }
         }
         d_ptr->mutex.unlock();
-        emit d_ptr->q_ptr->settingsChanged();
+
+        if (removeLastInstance)
+            emit d_ptr->q_ptr->settingsChanged();
     }
 }
 
