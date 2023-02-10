@@ -84,10 +84,9 @@ public:
 
     } hash;
 
-    struct Vector
+    struct
     {
         QList<QLoaderSettings *> settings;
-        ~Vector() { qDeleteAll(settings); }
 
     } vector;
 
