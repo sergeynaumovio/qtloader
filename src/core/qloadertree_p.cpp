@@ -1255,7 +1255,7 @@ QLoaderError QLoaderTreePrivate::copy(const QStringList &section, const QStringL
     error = loadRecursive(settings, parent);
 
     mutex.lock();
-    qDeleteAll(d.copied);
+    vector.settings.append(d.copied);
     d.copied.clear();
     mutex.unlock();
 
