@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #ifndef QLOADERTERMINAL_H
@@ -26,7 +26,7 @@ protected:
     void paintEvent(QPaintEvent *e) override;
 
 public:
-    Q_INVOKABLE QLoaderTerminal(QLoaderSettings *settings, QWidget *parent);
+    Q_INVOKABLE QLoaderTerminal(QLoaderSettings *settings, QWidget *parent = nullptr);
     ~QLoaderTerminal();
 
     QPlainTextEdit *out() override;
