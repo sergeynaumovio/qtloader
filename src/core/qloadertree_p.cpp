@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadertree_p.h"
-#include "qloadertree.h"
-#include "qloadersettings.h"
-#include "qloaderplugininterface.h"
-#include "qloadersaveinterface.h"
-#include "qloadercd.h"
-#include "qloaderclear.h"
-#include "qloaderexit.h"
 #include "qloaderdata.h"
 #include "qloaderdir.h"
-#include "qloadersave.h"
+#include "qloadertree.h"
+#include "qloaderplugininterface.h"
+#include "qloadersaveinterface.h"
+#include "qloadersettings.h"
 #include "qloadershell.h"
+#include "qloadershellcd.h"
+#include "qloadershellclear.h"
+#include "qloadershellexit.h"
+#include "qloadershellsave.h"
 #include "qloaderstorage.h"
 #include "qloaderstorage_p.h"
 #include "qloaderterminal.h"
@@ -400,20 +400,20 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
     QByteArray className = settings->className();
     const char *shortName = className.data() + qstrlen("QLoader");
 
-    if (!qstrcmp(shortName, "Cd"))
+    if (!qstrcmp(shortName, "ShellCd"))
     {
         QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
         if (shell)
-            return new QLoaderCd(settings, shell);
+            return new QLoaderShellCd(settings, shell);
 
         return parent;
      }
 
-    if (!qstrcmp(shortName, "Clear"))
+    if (!qstrcmp(shortName, "ShellClear"))
     {
         QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
         if (shell)
-            return new QLoaderClear(settings, shell);
+            return new QLoaderShellClear(settings, shell);
 
         return parent;
      }
@@ -440,20 +440,20 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         return parent;
     }
 
-    if (!qstrcmp(shortName, "Exit"))
+    if (!qstrcmp(shortName, "ShellExit"))
     {
         QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
         if (shell)
-            return new QLoaderExit(settings, shell);
+            return new QLoaderShellExit(settings, shell);
 
         return parent;
      }
 
-    if (!qstrcmp(shortName, "Save"))
+    if (!qstrcmp(shortName, "ShellSave"))
     {
         QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
         if (shell)
-            return new QLoaderSave(settings, shell);
+            return new QLoaderShellSave(settings, shell);
 
         return parent;
      }
@@ -950,6 +950,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
             if (!hash.settings.contains(section))
             {
                 hash.settings[section] = settings;
+                vector.settings.push_back(settings);
 
                 if (section.size() == 1 && section.back().size())
                 {
@@ -1153,7 +1154,6 @@ QLoaderError QLoaderTreePrivate::load()
 
     } while (0);
 
-    qDeleteAll(hash.settings);
     if (!loaded)
     {
         file->close();

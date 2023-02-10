@@ -1,12 +1,12 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
-#include "qloaderclear.h"
+#include "qloadershellclear.h"
 #include "qloadershell.h"
 #include "qloaderterminalinterface.h"
 #include <QPlainTextEdit>
 
-QLoaderClear::QLoaderClear(QLoaderSettings *settings, QLoaderShell *parent)
+QLoaderShellClear::QLoaderShellClear(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
     QLoaderSettings(settings),
     shell(parent)
@@ -14,7 +14,7 @@ QLoaderClear::QLoaderClear(QLoaderSettings *settings, QLoaderShell *parent)
     parent->addCommand(this);
 }
 
-QLoaderError QLoaderClear::exec(const QStringList &/*arguments*/)
+QLoaderError QLoaderShellClear::exec(const QStringList &/*arguments*/)
 {
     if (shell->terminal())
         shell->terminal()->out()->clear();
@@ -22,12 +22,12 @@ QLoaderError QLoaderClear::exec(const QStringList &/*arguments*/)
     return {};
 }
 
-QString QLoaderClear::name() const
+QString QLoaderShellClear::name() const
 {
     return "clear";
 }
 
-QStringList QLoaderClear::tab(const QStringList &/*arguments*/)
+QStringList QLoaderShellClear::tab(const QStringList &/*arguments*/)
 {
     return {};
 }

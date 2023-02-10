@@ -1,10 +1,9 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadershell.h"
 #include "qloaderterminalinterface.h"
 #include "qloadercommandinterface.h"
-#include "qloaderclear.h"
 #include "qloadertree.h"
 #include <QPlainTextEdit>
 

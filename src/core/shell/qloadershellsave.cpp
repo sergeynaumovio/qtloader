@@ -1,11 +1,11 @@
 // Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
-#include "qloadersave.h"
+#include "qloadershellsave.h"
 #include "qloadershell.h"
 #include "qloadertree.h"
 
-QLoaderSave::QLoaderSave(QLoaderSettings *settings, QLoaderShell *parent)
+QLoaderShellSave::QLoaderShellSave(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
     QLoaderSettings(settings),
     shell(parent)
@@ -13,19 +13,19 @@ QLoaderSave::QLoaderSave(QLoaderSettings *settings, QLoaderShell *parent)
     parent->addCommand(this);
 }
 
-QLoaderError QLoaderSave::exec(const QStringList &/*arguments*/)
+QLoaderError QLoaderShellSave::exec(const QStringList &/*arguments*/)
 {
     tree()->save();
 
     return {};
 }
 
-QString QLoaderSave::name() const
+QString QLoaderShellSave::name() const
 {
     return "save";
 }
 
-QStringList QLoaderSave::tab(const QStringList &/*arguments*/)
+QStringList QLoaderShellSave::tab(const QStringList &/*arguments*/)
 {
     return {};
 }

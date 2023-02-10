@@ -35,17 +35,17 @@ set(QT_LOADER_LIBRARY Qt${QT_VERSION_MAJOR}Loader)
 add_library(${QT_LOADER_LIBRARY} SHARED)
 
 target_sources(${QT_LOADER_LIBRARY}
-    PRIVATE src/core/shell/qloadercd.cpp
-            src/core/shell/qloadercd.h
-            src/core/shell/qloaderclear.cpp
-            src/core/shell/qloaderclear.h
-            src/core/shell/qloadercommandinterface.h
-            src/core/shell/qloaderexit.cpp
-            src/core/shell/qloaderexit.h
-            src/core/shell/qloadersave.cpp
-            src/core/shell/qloadersave.h
+    PRIVATE src/core/shell/qloadercommandinterface.h
             src/core/shell/qloadershell.cpp
             src/core/shell/qloadershell.h
+            src/core/shell/qloadershellcd.cpp
+            src/core/shell/qloadershellcd.h
+            src/core/shell/qloadershellclear.cpp
+            src/core/shell/qloadershellclear.h
+            src/core/shell/qloadershellexit.cpp
+            src/core/shell/qloadershellexit.h
+            src/core/shell/qloadershellsave.cpp
+            src/core/shell/qloadershellsave.h
             src/core/shell/qloaderterminalinterface.h
             src/core/qloaderdata.cpp
             src/core/qloaderdata.h
