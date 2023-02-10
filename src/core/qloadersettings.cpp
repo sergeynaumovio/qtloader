@@ -4,15 +4,13 @@
 #include "qloadersettings.h"
 #include "qloadertree_p.h"
 
-QLoaderSettings::QLoaderSettings(QLoaderSettings *&settings)
+QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
 {
     d_ptr->mutex.lock();
     d_ptr->hash.data[q_ptr].settings.push_back(this);
     d_ptr->mutex.unlock();
-
-    settings = this;
 }
 
 QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)

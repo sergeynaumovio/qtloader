@@ -25,7 +25,7 @@ class Q_LOADER_EXPORT QLoaderSettings
     QLoaderTreePrivate *const d_ptr;
 
 protected:
-    explicit QLoaderSettings(QLoaderSettings *&settings);
+    explicit QLoaderSettings(QLoaderSettings *settings);
 
     bool addBlob(const QString &key);
     void emitError(const QString &error) const;

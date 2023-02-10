@@ -48,6 +48,7 @@ class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
     std::aligned_storage_t<240, sizeof (ptrdiff_t)> d_storage;
+
     void copyRecursive(QLoaderSettings *settings,
                        const QLoaderTreeSection &src,
                        const QLoaderTreeSection &dst);
@@ -77,11 +78,19 @@ public:
 
     struct
     {
-        QHash<QStringList, QLoaderSettings*> settings;
-        QHash<QLoaderSettings*, QLoaderSettingsData> data;
+        QHash<QStringList, QLoaderSettings *> settings;
+        QHash<QLoaderSettings *, QLoaderSettingsData> data;
         QHash<QUuid, qint64> blobs;
 
     } hash;
+
+    struct Vector
+    {
+        QList<QLoaderSettings *> settings;
+        ~Vector() { qDeleteAll(settings); }
+
+    } vector;
+
 
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
