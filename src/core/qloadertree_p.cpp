@@ -388,6 +388,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
     d.~QLoaderTreePrivateData();
+    qDeleteAll(hash.settings);
 }
 
 QLoaderBlob QLoaderTreePrivate::blob(const QUuid &uuid) const
