@@ -388,7 +388,6 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
     d.~QLoaderTreePrivateData();
-    qDeleteAll(vector.settings);
 }
 
 QLoaderBlob QLoaderTreePrivate::blob(const QUuid &uuid) const
@@ -951,7 +950,6 @@ QLoaderError QLoaderTreePrivate::readSettings()
             if (!hash.settings.contains(section))
             {
                 hash.settings[section] = settings;
-                vector.settings.push_back(settings);
 
                 if (section.size() == 1 && section.back().size())
                 {
@@ -1255,7 +1253,6 @@ QLoaderError QLoaderTreePrivate::copy(const QStringList &section, const QStringL
     error = loadRecursive(settings, parent);
 
     mutex.lock();
-    vector.settings.append(d.copied);
     d.copied.clear();
     mutex.unlock();
 

@@ -84,13 +84,6 @@ public:
 
     } hash;
 
-    struct
-    {
-        QList<QLoaderSettings *> settings;
-
-    } vector;
-
-
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
 

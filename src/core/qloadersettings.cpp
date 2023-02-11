@@ -35,10 +35,10 @@ QLoaderSettings::~QLoaderSettings()
                     std::erase(data[item.parent].children, q_ptr);
 
                 d_ptr->hash.settings.remove(item.section);
-
                 data.remove(q_ptr);
-
                 d_ptr->modified = true;
+
+                delete q_ptr;
             }
         }
         d_ptr->mutex.unlock();
