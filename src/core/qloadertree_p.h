@@ -39,7 +39,7 @@ struct QLoaderSettingsData
     QObject *object{};
     QList<QLoaderSettings *> settings;
     QMap<QString, QLoaderProperty> properties;
-    std::vector<QLoaderSettings*> children;
+    QList<QLoaderSettings *> children;
 
     void clear();
 };

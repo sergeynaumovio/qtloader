@@ -774,7 +774,7 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
 
     mutex.lock();
     setProperties(hash.data[settings], object);
-    std::vector<QLoaderSettings*> children = hash.data[settings].children;
+    QList<QLoaderSettings *> children = hash.data[settings].children;
     mutex.unlock();
 
     for (QLoaderSettings *child : children)
@@ -1180,7 +1180,7 @@ QLoaderError QLoaderTreePrivate::move(const QStringList &section, const QStringL
         return error;
 
     mutex.lock();
-    std::erase(hash.data[mv.src.parent.settings].children, mv.src.settings);
+    hash.data[mv.src.parent.settings].children.removeOne(mv.src.settings);
     hash.data[mv.dst.parent.settings].children.push_back(mv.src.settings);
     moveRecursive(mv.src.settings, mv.src, mv.dst);
     mutex.unlock();

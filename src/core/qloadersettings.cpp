@@ -32,7 +32,7 @@ QLoaderSettings::~QLoaderSettings()
             if ((removeLastInstance = (item.settings.size() == 0)))
             {
                 if (data.contains(item.parent))
-                    std::erase(data[item.parent].children, q_ptr);
+                    data[item.parent].children.removeOne(q_ptr);
 
                 d_ptr->hash.settings.remove(item.section);
                 data.remove(q_ptr);
