@@ -34,7 +34,8 @@ QLoaderSettings::~QLoaderSettings()
                 if (data.contains(item.parent))
                     data[item.parent].children.removeOne(q_ptr);
 
-                d_ptr->hash.settings.remove(item.section);
+                d_ptr->hash.settings.sections.remove(item.section);
+                d_ptr->hash.settings.objects.remove(item.object);
                 data.remove(q_ptr);
                 d_ptr->modified = true;
 

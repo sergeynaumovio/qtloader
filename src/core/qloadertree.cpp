@@ -26,7 +26,7 @@ QLoaderError QLoaderTree::backup()
 bool QLoaderTree::contains(const QStringList &section) const
 {
     d_ptr->mutex.lock();
-    bool containsSection = d_ptr->hash.settings.contains(section);
+    bool containsSection = d_ptr->hash.settings.sections.contains(section);
     d_ptr->mutex.unlock();
 
     return containsSection;
@@ -79,8 +79,8 @@ QObject *QLoaderTree::object(const QStringList &section) const
 {
     QObject *object{};
     d_ptr->mutex.lock();
-    if (d_ptr->hash.settings.contains(section))
-        object = d_ptr->hash.data[d_ptr->hash.settings[section]].object;
+    if (d_ptr->hash.settings.sections.contains(section))
+        object = d_ptr->hash.data[d_ptr->hash.settings.sections[section]].object;
     d_ptr->mutex.unlock();
 
     return object;
@@ -102,4 +102,15 @@ QLoaderError QLoaderTree::save() const
     }
 
     return error;
+}
+
+QLoaderSettings *QLoaderTree::settings(QObject *object) const
+{
+    QLoaderSettings *settings{};
+    d_ptr->mutex.lock();
+    if (d_ptr->hash.settings.objects.contains(object))
+        settings = d_ptr->hash.settings.objects.value(object);
+    d_ptr->mutex.unlock();
+
+    return settings;
 }

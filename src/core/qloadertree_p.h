@@ -78,7 +78,13 @@ public:
 
     struct
     {
-        QHash<QStringList, QLoaderSettings *> settings;
+        struct
+        {
+            QHash<QStringList, QLoaderSettings *> sections;
+            QHash<QObject *, QLoaderSettings *> objects;
+
+        } settings;
+
         QHash<QLoaderSettings *, QLoaderSettingsData> data;
         QHash<QUuid, qint64> blobs;
 

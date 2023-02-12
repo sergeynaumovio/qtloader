@@ -10,6 +10,7 @@
 
 class QLoaderTreePrivate;
 class QLoaderData;
+class QLoaderSettings;
 class QLoaderShell;
 
 class Q_LOADER_EXPORT QLoaderTree : public QObject
@@ -45,6 +46,7 @@ public:
     QLoaderShell *newShellInstance() const;
     QObject *object(const QStringList &section) const;
     QLoaderError save() const;
+    QLoaderSettings *settings(QObject *object) const;
 };
 
 #endif // QLOADERTREE_H

@@ -72,13 +72,13 @@ public:
             return;
 
         d->mutex.lock();
-        if (!d->hash.settings.contains(parent.section))
+        if (!d->hash.settings.sections.contains(parent.section))
             valid = false;
         else
         {
             valid = true;
-            parent.settings = d->hash.settings.value(parent.section);
-            settings = d->hash.settings.value(section);
+            parent.settings = d->hash.settings.sections.value(parent.section);
+            settings = d->hash.settings.sections.value(section);
             object = d->hash.data.value(settings).object;
         }
         d->mutex.unlock();
@@ -388,7 +388,7 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
 QLoaderTreePrivate::~QLoaderTreePrivate()
 {
     d.~QLoaderTreePrivateData();
-    qDeleteAll(hash.settings);
+    qDeleteAll(hash.settings.sections);
 }
 
 QLoaderBlob QLoaderTreePrivate::blob(const QUuid &uuid) const
@@ -736,6 +736,7 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
         d.root.object = object;
 
     mutex.lock();
+    hash.settings.objects[object] = settings;
     hash.data[settings].object = object;
     mutex.unlock();
 
@@ -796,8 +797,8 @@ void QLoaderTreePrivate::moveRecursive(QLoaderSettings *settings,
 
     QStringList section = QLoaderTreeSectionAction<Move>::section(item.section, src.section, dst.section);
 
-    hash.settings.remove(item.section);
-    hash.settings[section] = settings;
+    hash.settings.sections.remove(item.section);
+    hash.settings.sections[section] = settings;
     item.section = std::move(section);
 
     for (QLoaderSettings *child : hash.data[settings].children)
@@ -948,9 +949,9 @@ QLoaderError QLoaderTreePrivate::readSettings()
             item.section = section;
             item.sectionLine = currentLine;
 
-            if (!hash.settings.contains(section))
+            if (!hash.settings.sections.contains(section))
             {
-                hash.settings[section] = settings;
+                hash.settings.sections[section] = settings;
 
                 if (section.size() == 1 && section.back().size())
                 {
@@ -964,7 +965,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
                     QStringList parent = section;
                     parent.removeLast();
 
-                    if (hash.settings.contains(parent))
+                    if (hash.settings.sections.contains(parent))
                     {
                         if (parent.size() == 1 && d.storage.settings)
                         {
@@ -973,7 +974,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
                         else
                         {
                             valid = true;
-                            item.parent = hash.settings[parent];
+                            item.parent = hash.settings.sections[parent];
                             hash.data[item.parent].children.push_back(settings);
                         }
                     }
@@ -1218,12 +1219,12 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
 
     QLoaderSettings *copySettings = new QLoaderSettings(*this);
     d.copied.append(copySettings);
-    hash.settings[section] = copySettings;
+    hash.settings.sections[section] = copySettings;
 
     QStringList parentSection = section;
     parentSection.removeLast();
 
-    QLoaderSettings *parentSettings = hash.settings[parentSection];
+    QLoaderSettings *parentSettings = hash.settings.sections[parentSection];
 
     hash.data[parentSettings].children.push_back(copySettings);
 
@@ -1247,8 +1248,8 @@ QLoaderError QLoaderTreePrivate::copy(const QStringList &section, const QStringL
 
     mutex.lock();
     copyRecursive(cp.src.settings, cp.src, cp.dst);
-    QLoaderSettings *settings = hash.settings[cp.dst.section];
-    QObject *parent = hash.data[hash.settings[cp.dst.parent.section]].object;
+    QLoaderSettings *settings = hash.settings.sections[cp.dst.section];
+    QObject *parent = hash.data[hash.settings.sections[cp.dst.parent.section]].object;
     mutex.unlock();
 
     error = loadRecursive(settings, parent);
