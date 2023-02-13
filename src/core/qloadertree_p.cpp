@@ -1213,9 +1213,9 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
                                        const QLoaderTreeSection &src,
                                        const QLoaderTreeSection &dst)
 {
-    QLoaderSettingsData &item = hash.data[settings];
+    QStringList itemSection = hash.data[settings].section;
 
-    QStringList section = QLoaderTreeSectionAction<Copy>::section(item.section, src.section, dst.section);
+    QStringList section = QLoaderTreeSectionAction<Copy>::section(itemSection, src.section, dst.section);
 
     QLoaderSettings *copySettings = new QLoaderSettings(*this);
     d.copied.append(copySettings);
@@ -1228,11 +1228,10 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
 
     hash.data[parentSettings].children.push_back(copySettings);
 
-    QLoaderSettingsData &copy = hash.data[copySettings];
-    copy.parent = parentSettings;
-    copy.section = std::move(section);
-    copy.className = hash.data[settings].className;
-    copy.properties = hash.data[settings].properties;
+    hash.data[copySettings].parent = parentSettings;
+    hash.data[copySettings].section = std::move(section);
+    hash.data[copySettings].className = hash.data[settings].className;
+    hash.data[copySettings].properties = hash.data[settings].properties;
 
     for (QLoaderSettings *child : hash.data[settings].children)
         copyRecursive(child, src, dst);

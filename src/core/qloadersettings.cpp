@@ -26,8 +26,8 @@ QLoaderSettings::~QLoaderSettings()
         d_ptr->mutex.lock();
         {
             QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
-            QLoaderSettingsData &item = data[q_ptr];
-            item.settings.removeOne(this);
+            data[q_ptr].settings.removeOne(this);
+            const QLoaderSettingsData &item = data[q_ptr];
 
             if ((removeLastInstance = (item.settings.size() == 0)))
             {
