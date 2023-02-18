@@ -1,21 +1,21 @@
 #!/usr/bin/qtloader6
 
-[Terminal]
+[terminal]
 class = QLoaderTerminal
 visible = true
 
-[Terminal/Shell]
+[terminal/shell]
 class = QLoaderShell
-home = QStringList(Terminal)
+home = terminal
 
-[Terminal/Shell/Cd]
-class = QLoaderCd
+[terminal/shell/cd]
+class = QLoaderShellCd
 
-[Terminal/Shell/Clear]
-class = QLoaderClear
+[terminal/shell/clear]
+class = QLoaderShellClear
 
-[Terminal/Shell/Exit]
-class = QLoaderExit
+[terminal/shell/exit]
+class = QLoaderShellExit
 
-[Terminal/Shell/Save]
-class = QLoaderSave
+[terminal/shell/save]
+class = QLoaderShellSave
