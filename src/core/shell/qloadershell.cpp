@@ -20,7 +20,15 @@ QLoaderShell::QLoaderShell(QLoaderSettings *settings)
 :   QLoaderSettings(settings),
     d_ptr(new QLoaderShellPrivate)
 {
-    d_ptr->home = value("home", section()).toStringList();
+    QString home = value("home", section()).toString();
+    d_ptr->home = value("home", section()).toString().split('/');
+
+    if (!tree()->contains(d_ptr->home))
+    {
+        emitWarning("[" + home + ']' + ": home section not valid");
+        d_ptr->home = section();
+    }
+
     d_ptr->section = d_ptr->home;
 }
 
