@@ -1101,9 +1101,8 @@ QLoaderError QLoaderTreePrivate::readSettings()
 
                     d.blobs.insert(uuid);
                     item.properties[key].isBlob = true;
+                    item.properties[key].isValue = false;
                 }
-                else
-                    item.properties[key].isValue = true;
             }
             else
             {

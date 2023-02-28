@@ -65,6 +65,7 @@ bool QLoaderSettings::addBlob(const QString &key)
     }
     d_ptr->mutex.lock();
     d_ptr->hash.data[q_ptr].properties.insert(key, {.isBlob = true,
+                                                    .isValue = false,
                                                     .string = "QLoaderBlob(" + uuid.toString(QUuid::WithoutBraces) + ")"});
     d_ptr->mutex.unlock();
 

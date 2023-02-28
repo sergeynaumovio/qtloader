@@ -24,7 +24,7 @@ class QLoaderBlob;
 struct QLoaderProperty
 {
     bool isBlob{};
-    bool isValue{};
+    bool isValue{true};
     QString string;
     void operator =(const QString &s) { string = s; }
     operator const QString &() { return string; }
