@@ -29,7 +29,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT MSVC)
 endif()
 
 # QT_LOADER_LIBRARY ------------------------------------------------------------
-include("cmake/QtLoaderVersion.in")
+include("cmake/QtLoaderConfigVersion.in")
 set(QT_LOADER_LIBRARY Qt${QT_VERSION_MAJOR}Loader)
 
 add_library(${QT_LOADER_LIBRARY} SHARED)
@@ -153,7 +153,7 @@ configure_package_config_file(
     PATH_VARS CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_INCLUDEDIR
 )
 write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/${QT_LOADER_LIBRARY}Version.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${QT_LOADER_LIBRARY}ConfigVersion.cmake
     VERSION ${QT_LOADER_VERSION}
     COMPATIBILITY SameMajorVersion
 )
