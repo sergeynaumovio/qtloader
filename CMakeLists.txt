@@ -160,7 +160,7 @@ write_basic_package_version_file(
 
 install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/${QT_LOADER_LIBRARY}Config.cmake"
-          "${CMAKE_CURRENT_BINARY_DIR}/${QT_LOADER_LIBRARY}Version.cmake"
+          "${CMAKE_CURRENT_BINARY_DIR}/${QT_LOADER_LIBRARY}ConfigVersion.cmake"
           DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${QT_LOADER_LIBRARY}"
 )
 
