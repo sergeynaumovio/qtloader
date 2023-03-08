@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project("QtLoader" LANGUAGES CXX)
+project(QtLoader LANGUAGES CXX)
 
 if(MSVC)
     cmake_policy(SET CMP0092 NEW) # Disable passing /W3 by default on MSVC
