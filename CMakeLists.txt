@@ -64,6 +64,7 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qloadertree.h
             src/core/qloadertree_p.cpp
             src/core/qloadertree_p.h
+            src/core/qscopedstorage.h
             src/core/qtloaderglobal.h
             src/widgets/markupcommander/qloadermarkupcommander.cpp
             src/widgets/markupcommander/qloadermarkupcommander.h
@@ -93,6 +94,7 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/QLoaderSaveInterface
     src/core/QLoaderSettings
     src/core/QLoaderTree
+    src/core/QScopedStorage
     src/core/qloaderdata.h
     src/core/qloaderdir.h
     src/core/qloadererror.h
@@ -100,6 +102,7 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qloadersaveinterface.h
     src/core/qloadersettings.h
     src/core/qloadertree.h
+    src/core/qscopedstorage.h
     src/core/qtloaderglobal.h
     src/widgets/markupcommander/QLoaderMarkupCommander
     src/widgets/markupcommander/qloadermarkupcommander.h
