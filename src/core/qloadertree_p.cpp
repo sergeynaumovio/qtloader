@@ -247,7 +247,7 @@ public:
 
         if ((match = d.charlist.match(value)).hasMatch())
         {
-            QStringList stringlist = match.captured("list").split(',');
+            QStringList stringlist = match.captured("list").split(", ");
             QList<QChar> charlist;
 
             for (QString &string : stringlist)
@@ -282,22 +282,17 @@ public:
     {
         QMetaType::Type type = static_cast<QMetaType::Type>(variant.metaType().id());
         if (type == QMetaType::QByteArray)
-        {
-            QByteArray bytearray = variant.toByteArray();
-            return QString("QByteArray(" + bytearray.toBase64() + ')');
-        }
+            return QString("QByteArray(" + variant.toByteArray().toBase64() + ')');
 
         if (type == QMetaType::QChar)
-        {
-            return QString(QLatin1String("QChar(") + variant.toChar() + ')');
-        }
+            return QString(QLatin1StringView("QChar(") + variant.toChar() + ')');
 
         if (type == QMetaType::QSize)
-        {
-            QSize size = variant.toSize();
-            return QString("QSize(" + QString::number(size.width()) + ", "
-                                    + QString::number(size.height()) + ')');
-        }
+            return QString("QSize(" + QString::number(variant.toSize().width()) + ", "
+                                    + QString::number(variant.toSize().height()) + ')');
+
+        if (type == QMetaType::QStringList)
+            return QString("QStringList(" + variant.toStringList().join(", ") + ')');
 
         return variant.toString();
     }
