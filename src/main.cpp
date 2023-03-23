@@ -13,6 +13,10 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QCoreApplication::setApplicationName("Qt Loader");
 
+#ifdef Q_OS_WINDOWS
+    QApplication::setStyle("fusion");
+#endif
+
     QScopedPointer<QCoreApplication> app([&]() -> QCoreApplication *
     {
         for (int i = 1; i < argc; ++i)
@@ -22,7 +26,7 @@ int main(int argc, char *argv[])
         return new QApplication(argc, argv);
     }());
 
-#ifdef Q_OS_LINUX
+#ifndef Q_OS_WINDOWS
     app->addLibraryPath("/usr/lib");
     app->addLibraryPath("/usr/local/lib");
     const QStringList ld = qEnvironmentVariable("LD_LIBRARY_PATH").split(':');
