@@ -17,7 +17,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
 find_package(QT NAMES Qt6 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} 6.4 COMPONENTS Widgets REQUIRED)
 
 if(NOT APPLE)
     set(CMAKE_INSTALL_RPATH $ORIGIN)
@@ -33,6 +33,10 @@ include("cmake/QtLoaderConfigVersion.in")
 set(QT_LOADER_LIBRARY Qt${QT_VERSION_MAJOR}Loader)
 
 add_library(${QT_LOADER_LIBRARY} SHARED)
+
+target_compile_definitions(${QT_LOADER_LIBRARY}
+    PRIVATE QT_NO_CAST_FROM_ASCII
+)
 
 target_sources(${QT_LOADER_LIBRARY}
     PRIVATE src/core/shell/qloadercommandinterface.h
@@ -171,6 +175,10 @@ install(
 set(QT_LOADER_EXECUTABLE qtloader${QT_VERSION_MAJOR})
 
 add_executable(${QT_LOADER_EXECUTABLE})
+
+target_compile_definitions(${QT_LOADER_EXECUTABLE}
+    PRIVATE QT_NO_CAST_FROM_ASCII
+)
 
 set_target_properties(${QT_LOADER_EXECUTABLE} PROPERTIES
     OUTPUT_NAME ${QT_LOADER_EXECUTABLE}

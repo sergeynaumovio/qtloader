@@ -5,6 +5,8 @@
 #include "qloadershell.h"
 #include <QCommandLineParser>
 
+using namespace Qt::Literals::StringLiterals;
+
 class QLoaderShellCdPrivate
 {
 public:
@@ -14,7 +16,7 @@ public:
     QLoaderShellCdPrivate(QLoaderShell *sh)
     :   shell(sh)
     {
-        parser.addPositionalArgument("object", "Change current object.");
+        parser.addPositionalArgument(u"object"_s, u"Change current object."_s);
     }
 };
 
@@ -41,10 +43,10 @@ QLoaderError QLoaderShellCd::exec(const QStringList &arguments)
     }
     else if (posargs.size() == 1)
     {
-        if (posargs.first() == ".")
+        if (posargs.first() == '.'_L1)
             return {};
 
-        if (posargs.first() == "..")
+        if (posargs.first() == ".."_L1)
         {
             d_ptr->shell->cdUp();
             return {};
@@ -53,15 +55,15 @@ QLoaderError QLoaderShellCd::exec(const QStringList &arguments)
         if (d_ptr->shell->cd(posargs.first()))
             return {};
 
-        return {.status = QLoaderError::Object, .message = posargs.first() + ": no such object"};
+        return {.status = QLoaderError::Object, .message = posargs.first() + u": no such object"_s};
     }
 
-    return {.status = QLoaderError::Object, .message = "too many arguments"};
+    return {.status = QLoaderError::Object, .message = u"too many arguments"_s};
 }
 
 QString QLoaderShellCd::name() const
 {
-    return "cd";
+    return u"cd"_s;
 }
 
 QStringList QLoaderShellCd::tab(const QStringList &/*arguments*/)

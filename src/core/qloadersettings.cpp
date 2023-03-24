@@ -4,6 +4,8 @@
 #include "qloadersettings.h"
 #include "qloadertree_p.h"
 
+using namespace Qt::Literals::StringLiterals;
+
 QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
@@ -53,20 +55,23 @@ bool QLoaderSettings::addBlob(const QString &key)
 {
     if (contains(key))
     {
-        emitError("key \"" + key + "\" already set");
+        emitError(u"key \""_s + key + u"\" already set"_s);
         return false;
     }
 
     QUuid uuid = d_ptr->createStorageUuid();
     if (uuid.isNull())
     {
-        emitError("storage object not set");
+        emitError(u"storage object not set"_s);
         return false;
     }
+
     d_ptr->mutex.lock();
-    d_ptr->hash.data[q_ptr].properties.insert(key, {.isBlob = true,
-                                                    .isValue = false,
-                                                    .string = "QLoaderBlob(" + uuid.toString(QUuid::WithoutBraces) + ")"});
+    QLoaderProperty value {.isBlob = true,
+                           .isValue = false,
+                           .string = u"QLoaderBlob("_s + uuid.toString(QUuid::WithoutBraces) + u")"_s};
+
+    d_ptr->hash.data[q_ptr].properties.insert(key, value);
     d_ptr->mutex.unlock();
 
     return true;

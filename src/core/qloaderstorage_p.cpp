@@ -6,6 +6,7 @@
 #include "qloadersettings.h"
 #include <QFile>
 
+using namespace Qt::Literals::StringLiterals;
 using Version = qint32;
 
 struct Position
@@ -83,7 +84,7 @@ QLoaderBlob QLoaderStoragePrivate::blob(const QUuid &uuid) const
 QLoaderError QLoaderStoragePrivate::save(QFile *outfile, QLoaderSettings *root)
 {
     ofile = outfile;
-    QLoaderError error{.status = QLoaderError::Access, .message = "read-only file"};
+    QLoaderError error{.status = QLoaderError::Access, .message = u"read-only file"_s};
     if (!ofile->open(QIODevice::ReadWrite))
         return error;
 

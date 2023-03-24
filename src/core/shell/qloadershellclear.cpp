@@ -6,6 +6,8 @@
 #include "qloaderterminalinterface.h"
 #include <QPlainTextEdit>
 
+using namespace Qt::Literals::StringLiterals;
+
 QLoaderShellClear::QLoaderShellClear(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
     QLoaderSettings(settings),
@@ -24,7 +26,7 @@ QLoaderError QLoaderShellClear::exec(const QStringList &/*arguments*/)
 
 QString QLoaderShellClear::name() const
 {
-    return "clear";
+    return u"clear"_s;
 }
 
 QStringList QLoaderShellClear::tab(const QStringList &/*arguments*/)

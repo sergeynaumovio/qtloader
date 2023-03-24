@@ -7,6 +7,8 @@
 #include "qloadertree.h"
 #include <QPlainTextEdit>
 
+using namespace Qt::Literals::StringLiterals;
+
 class QLoaderShellPrivate
 {
 public:
@@ -20,12 +22,12 @@ QLoaderShell::QLoaderShell(QLoaderSettings *settings)
 :   QLoaderSettings(settings),
     d_ptr(new QLoaderShellPrivate)
 {
-    QString home = value("home", section()).toString();
-    d_ptr->home = value("home", section()).toString().split('/');
+    QString home = value(u"home"_s, section()).toString();
+    d_ptr->home = value(u"home"_s, section()).toString().split(u'/');
 
     if (!tree()->contains(d_ptr->home))
     {
-        emitWarning("[" + home + ']' + ": home section not valid");
+        emitWarning(u'[' + home + u']' + u": home section not valid"_s);
         d_ptr->home = section();
     }
 
@@ -39,9 +41,9 @@ void QLoaderShell::addCommand(QObject *object)
 {
     QLoaderCommandInterface *command = qobject_cast<QLoaderCommandInterface *>(object);
     if (!command)
-        emitError("interface not valid");
+        emitError(u"interface not valid"_s);
     else if (d_ptr->commands.contains(command->name()))
-        emitError("command \"" + command->name() + "\" already set");
+        emitError(u"command \""_s + command->name() + u"\" already set"_s);
     else
     {
         d_ptr->commands.insert(command->name(), object);
@@ -51,7 +53,7 @@ void QLoaderShell::addCommand(QObject *object)
 bool QLoaderShell::cd(const QString &relative)
 {
     QStringList absolute = d_ptr->section;
-    for (const QString &name : relative.split('/'))
+    for (const QString &name : relative.split(u'/'))
         absolute.append(name);
 
     if (tree()->contains(absolute))
@@ -93,14 +95,14 @@ QLoaderError QLoaderShell::exec(const QString &name, const QStringList &argument
     {
         QLoaderError error = qobject_cast<QLoaderCommandInterface *>(d_ptr->commands[name])->exec(arguments);
         if (error && d_ptr->terminal)
-            d_ptr->terminal->out()->insertPlainText("\nshell: " + name + ": " + error.message);
+            d_ptr->terminal->out()->insertPlainText(u"\nshell: "_s + name + u": "_s + error.message);
 
         return error;
     }
 
-    QLoaderError error{.status = QLoaderError::Object, .message = "command not found"};
+    QLoaderError error{.status = QLoaderError::Object, .message = u"command not found"_s};
     if (d_ptr->terminal)
-        d_ptr->terminal->out()->insertPlainText("\nshell: " + name + ": " + error.message);
+        d_ptr->terminal->out()->insertPlainText(u"\nshell: "_s + name + u": "_s + error.message);
 
     return error;
 }

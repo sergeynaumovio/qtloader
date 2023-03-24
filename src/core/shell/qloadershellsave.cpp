@@ -5,6 +5,8 @@
 #include "qloadershell.h"
 #include "qloadertree.h"
 
+using namespace Qt::Literals::StringLiterals;
+
 QLoaderShellSave::QLoaderShellSave(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
     QLoaderSettings(settings),
@@ -22,7 +24,7 @@ QLoaderError QLoaderShellSave::exec(const QStringList &/*arguments*/)
 
 QString QLoaderShellSave::name() const
 {
-    return "save";
+    return u"save"_s;
 }
 
 QStringList QLoaderShellSave::tab(const QStringList &/*arguments*/)

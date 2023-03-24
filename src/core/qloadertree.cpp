@@ -5,6 +5,8 @@
 #include "qloadertree_p.h"
 #include <QFile>
 
+using namespace Qt::Literals::StringLiterals;
+
 QLoaderTree::QLoaderTree(QLoaderTreePrivate &d, QObject *parent)
 :   QObject(parent),
     d_ptr(&d)
@@ -92,7 +94,7 @@ QLoaderError QLoaderTree::save() const
     if (d_ptr->isSaving())
     {
         error.status = QLoaderError::Access;
-        error.message = "saving in progress";
+        error.message = u"saving in progress"_s;
     }
     else
     {

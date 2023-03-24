@@ -4,6 +4,8 @@
 #include "qloadershellexit.h"
 #include "qloadershell.h"
 
+using namespace Qt::Literals::StringLiterals;
+
 QLoaderShellExit::QLoaderShellExit(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
     QLoaderSettings(settings),
@@ -21,7 +23,7 @@ QLoaderError QLoaderShellExit::exec(const QStringList &/*arguments*/)
 
 QString QLoaderShellExit::name() const
 {
-    return "exit";
+    return u"exit"_s;
 }
 
 QStringList QLoaderShellExit::tab(const QStringList &/*arguments*/)

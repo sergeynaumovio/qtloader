@@ -7,11 +7,13 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+using namespace Qt::Literals::StringLiterals;
+
 int main(int argc, char *argv[])
 {
     setlocale(LC_ALL, "");
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    QCoreApplication::setApplicationName("Qt Loader");
+    QCoreApplication::setApplicationName(u"Qt Loader"_s);
 
 #ifdef Q_OS_WINDOWS
     QApplication::setStyle("fusion");
@@ -27,9 +29,9 @@ int main(int argc, char *argv[])
     }());
 
 #ifndef Q_OS_WINDOWS
-    app->addLibraryPath("/usr/lib");
-    app->addLibraryPath("/usr/local/lib");
-    const QStringList ld = qEnvironmentVariable("LD_LIBRARY_PATH").split(':');
+    app->addLibraryPath(u"/usr/lib"_s);
+    app->addLibraryPath(u"/usr/local/lib"_s);
+    const QStringList ld = qEnvironmentVariable("LD_LIBRARY_PATH").split(u':');
     for (const QString &path : ld)
         app->addLibraryPath(path);
 #endif
@@ -38,10 +40,10 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
 
-    parser.addOption(QCommandLineOption({"s", "section"}, "Root section."));
-    parser.addOption(QCommandLineOption("no-gui", "Start console application."));
+    parser.addOption(QCommandLineOption({u"s"_s, u"section"_s}, u"Root section."_s));
+    parser.addOption(QCommandLineOption(u"no-gui"_s, u"Start console application."_s));
 
-    parser.addPositionalArgument("file", "Set .qt file.");
+    parser.addPositionalArgument(u"file"_s, u"Set .qt file."_s);
     parser.process(*app);
     QString fileName;
 
@@ -57,9 +59,9 @@ int main(int argc, char *argv[])
         else
         {
             fileName = QFileDialog::getOpenFileName(nullptr,
-                                                    "Open Qt File",
-                                                    "",
-                                                    "Qt File (*.qt)");
+                                                    u"Open Qt File"_s,
+                                                    u""_s,
+                                                    u"Qt File (*.qt)"_s);
 
             if (!fileName.size())
                 return -1;
@@ -80,15 +82,15 @@ int main(int argc, char *argv[])
             }
             else
             {
-                QString messsage = "File not found \"" + fileName + "\"";
-                return QMessageBox::warning(nullptr, "Qt Loader",
+                QString messsage = u"File not found \""_s + fileName + u"\""_s;
+                return QMessageBox::warning(nullptr, u"Qt Loader"_s,
                                             QDir::toNativeSeparators(messsage),
                                             QMessageBox::Close);
             }
         }
-        QString message = fileName + ":" + QString::number(error.line) + ": " +
+        QString message = fileName + u':' + QString::number(error.line) + u": "_s +
                           QVariant::fromValue(error.status).toString().toLower() +
-                          " error: " + error.message;;
+                          u" error: "_s + error.message;;
 
         if (coreApp)
         {
@@ -96,7 +98,7 @@ int main(int argc, char *argv[])
             return -1;
         }
         else
-            return QMessageBox::critical(nullptr, "Qt Loader",
+            return QMessageBox::critical(nullptr, u"Qt Loader"_s,
                                          QDir::toNativeSeparators(message),
                                          QMessageBox::Close);
     }

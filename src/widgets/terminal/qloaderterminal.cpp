@@ -15,6 +15,8 @@
 #include <QTextCursor>
 #include <QThread>
 
+using namespace Qt::Literals::StringLiterals;
+
 class QLoaderTerminalHistory
 {
     QLoaderTerminal *const q_ptr;
@@ -73,7 +75,7 @@ public:
 
     struct
     {
-        QRegularExpression regex{"[^\\s]+"};
+        QRegularExpression regex{u"[^\\s]+"_s};
         QString string;
 
     } command;
@@ -170,7 +172,7 @@ public:
 
         if (string.size())
         {
-            QStringList pipeline = string.split('|');
+            QStringList pipeline = string.split(u'|');
             QString cmd = pipeline.first();
 
             QRegularExpressionMatch match;
@@ -182,7 +184,7 @@ public:
         }
 
         if (!q_ptr->document()->isEmpty())
-            q_ptr->insertPlainText("\n");
+            q_ptr->insertPlainText(u"\n"_s);
 
         q_ptr->insertPlainText(path.string);
         q_ptr->ensureCursorVisible();
@@ -207,7 +209,7 @@ public:
     {
         if (!section.isEmpty() && !q_ptr->tree()->contains(section))
         {
-            q_ptr->emitError("section \"" + section.join('/') + "\" not found");
+            q_ptr->emitError(u"section \""_s + section.join(u'/') + u"\" not found"_s);
             return;
         }
 
@@ -216,17 +218,17 @@ public:
         else if (q_ptr->tree()->contains(section))
             path.section = section;
 
-        path.string = "[" + path.section.join('/') + "] ";
+        path.string = u'[' + path.section.join(u'/') + u"] "_s;
     }
 };
 
 void QLoaderTerminal::contextMenuEvent(QContextMenuEvent *e)
 {
     QMenu menu;
-    menu.addAction("&Copy")->setShortcut(QKeySequence("Ctrl+Shift+C"));
-    menu.addAction("&Paste")->setShortcut(QKeySequence("Ctrl+Shift+V"));
+    menu.addAction(u"&Copy"_s)->setShortcut(QKeySequence(u"Ctrl+Shift+C"_s));
+    menu.addAction(u"&Paste"_s)->setShortcut(QKeySequence(u"Ctrl+Shift+V"_s));
     menu.addSeparator();
-    menu.addAction("Select &All")->setShortcut(QKeySequence("Ctrl+Shift+A"));
+    menu.addAction(u"Select &All"_s)->setShortcut(QKeySequence(u"Ctrl+Shift+A"_s));
     menu.exec(e->globalPos());
 }
 
@@ -420,7 +422,7 @@ void QLoaderTerminal::paintEvent(QPaintEvent *e)
         painter.setPen(Qt::white);
         painter.drawRect(rect);
 
-        QChar chr = ' ';
+        QChar chr(u' ');
         if (position(cursor) >= 0 && position(cursor) < string.size())
             chr = cursor.block().text().at(position(cursor));
         painter.drawText(rect, chr);
@@ -445,7 +447,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 
     QFont f;
 #ifdef Q_OS_LINUX
-    f.setFamily("Monospace");
+    f.setFamily(u"Monospace"_s);
     f.setPointSize(11);
 #else
     f.setFamily("Lucida Console");
@@ -454,7 +456,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
     f.setFixedPitch(true);
     setFont(f);
 
-    setCursorWidth(QFontMetrics(font()).boundingRect(QChar('o')).width());
+    setCursorWidth(QFontMetrics(font()).boundingRect(QChar(u'o')).width());
     setFrameStyle(QFrame::NoFrame);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setTextInteractionFlags(Qt::TextEditorInteraction);
