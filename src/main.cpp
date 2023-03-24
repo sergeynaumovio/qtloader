@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName(u"Qt Loader"_s);
 
 #ifdef Q_OS_WINDOWS
-    QApplication::setStyle("fusion");
+    QApplication::setStyle(u"fusion"_s);
 #endif
 
     QScopedPointer<QCoreApplication> app([&]() -> QCoreApplication *

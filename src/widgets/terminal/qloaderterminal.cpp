@@ -450,7 +450,7 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
     f.setFamily(u"Monospace"_s);
     f.setPointSize(11);
 #else
-    f.setFamily("Lucida Console");
+    f.setFamily(u"Lucida Console"_s);
     f.setPointSize(10);
 #endif
     f.setFixedPitch(true);
