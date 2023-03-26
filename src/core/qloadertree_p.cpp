@@ -229,6 +229,16 @@ class StringVariantConverter
         const QRegularExpression bytearray{u"^QByteArray\\s*\\(\\s*(?<bytearray>.*)\\)"_s};
         const QRegularExpression chr{u"^QChar\\s*\\(\\s*(?<char>.{1})\\s*\\)_"_s};
         const QRegularExpression charlist{u"^QCharList\\s*\\(\\s*(?<list>.*)\\)"_s};
+
+        const QRegularExpression color_rgb{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
+                                                          "\\s*(?<g>\\d+)\\s*\\,"
+                                                          "\\s*(?<b>\\d+)\\s*\\)"_s};
+
+        const QRegularExpression color_rgba{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
+                                                           "\\s*(?<g>\\d+)\\s*\\,"
+                                                           "\\s*(?<b>\\d+)\\s*\\,"
+                                                           "\\s*(?<a>\\d+)\\s*\\)"_s};
+
         const QRegularExpression size{u"^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"_s};
         const QRegularExpression stringlist{u"^QStringList\\s*\\(\\s*(?<list>.*)\\)"_s};
 
@@ -263,6 +273,17 @@ public:
 
             return QVariant::fromValue(charlist);
         }
+
+        if ((match = d.color_rgb.match(value)).hasMatch())
+            return QColor(match.captured(u"r"_s).toInt(),
+                          match.captured(u"g"_s).toInt(),
+                          match.captured(u"b"_s).toInt());
+
+        if ((match = d.color_rgba.match(value)).hasMatch())
+            return QColor(match.captured(u"r"_s).toInt(),
+                          match.captured(u"g"_s).toInt(),
+                          match.captured(u"b"_s).toInt(),
+                          match.captured(u"a"_s).toInt());
 
         if ((match = d.size.match(value)).hasMatch())
             return QSize(match.captured(u"width"_s).toInt(), match.captured(u"height"_s).toInt());
