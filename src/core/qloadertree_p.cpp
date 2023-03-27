@@ -231,13 +231,13 @@ class StringVariantConverter
         const QRegularExpression charlist{u"^QCharList\\s*\\(\\s*(?<list>.*)\\)"_s};
 
         const QRegularExpression color_rgb{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
-                                                          "\\s*(?<g>\\d+)\\s*\\,"
-                                                          "\\s*(?<b>\\d+)\\s*\\)"_s};
+                                                         u"\\s*(?<g>\\d+)\\s*\\,"
+                                                         u"\\s*(?<b>\\d+)\\s*\\)"_s};
 
         const QRegularExpression color_rgba{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
-                                                           "\\s*(?<g>\\d+)\\s*\\,"
-                                                           "\\s*(?<b>\\d+)\\s*\\,"
-                                                           "\\s*(?<a>\\d+)\\s*\\)"_s};
+                                                          u"\\s*(?<g>\\d+)\\s*\\,"
+                                                          u"\\s*(?<b>\\d+)\\s*\\,"
+                                                          u"\\s*(?<a>\\d+)\\s*\\)"_s};
 
         const QRegularExpression size{u"^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"_s};
         const QRegularExpression stringlist{u"^QStringList\\s*\\(\\s*(?<list>.*)\\)"_s};
