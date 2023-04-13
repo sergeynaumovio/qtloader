@@ -15,10 +15,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QCoreApplication::setApplicationName(u"Qt Loader"_s);
 
-#ifdef Q_OS_WINDOWS
-    QApplication::setStyle(u"fusion"_s);
-#endif
-
     QScopedPointer<QCoreApplication> app([&]() -> QCoreApplication *
     {
         for (int i = 1; i < argc; ++i)
