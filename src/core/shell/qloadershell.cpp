@@ -19,7 +19,7 @@ public:
 };
 
 QLoaderShell::QLoaderShell(QLoaderSettings *settings)
-:   QLoaderSettings(settings),
+:   QLoaderSettings(this, settings),
     d_ptr(new QLoaderShellPrivate)
 {
     QString home = value(u"home"_s, section()).toString();

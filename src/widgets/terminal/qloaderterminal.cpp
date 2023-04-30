@@ -433,7 +433,7 @@ void QLoaderTerminal::paintEvent(QPaintEvent *e)
 
 QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 :   QPlainTextEdit(parent),
-    QLoaderSettings(settings),
+    QLoaderSettings(this, settings),
     d_ptr(new QLoaderTerminalPrivate(this))
 {
     QPalette p = palette();

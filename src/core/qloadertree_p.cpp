@@ -565,110 +565,7 @@ QLoaderData *QLoaderTreePrivate::data() const
     return static_cast<QLoaderData*>(d.data.object);
 }
 
-void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject *object)
-{
-    object->setObjectName(item.section.last());
 
-    auto value = [&item, this](const QString &key, const QVariant defaultValue = QVariant())
-    {
-        if (item.properties.contains(key))
-            return fromString(item.properties[key]);
-
-        return defaultValue;
-    };
-
-    QVariant v;
-    QAction *action = qobject_cast<QAction*>(object);
-    if (action)
-    {
-        if (!(v = value(u"autoRepeat"_s)).isNull())
-            action->setAutoRepeat(v.toBool());
-
-        if (!(v = value(u"checkable"_s)).isNull())
-            action->setCheckable(v.toBool());
-
-        if (!(v = value(u"checked"_s)).isNull())
-            action->setChecked(v.toBool());
-
-        if (!(v = value(u"enabled"_s)).isNull())
-            action->setEnabled(v.toBool());
-
-        if (!(v = value(u"text"_s)).isNull())
-            action->setText(v.toString());
-
-        return;
-    }
-
-    if (!object->isWidgetType())
-        return;
-
-    QWidget *widget = static_cast<QWidget*>(object);
-    if (!(v = value(u"enabled"_s)).isNull())
-        widget->setEnabled(v.toBool());
-
-    if (!(v = value(u"fixedHeight"_s)).isNull())
-        widget->setFixedHeight(v.toInt());
-
-    if (!(v = value(u"fixedSize"_s)).isNull())
-        widget->setFixedSize(v.toSize());
-
-    if (!(v = value(u"fixedWidth"_s)).isNull())
-        widget->setFixedWidth(v.toInt());
-
-    if (!(v = value(u"hidden"_s)).isNull())
-        widget->setHidden(v.toBool());
-
-    if (!(v = value(u"maximumHeight"_s)).isNull())
-        widget->setMaximumHeight(v.toInt());
-
-    if (!(v = value(u"maximumSize"_s)).isNull())
-        widget->setMaximumSize(v.toSize());
-
-    if (!(v = value(u"maximumWidth"_s)).isNull())
-        widget->setMaximumWidth(v.toInt());
-
-    if (!(v = value(u"minimumHeight"_s)).isNull())
-        widget->setMinimumHeight(v.toInt());
-
-    if (!(v = value(u"minimumSize"_s)).isNull())
-        widget->setMinimumSize(v.toSize());
-
-    if (!(v = value(u"minimumWidth"_s)).isNull())
-        widget->setMinimumWidth(v.toInt());
-
-    if (!(v = value(u"styleSheet"_s)).isNull())
-        widget->setStyleSheet(v.toString());
-
-    if (!(v = value(u"visible"_s)).isNull())
-        widget->setVisible(v.toBool());
-
-    QLabel *label = qobject_cast<QLabel*>(object);
-    if (label)
-    {
-        if (!(v = value(u"text"_s)).isNull())
-            label->setText(v.toString());
-
-        return;
-    }
-
-    QMainWindow *mainwindow = qobject_cast<QMainWindow*>(object);
-    if (mainwindow)
-    {
-        if (!(v = value(u"windowTitle"_s)).isNull())
-            mainwindow->setWindowTitle(v.toString());
-
-        return;
-    }
-
-    QMenu *menu = qobject_cast<QMenu*>(object);
-    if (menu)
-    {
-        if (!(v = value(u"title"_s)).isNull())
-            menu->setTitle(v.toString());
-
-        return;
-    }
-}
 
 void QLoaderTreePrivate::emitSettingsChanged()
 {
@@ -754,11 +651,6 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
         d.root.object = object;
 
     mutex.lock();
-    hash.settings.objects[object] = settings;
-    hash.data[settings].object = object;
-    mutex.unlock();
-
-    mutex.lock();
     if (errorMessage.has_value())
     {
         error.line = itemSectionLine;
@@ -793,7 +685,6 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
         mutex.unlock();
 
     mutex.lock();
-    setProperties(hash.data[settings], object);
     QList<QLoaderSettings *> children = hash.data[settings].children;
     mutex.unlock();
 
@@ -1371,6 +1262,109 @@ QLoaderError QLoaderTreePrivate::save()
     }
 
     return error;
+}
+
+void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject *object)
+{
+    object->setObjectName(item.section.last());
+
+    auto value = [&item, this](const QString &key, const QVariant defaultValue = QVariant())
+    {
+        if (item.properties.contains(key))
+            return fromString(item.properties[key]);
+
+        return defaultValue;
+    };
+
+    QVariant v;
+    if (QAction *action = qobject_cast<QAction *>(object))
+    {
+        if (!(v = value(u"autoRepeat"_s)).isNull())
+            action->setAutoRepeat(v.toBool());
+
+        if (!(v = value(u"checkable"_s)).isNull())
+            action->setCheckable(v.toBool());
+
+        if (!(v = value(u"checked"_s)).isNull())
+            action->setChecked(v.toBool());
+
+        if (!(v = value(u"enabled"_s)).isNull())
+            action->setEnabled(v.toBool());
+
+        if (!(v = value(u"text"_s)).isNull())
+            action->setText(v.toString());
+
+        return;
+    }
+
+    if (!object->isWidgetType())
+        return;
+
+    if (QWidget *widget = static_cast<QWidget *>(object))
+    {
+        if (!(v = value(u"enabled"_s)).isNull())
+            widget->setEnabled(v.toBool());
+
+        if (!(v = value(u"fixedHeight"_s)).isNull())
+            widget->setFixedHeight(v.toInt());
+
+        if (!(v = value(u"fixedSize"_s)).isNull())
+            widget->setFixedSize(v.toSize());
+
+        if (!(v = value(u"fixedWidth"_s)).isNull())
+            widget->setFixedWidth(v.toInt());
+
+        if (!(v = value(u"hidden"_s)).isNull())
+            widget->setHidden(v.toBool());
+
+        if (!(v = value(u"maximumHeight"_s)).isNull())
+            widget->setMaximumHeight(v.toInt());
+
+        if (!(v = value(u"maximumSize"_s)).isNull())
+            widget->setMaximumSize(v.toSize());
+
+        if (!(v = value(u"maximumWidth"_s)).isNull())
+            widget->setMaximumWidth(v.toInt());
+
+        if (!(v = value(u"minimumHeight"_s)).isNull())
+            widget->setMinimumHeight(v.toInt());
+
+        if (!(v = value(u"minimumSize"_s)).isNull())
+            widget->setMinimumSize(v.toSize());
+
+        if (!(v = value(u"minimumWidth"_s)).isNull())
+            widget->setMinimumWidth(v.toInt());
+
+        if (!(v = value(u"styleSheet"_s)).isNull())
+            widget->setStyleSheet(v.toString());
+
+        if (!(v = value(u"visible"_s)).isNull())
+            widget->setVisible(v.toBool());
+    }
+
+    if (QLabel *label = qobject_cast<QLabel *>(object))
+    {
+        if (!(v = value(u"text"_s)).isNull())
+            label->setText(v.toString());
+
+        return;
+    }
+
+    if (QMainWindow *mainwindow = qobject_cast<QMainWindow *>(object))
+    {
+        if (!(v = value(u"windowTitle"_s)).isNull())
+            mainwindow->setWindowTitle(v.toString());
+
+        return;
+    }
+
+    if (QMenu *menu = qobject_cast<QMenu *>(object))
+    {
+        if (!(v = value(u"title"_s)).isNull())
+            menu->setTitle(v.toString());
+
+        return;
+    }
 }
 
 void QLoaderTreePrivate::setStorageData(QLoaderStoragePrivate &d_ref)

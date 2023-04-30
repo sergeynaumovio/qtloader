@@ -9,7 +9,7 @@ using namespace Qt::Literals::StringLiterals;
 
 QLoaderShellSave::QLoaderShellSave(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
-    QLoaderSettings(settings),
+    QLoaderSettings(this, settings),
     shell(parent)
 {
     parent->addCommand(this);

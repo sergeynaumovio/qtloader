@@ -26,7 +26,7 @@ struct QLoaderProperty
     bool isBlob{};
     bool isValue{true};
     QString string;
-    void operator =(const QString &s) { string = s; }
+    void operator=(const QString &s) { string = s; }
     operator const QString &() { return string; }
 };
 
@@ -63,7 +63,6 @@ class QLoaderTreePrivate
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
     void saveRecursive(QLoaderSettings *settings, QTextStream &out);
-    void setProperties(const QLoaderSettingsData &item, QObject *object);
 
 public:
     QLoaderTree *const q_ptr;
@@ -109,6 +108,7 @@ public:
     QLoaderShell *newShellInstance();
     bool removeBlob(const QUuid &id);
     QLoaderError save();
+    void setProperties(const QLoaderSettingsData &item, QObject *object);
     void setStorageData(QLoaderStoragePrivate &d);
 };
 

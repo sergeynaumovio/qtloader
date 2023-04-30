@@ -7,7 +7,7 @@
 
 QLoaderStorage::QLoaderStorage(QLoaderTreePrivate &d, QLoaderSettings *settings, QObject *parent)
 :   QObject(parent),
-    QLoaderSettings(settings),
+    QLoaderSettings(this, settings),
     d_ptr(new QLoaderStoragePrivate(d))
 {
     d.setStorageData(*d_ptr);

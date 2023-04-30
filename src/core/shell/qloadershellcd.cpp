@@ -22,7 +22,7 @@ public:
 
 QLoaderShellCd::QLoaderShellCd(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
-    QLoaderSettings(settings),
+    QLoaderSettings(this, settings),
     d_ptr(new QLoaderShellCdPrivate(parent))
 {
     parent->addCommand(this);

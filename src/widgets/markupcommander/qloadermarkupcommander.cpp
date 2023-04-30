@@ -11,7 +11,7 @@ public:
 
 QLoaderMarkupCommander::QLoaderMarkupCommander(QLoaderSettings *settings, QWidget *parent)
 :   QWidget(parent),
-    QLoaderSettings(settings),
+    QLoaderSettings(this, settings),
     d_ptr(new QLoaderMarkupCommanderPrivate{this})
 { }
 

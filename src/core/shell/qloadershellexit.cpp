@@ -8,7 +8,7 @@ using namespace Qt::Literals::StringLiterals;
 
 QLoaderShellExit::QLoaderShellExit(QLoaderSettings *settings, QLoaderShell *parent)
 :   QObject(parent),
-    QLoaderSettings(settings),
+    QLoaderSettings(this, settings),
     shell(parent)
 {
     parent->addCommand(this);

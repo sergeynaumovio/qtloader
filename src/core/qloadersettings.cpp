@@ -6,12 +6,18 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-QLoaderSettings::QLoaderSettings(QLoaderSettings *settings)
+QLoaderSettings::QLoaderSettings(QObject *object, QLoaderSettings *settings)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
 {
     d_ptr->mutex.lock();
-    d_ptr->hash.data[q_ptr].settings.push_back(this);
+    if (!d_ptr->hash.data[q_ptr].object)
+    {
+        d_ptr->hash.data[q_ptr].object = object;
+        d_ptr->hash.settings.objects[object] = this;
+        d_ptr->setProperties(d_ptr->hash.data[q_ptr], object);
+    }
+    d_ptr->hash.data[q_ptr].settings.append(this);
     d_ptr->mutex.unlock();
 }
 
@@ -31,7 +37,7 @@ QLoaderSettings::~QLoaderSettings()
             data[q_ptr].settings.removeOne(this);
             const QLoaderSettingsData &item = data[q_ptr];
 
-            if ((removeLastInstance = (item.settings.size() == 0)))
+            if ((removeLastInstance = item.settings.isEmpty()))
             {
                 if (data.contains(item.parent))
                     data[item.parent].children.removeOne(q_ptr);

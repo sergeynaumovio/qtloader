@@ -6,12 +6,12 @@
 
 QLoaderDir::QLoaderDir(QLoaderSettings *settings, QLoaderData *parent)
 :   QObject(parent),
-    QLoaderSettings(settings)
+    QLoaderSettings(this, settings)
 { }
 
 QLoaderDir::QLoaderDir(QLoaderSettings *settings, QLoaderDir *parent)
 :   QObject(parent),
-    QLoaderSettings(settings)
+    QLoaderSettings(this, settings)
 { }
 
 QIcon QLoaderDir::icon() const
