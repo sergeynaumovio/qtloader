@@ -421,7 +421,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!qstrcmp(shortName, "ShellCd"))
     {
-        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
             return new QLoaderShellCd(settings, shell);
 
@@ -430,7 +430,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!qstrcmp(shortName, "ShellClear"))
     {
-        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
             return new QLoaderShellClear(settings, shell);
 
@@ -448,11 +448,11 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!qstrcmp(shortName, "Dir"))
     {
-        QLoaderData *ldata = qobject_cast<QLoaderData*>(parent);
+        QLoaderData *ldata = qobject_cast<QLoaderData *>(parent);
         if (ldata)
             return new QLoaderDir(settings, ldata);
 
-        QLoaderDir *dir = qobject_cast<QLoaderDir*>(parent);
+        QLoaderDir *dir = qobject_cast<QLoaderDir *>(parent);
         if (dir)
             return new QLoaderDir(settings, dir);
 
@@ -461,7 +461,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!qstrcmp(shortName, "ShellExit"))
     {
-        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
             return new QLoaderShellExit(settings, shell);
 
@@ -470,7 +470,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!qstrcmp(shortName, "ShellSave"))
     {
-        QLoaderShell *shell = qobject_cast<QLoaderShell*>(parent);
+        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
             return new QLoaderShellSave(settings, shell);
 
@@ -496,11 +496,11 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!qstrcmp(shortName, "Terminal"))
     {
-        bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
+        bool coreApp = !qobject_cast<QApplication *>(QCoreApplication::instance());
         if (coreApp)
             return nullptr;
 
-        QWidget *widget = qobject_cast<QWidget*>(parent);
+        QWidget *widget = qobject_cast<QWidget *>(parent);
         if (!parent || (parent && widget))
             return new QLoaderTerminal(settings, widget);
 
@@ -529,7 +529,7 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
             return nullptr;
         }
 
-        QLoaderPluginInterface *plugin = qobject_cast<QLoaderPluginInterface*>(loader.instance());
+        QLoaderPluginInterface *plugin = qobject_cast<QLoaderPluginInterface *>(loader.instance());
         if (!plugin)
         {
             mutex.lock();
@@ -1055,7 +1055,7 @@ QLoaderError QLoaderTreePrivate::load()
         if (d.data.settings && (error = loadRecursive(d.data.settings, q_ptr)))
             break;
 
-        bool coreApp = !qobject_cast<QApplication*>(QCoreApplication::instance());
+        bool coreApp = !qobject_cast<QApplication *>(QCoreApplication::instance());
         if ((error = loadRecursive(d.root.settings, coreApp ? q_ptr : nullptr)))
             break;
 
@@ -1201,7 +1201,7 @@ void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &
         out << i.key() << " = " << i.value().string << '\n';
     }
 
-    QLoaderSaveInterface *resources = qobject_cast<QLoaderSaveInterface*>(item.object);
+    QLoaderSaveInterface *resources = qobject_cast<QLoaderSaveInterface *>(item.object);
     if (resources)
         resources->save();
 }

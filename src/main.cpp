@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     parser.process(*app);
     QString fileName;
 
-    bool coreApp = !qobject_cast<QApplication*>(app.data());
+    bool coreApp = !qobject_cast<QApplication *>(app.data());
     QStringList arguments = parser.positionalArguments();
     if (!arguments.size() || !arguments.first().size())
     {
