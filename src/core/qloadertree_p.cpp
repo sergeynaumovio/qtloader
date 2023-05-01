@@ -562,10 +562,8 @@ QUuid QLoaderTreePrivate::createStorageUuid() const
 
 QLoaderData *QLoaderTreePrivate::data() const
 {
-    return static_cast<QLoaderData*>(d.data.object);
+    return static_cast<QLoaderData *>(d.data.object);
 }
-
-
 
 void QLoaderTreePrivate::emitSettingsChanged()
 {
