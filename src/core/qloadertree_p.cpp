@@ -1336,6 +1336,9 @@ void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject 
         if (!(v = value(u"styleSheet"_s)).isNull())
             widget->setStyleSheet(v.toString());
 
+        if (!(v = value(u"windowTitle"_s)).isNull())
+            widget->setWindowTitle (v.toString());
+
         if (!(v = value(u"visible"_s)).isNull())
             widget->setVisible(v.toBool());
     }
