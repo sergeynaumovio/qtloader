@@ -28,7 +28,10 @@ class QLoaderTerminalHistory
 public:
     QLoaderTerminalHistory(QLoaderTerminal *q)
     :   q_ptr(q)
-    { }
+    {
+        Q_UNUSED(q_ptr)
+        Q_UNUSED(skip)
+    }
 };
 
 class QLoaderTerminalPromt
