@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     parser.addOption(QCommandLineOption({u"s"_s, u"section"_s}, u"Root section."_s));
     parser.addOption(QCommandLineOption(u"no-gui"_s, u"Start console application."_s));
 
-    parser.addPositionalArgument(u"file"_s, u"Set .qt file."_s);
+    parser.addPositionalArgument(u"file"_s, u"Open .qt6 file."_s);
     parser.process(*app);
     QString fileName;
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
             fileName = QFileDialog::getOpenFileName(nullptr,
                                                     u"Open Qt File"_s,
                                                     u""_s,
-                                                    u"Qt File (*.qt)"_s);
+                                                    u"Qt File (*.qt6)"_s);
 
             if (!fileName.size())
                 return -1;
