@@ -32,9 +32,9 @@ QLoaderSettings::~QLoaderSettings()
     {
         bool removeLastInstance{};
         d_ptr->mutex.lock();
+        if (d_ptr->hash.data[q_ptr].settings.removeOne(this))
         {
             QHash<QLoaderSettings*, QLoaderSettingsData> &data = d_ptr->hash.data;
-            data[q_ptr].settings.removeOne(this);
             const QLoaderSettingsData &item = data[q_ptr];
 
             if ((removeLastInstance = item.settings.isEmpty()))
