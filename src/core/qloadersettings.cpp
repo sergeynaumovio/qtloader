@@ -159,10 +159,14 @@ bool QLoaderSettings::removeBlob(const QString &key)
 bool QLoaderSettings::setValue(const QString &key, const QVariant &value)
 {
     d_ptr->mutex.lock();
-    if (!d_ptr->hash.data[q_ptr].properties.contains(key) ||
-        d_ptr->hash.data[q_ptr].properties[key].isValue)
+    bool contains = d_ptr->hash.data[q_ptr].properties.contains(key);
+    if (!contains || d_ptr->hash.data[q_ptr].properties[key].isValue)
     {
-        d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
+        if (contains && value.isNull())
+            d_ptr->hash.data[q_ptr].properties.remove(key);
+        else if (!value.isNull())
+            d_ptr->hash.data[q_ptr].properties[key] = fromVariant(value);
+
         d_ptr->mutex.unlock();
         emit d_ptr->q_ptr->settingsChanged();
         return true;
