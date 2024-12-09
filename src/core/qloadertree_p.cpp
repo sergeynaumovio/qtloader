@@ -94,7 +94,8 @@ class QLoaderTreeSectionAction
 {
     QLoaderTreePrivate *const d_ptr;
 
-    bool allow() const;
+    QLoaderError actionError() const;
+    QString actionPath () const { return u'[' + src.section.join(u'/') + u"] -> ["_s + dst.section.join(u'/') + u']'; }
 
 public:
     QLoaderTreeSection src;
@@ -119,13 +120,9 @@ public:
         if (!src.valid || !dst.valid)
             return {.status = QLoaderError::Design, .message = u"section not valid"_s};
 
-        if (!allow())
+        if (QLoaderError err = actionError())
         {
-            QLoaderError err;
-            err.message = u"operation not allowed"_s;
-            err.status = QLoaderError::Object;
             emit d_ptr->q_ptr->errorChanged(src.object, err.message);
-
             return err;
         }
 
@@ -148,15 +145,21 @@ public:
 };
 
 template<>
-bool QLoaderTreeSectionAction<Copy>::allow() const
+QLoaderError QLoaderTreeSectionAction<Copy>::actionError() const
 {
-    return d_ptr->hash.data[src.settings].settings.front()->isCopyable(dst.section);
+    if (!d_ptr->hash.data[src.settings].settings.front()->isCopyable(dst.section))
+        return {.status = QLoaderError::Object, .message = actionPath() + u" : copy operation not allowed"_s};
+
+    return {};
 }
 
 template<>
-bool QLoaderTreeSectionAction<Move>::allow() const
+QLoaderError QLoaderTreeSectionAction<Move>::actionError() const
 {
-    return d_ptr->hash.data[src.settings].settings.front()->isMovable(dst.section);
+    if (!d_ptr->hash.data[src.settings].settings.front()->isMovable(dst.section))
+        return {.status = QLoaderError::Object, .message = actionPath() + u" : move operation not allowed"_s};
+
+    return {};
 }
 
 class KeyValueParser
@@ -1083,8 +1086,7 @@ QLoaderError QLoaderTreePrivate::move(const QStringList &section, const QStringL
 {
     QLoaderTreeSectionAction<Move> mv(section, to, this);
 
-    QLoaderError error;
-    if ((error = mv.error()))
+    if (QLoaderError error = mv.error())
         return error;
 
     mutex.lock();
