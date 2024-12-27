@@ -386,7 +386,7 @@ public:
     KeyValueParser parser;
     StringVariantConverter converter;
     QMutex loading;
-    QString execLine;
+    QString shebang;
     QList<QLoaderSettings*> copied;
     Saving saving;
 
@@ -597,8 +597,8 @@ void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
 
 void QLoaderTreePrivate::dump(QLoaderSettings *settings) const
 {
-    if (d.execLine.size())
-        qDebug().noquote() << d.execLine;
+    if (d.shebang.size())
+        qDebug().noquote() << d.shebang;
 
     dumpRecursive(settings);
 }
@@ -815,19 +815,25 @@ QLoaderError QLoaderTreePrivate::readSettings()
         return error;
     }
 
+    QTextStream in(file);
+    QString line;
+    line.reserve (10240);
+    int currentLine{};
+
+    const QLatin1StringView shebang("#!"_L1);
+    const QChar comment('#'_L1);
+
     QLoaderSettings *settings{};
     QLoaderSettingsData item;
-    int currentLine = 0;
-    QLatin1StringView comment("#");
 
-    while (!file->atEnd())
+    while (!in.atEnd())
     {
-        QString line = QLatin1StringView(file->readLine());
+        in.readLineInto(&line);
         ++currentLine;
 
-        if (currentLine == 1 && line.startsWith(u"#!"_s))
+        if (currentLine == 1 && line.startsWith(shebang))
         {
-            d.execLine = line;
+            d.shebang = line;
             continue;
         }
 
@@ -1225,15 +1231,16 @@ QLoaderError QLoaderTreePrivate::save()
         QFileDevice::Permissions permissions = file->permissions();
 
         QString fileName = file->fileName();
-        QString bakFileName = fileName + u".bak"_s;
+        QString bakFileName = fileName + ".bak"_L1;
 
         QFile ofile(bakFileName);
         if (!ofile.open(QIODevice::WriteOnly))
             return error;
 
         QTextStream out(&ofile);
-        if (d.execLine.size())
-            out << d.execLine;
+
+        if (d.shebang.size())
+            out << d.shebang;
 
         saveRecursive(d.root.settings, out);
         ofile.close();
