@@ -1240,7 +1240,7 @@ QLoaderError QLoaderTreePrivate::save()
         QTextStream out(&ofile);
 
         if (d.shebang.size())
-            out << d.shebang;
+            out << d.shebang << '\n';
 
         saveRecursive(d.root.settings, out);
         ofile.close();
