@@ -8,6 +8,7 @@
 #include <QLayout>
 #include <QMenu>
 #include <QPainter>
+#include <QPointer>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QStack>
