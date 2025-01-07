@@ -10,7 +10,6 @@
 #include "qloadersettings.h"
 #include "qloadershell.h"
 #include "qloadershellcd.h"
-#include "qloadershellclear.h"
 #include "qloadershellexit.h"
 #include "qloadershellsave.h"
 #include "qloaderstorage.h"
@@ -427,15 +426,6 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
             return new QLoaderShellCd(settings, shell);
-
-        return parent;
-     }
-
-    if (!qstrcmp(shortName, "ShellClear"))
-    {
-        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
-        if (shell)
-            return new QLoaderShellClear(settings, shell);
 
         return parent;
      }

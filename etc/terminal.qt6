@@ -11,9 +11,6 @@ home = terminal
 [terminal/shell/cd]
 class = QLoaderShellCd
 
-[terminal/shell/clear]
-class = QLoaderShellClear
-
 [terminal/shell/exit]
 class = QLoaderShellExit
 
