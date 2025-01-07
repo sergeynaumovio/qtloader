@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloaderterminal.h"
@@ -51,7 +51,7 @@ public:
     QTextCursor cursor;
 
 
-    QLoaderShell *shell;
+    QPointer<QLoaderShell> shell;
     QThread thread;
 
     struct
@@ -78,7 +78,7 @@ public:
 
     struct
     {
-        QRegularExpression regex{u"[^\\s]+"_s};
+        QRegularExpression regex{"[^\\s]+"_L1};
         QString string;
 
     } command;
@@ -87,7 +87,6 @@ public:
     :   q_ptr(q),
         shell(q->tree()->newShellInstance())
     {
-        shell->setTerminal(q);
         setPath(shell->section());
         shell->moveToThread(&thread);
         thread.start();
@@ -96,7 +95,6 @@ public:
         {
             thread.quit();
             thread.wait();
-            shell = nullptr;
             q->deleteLater();
         });
     }
@@ -175,19 +173,27 @@ public:
 
         if (string.size())
         {
-            QStringList pipeline = string.split(u'|');
+            QStringList pipeline = string.split('|'_L1);
             QString cmd = pipeline.first();
 
             QRegularExpressionMatch match;
             if ((match = command.regex.match(cmd)).hasMatch())
             {
                 command.string = match.captured();
-                shell->exec(command.string, QProcess::splitCommand(cmd));
+
+                if (command.string == "clear"_L1)
+                    return q_ptr->clear();
+
+                if (QLoaderError error = shell->exec(command.string, QProcess::splitCommand(cmd)))
+                    q_ptr->insertPlainText("\nshell: "_L1 + command.string + ": "_L1 + error.message);
             }
         }
 
         if (!q_ptr->document()->isEmpty())
-            q_ptr->insertPlainText(u"\n"_s);
+            q_ptr->insertPlainText("\n"_L1);
+
+        if (shell)
+            setPath(shell->section());
 
         q_ptr->insertPlainText(path.string);
         q_ptr->ensureCursorVisible();
@@ -482,12 +488,14 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 QLoaderTerminal::~QLoaderTerminal()
 { }
 
-QPlainTextEdit *QLoaderTerminal::out()
+void QLoaderTerminal::clear()
 {
-    return this;
+    QPlainTextEdit::clear();
+    insertPlainText(d_ptr->path.string);
+    d_ptr->cursor = textCursor();
 }
 
-void QLoaderTerminal::setCurrentSection(const QStringList &section)
+QLoaderShell *QLoaderTerminal::shell() const
 {
-    d_ptr->setPath(section);
+    return d_ptr->shell;
 }

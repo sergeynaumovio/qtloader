@@ -48,7 +48,6 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/shell/qloadershellexit.h
             src/core/shell/qloadershellsave.cpp
             src/core/shell/qloadershellsave.h
-            src/core/shell/qloaderterminalinterface.h
             src/core/qloaderdata.cpp
             src/core/qloaderdata.h
             src/core/qloaderdir.cpp
@@ -85,10 +84,8 @@ target_include_directories(${QT_LOADER_LIBRARY}
 set(QT_LOADER_PUBLIC_HEADERS
     src/core/shell/QLoaderCommandInterface
     src/core/shell/QLoaderShell
-    src/core/shell/QLoaderTerminalInterface
     src/core/shell/qloadercommandinterface.h
     src/core/shell/qloadershell.h
-    src/core/shell/qloaderterminalinterface.h
     src/core/QLoaderData
     src/core/QLoaderDir
     src/core/QLoaderError

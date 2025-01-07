@@ -1,8 +1,7 @@
-// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadershell.h"
-#include "qloaderterminalinterface.h"
 #include "qloadercommandinterface.h"
 #include "qloadertree.h"
 #include <QPlainTextEdit>
@@ -15,7 +14,6 @@ public:
     QHash<QString, QObject *> commands;
     QStringList home;
     QStringList section;
-    QLoaderTerminalInterface *terminal{};
 };
 
 QLoaderShell::QLoaderShell(QLoaderSettings *settings)
@@ -59,8 +57,6 @@ bool QLoaderShell::cd(const QString &relative)
     if (tree()->contains(absolute))
     {
         d_ptr->section = absolute;
-        if (d_ptr->terminal)
-            d_ptr->terminal->setCurrentSection(d_ptr->section);
 
         return true;
     }
@@ -71,8 +67,6 @@ bool QLoaderShell::cd(const QString &relative)
 void QLoaderShell::cdHome()
 {
     d_ptr->section = d_ptr->home;
-    if (d_ptr->terminal)
-        d_ptr->terminal->setCurrentSection(d_ptr->section);
 }
 
 bool QLoaderShell::cdUp()
@@ -80,8 +74,6 @@ bool QLoaderShell::cdUp()
     if (d_ptr->section.size() > 1)
     {
         d_ptr->section.removeLast();
-        if (d_ptr->terminal)
-            d_ptr->terminal->setCurrentSection(d_ptr->section);
 
         return true;
     }
@@ -89,35 +81,20 @@ bool QLoaderShell::cdUp()
     return false;
 }
 
+QLoaderError QLoaderShell::exec(QLatin1StringView command)
+{
+    return exec(command, {});
+}
+
 QLoaderError QLoaderShell::exec(const QString &name, const QStringList &arguments)
 {
     if (d_ptr->commands.contains(name))
-    {
-        QLoaderError error = qobject_cast<QLoaderCommandInterface *>(d_ptr->commands[name])->exec(arguments);
-        if (error && d_ptr->terminal)
-            d_ptr->terminal->out()->insertPlainText(u"\nshell: "_s + name + u": "_s + error.message);
+        return qobject_cast<QLoaderCommandInterface *>(d_ptr->commands[name])->exec(arguments);
 
-        return error;
-    }
-
-    QLoaderError error{.status = QLoaderError::Object, .message = u"command not found"_s};
-    if (d_ptr->terminal)
-        d_ptr->terminal->out()->insertPlainText(u"\nshell: "_s + name + u": "_s + error.message);
-
-    return error;
+    return QLoaderError{.status = QLoaderError::Object, .message = "command not found"_L1};
 }
 
 QStringList QLoaderShell::section() const
 {
     return d_ptr->section;
-}
-
-void QLoaderShell::setTerminal(QLoaderTerminalInterface *terminal)
-{
-    d_ptr->terminal = terminal;
-}
-
-QLoaderTerminalInterface *QLoaderShell::terminal() const
-{
-    return d_ptr->terminal;
 }

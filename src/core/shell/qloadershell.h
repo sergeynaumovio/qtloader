@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #ifndef QLOADERSHELL_H
@@ -8,7 +8,6 @@
 #include "qloadererror.h"
 
 class QLoaderShellPrivate;
-class QLoaderTerminalInterface;
 
 class QLoaderCommand
 {
@@ -40,12 +39,11 @@ public:
     void cdHome();
     bool cdUp();
     QLoaderError error() const;
+    QLoaderError exec(QLatin1StringView command);
     QLoaderError exec(const QLoaderCommand &command);
     QLoaderError exec(const QLoaderCommandList &pipeline);
     QLoaderError exec(const QString &name, const QStringList &arguments);
     QStringList section() const;
-    void setTerminal(QLoaderTerminalInterface *terminal);
-    QLoaderTerminalInterface *terminal() const;
 };
 
 #endif // QLOADERSHELL_H
