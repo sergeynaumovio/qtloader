@@ -50,8 +50,6 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/shell/qloadershellsave.h
             src/core/qloaderdata.cpp
             src/core/qloaderdata.h
-            src/core/qloaderdir.cpp
-            src/core/qloaderdir.h
             src/core/qloadererror.h
             src/core/qloaderplugininterface.h
             src/core/qloadersaveinterface.h
@@ -71,7 +69,6 @@ target_sources(${QT_LOADER_LIBRARY}
             src/widgets/markupcommander/qloadermarkupcommander.h
             src/widgets/terminal/qloaderterminal.cpp
             src/widgets/terminal/qloaderterminal.h
-            src/widgets/qloadericoninterface.h
 )
 
 target_include_directories(${QT_LOADER_LIBRARY}
@@ -87,7 +84,6 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/shell/qloadercommandinterface.h
     src/core/shell/qloadershell.h
     src/core/QLoaderData
-    src/core/QLoaderDir
     src/core/QLoaderError
     src/core/QLoaderPluginInterface
     src/core/QLoaderSaveInterface
@@ -95,7 +91,6 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/QLoaderTree
     src/core/QScopedStorage
     src/core/qloaderdata.h
-    src/core/qloaderdir.h
     src/core/qloadererror.h
     src/core/qloaderplugininterface.h
     src/core/qloadersaveinterface.h
@@ -107,8 +102,6 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/widgets/markupcommander/qloadermarkupcommander.h
     src/widgets/terminal/QLoaderTerminal
     src/widgets/terminal/qloaderterminal.h
-    src/widgets/QLoaderIconInterface
-    src/widgets/qloadericoninterface.h
 )
 
 set_target_properties(${QT_LOADER_LIBRARY} PROPERTIES

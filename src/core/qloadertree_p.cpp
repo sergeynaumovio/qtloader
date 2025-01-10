@@ -3,7 +3,6 @@
 
 #include "qloadertree_p.h"
 #include "qloaderdata.h"
-#include "qloaderdir.h"
 #include "qloadertree.h"
 #include "qloaderplugininterface.h"
 #include "qloadersaveinterface.h"
@@ -436,19 +435,6 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
         d.data.object->setParent(parent);
         return nullptr;
-    }
-
-    if (!qstrcmp(shortName, "Dir"))
-    {
-        QLoaderData *ldata = qobject_cast<QLoaderData *>(parent);
-        if (ldata)
-            return new QLoaderDir(settings, ldata);
-
-        QLoaderDir *dir = qobject_cast<QLoaderDir *>(parent);
-        if (dir)
-            return new QLoaderDir(settings, dir);
-
-        return parent;
     }
 
     if (!qstrcmp(shortName, "ShellExit"))
