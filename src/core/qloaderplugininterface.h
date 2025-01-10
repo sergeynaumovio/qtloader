@@ -10,7 +10,7 @@ class QLoaderSettings;
 class QLoaderPluginInterface
 {
 public:
-    virtual QObject *object(QLoaderSettings *settings, QObject *parent) = 0;
+    virtual QObject *object(QLoaderSettings *settings, QObject *parent) const = 0;
 };
 Q_DECLARE_INTERFACE(QLoaderPluginInterface, "QLoaderPluginInterface")
 
