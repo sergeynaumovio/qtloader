@@ -392,7 +392,6 @@ public:
     ~QLoaderTreePrivateData()
     {
         if (shell.object) delete shell.object;
-        else if (shell.settings) delete shell.settings;
     }
 };
 
