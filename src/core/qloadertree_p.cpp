@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadertree_p.h"
-#include "qloaderdata.h"
 #include "qloadertree.h"
 #include "qloaderplugininterface.h"
 #include "qloadersaveinterface.h"
@@ -11,8 +10,6 @@
 #include "qloadershellcd.h"
 #include "qloadershellexit.h"
 #include "qloadershellsave.h"
-#include "qloaderstorage.h"
-#include "qloaderstorage_p.h"
 #include "qloaderterminal.h"
 #include <QAction>
 #include <QApplication>
@@ -167,7 +164,6 @@ class KeyValueParser
         const QRegularExpression sectionName{u"^\\[(?<section>[^\\[\\]]*)\\]$"_s};
         const QRegularExpression keyValue{u"^(?<key>[^=]*[^\\s])\\s*=\\s*(?<value>.+)"_s};
         const QRegularExpression className{u"^[A-Z]+[a-z,0-9]*"_s};
-        const QRegularExpression blobUuid{u"^QLoaderBlob\\((?<uuid>[0-9a-f\\-]{36})\\)"_s};
 
     } d;
 
@@ -197,18 +193,6 @@ public:
         return false;
     }
 
-    bool matchBlobUuid(const QString &value, QString &uuid) const
-    {
-        QRegularExpressionMatch match;
-        if ((match = d.blobUuid.match(value)).hasMatch())
-        {
-            uuid = match.captured(u"uuid"_s);
-            return true;
-        }
-
-        return false;
-    }
-
     bool matchClassName(const char *name, QString &libraryName) const
     {
         QRegularExpressionMatch match;
@@ -226,7 +210,6 @@ class StringVariantConverter
 {
     struct
     {
-        const QRegularExpression blob{u"^QLoaderBlob\\s*\\(\\s*(?<bytearray>.*)\\)"_s};
         const QRegularExpression bytearray{u"^QByteArray\\s*\\(\\s*(?<bytearray>.*)\\)"_s};
         const QRegularExpression chr{u"^QChar\\s*\\(\\s*(?<char>.{1})\\s*\\)_"_s};
         const QRegularExpression charlist{u"^QCharList\\s*\\(\\s*(?<list>.*)\\)"_s};
@@ -249,9 +232,6 @@ public:
     QVariant fromString(const QString &value) const
     {
         QRegularExpressionMatch match;
-        if ((match = d.blob.match(value)).hasMatch())
-            return QVariant::fromValue(match.captured(u"bytearray"_s).toLocal8Bit());
-
         if ((match = d.bytearray.match(value)).hasMatch())
             return QVariant::fromValue(QByteArray::fromBase64(match.captured(u"bytearray"_s).toLocal8Bit()));
 
@@ -366,20 +346,11 @@ public:
     QObject *object{};
 };
 
-class StorageSettingsObject : public SettingsObject
-{
-public:
-    QLoaderStoragePrivate *d_ptr{};
-};
-
 class QLoaderTreePrivateData
 {
 public:
     SettingsObject root;
-    SettingsObject data;
     SettingsObject shell;
-    StorageSettingsObject storage;
-    QSet<QUuid> blobs;
 
     KeyValueParser parser;
     StringVariantConverter converter;
@@ -409,11 +380,6 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
     qDeleteAll(hash.settings.sections);
 }
 
-QLoaderBlob QLoaderTreePrivate::blob(const QUuid &uuid) const
-{
-    return d.storage.d_ptr->blob(uuid);
-}
-
 QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 {
     QByteArray className = settings->className();
@@ -427,15 +393,6 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
         return parent;
      }
-
-    if (!qstrcmp(shortName, "Data"))
-    {
-        if (!d.data.object)
-            return d.data.object = new QLoaderData(settings, parent);
-
-        d.data.object->setParent(parent);
-        return nullptr;
-    }
 
     if (!qstrcmp(shortName, "ShellExit"))
     {
@@ -460,15 +417,6 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         if (!d.shell.object)
             return d.shell.object = new QLoaderShell(settings);
 
-        return nullptr;
-     }
-
-    if (!qstrcmp(shortName, "Storage"))
-    {
-        if (!d.storage.object)
-            return d.storage.object = new QLoaderStorage(*this, settings, parent);
-
-        d.storage.object->setParent(parent);
         return nullptr;
      }
 
@@ -530,19 +478,6 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
     return nullptr;
 }
 
-QUuid QLoaderTreePrivate::createStorageUuid() const
-{
-    if (d.storage.d_ptr)
-        return d.storage.d_ptr->createUuid();
-
-    return {};
-}
-
-QLoaderData *QLoaderTreePrivate::data() const
-{
-    return static_cast<QLoaderData *>(d.data.object);
-}
-
 void QLoaderTreePrivate::emitSettingsChanged()
 {
     mutex.lock();
@@ -561,7 +496,7 @@ void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
     while (i.hasNext())
     {
         i.next();
-        qDebug().noquote() << i.key() << '=' << i.value().string;
+        qDebug().noquote() << i.key() << '=' << i.value();
     }
 
     qDebug() << "";
@@ -728,58 +663,6 @@ QLoaderShell *QLoaderTreePrivate::newShellInstance()
     return shell;
 }
 
-QLoaderError QLoaderTreePrivate::seekBlobs()
-{
-    QLoaderError error{.line = hash.data[d.storage.settings].sectionLine,
-                       .status = QLoaderError::Format};
-    QDataStream in(file);
-    QUuid currentUuid;
-    const int uuidStringSize = currentUuid.toString(QUuid::WithoutBraces).size();
-    const QString format(u" = QLoaderBlob("_s);
-
-    auto errMessage = [&error](const QUuid uuid)
-    {
-        error.message = u"blob uuid "_s + uuid.toString() + u" not valid"_s;
-        return error;
-    };
-
-    while (!file->atEnd())
-    {
-        QByteArray array = file->read(uuidStringSize);
-        QUuid uuid(array);
-
-        if (!uuid.isNull())
-            currentUuid = uuid;
-
-        array = file->read(format.size());
-
-        if (QLatin1StringView(array) != format)
-            return errMessage(currentUuid);
-
-        qint64 pos = file->pos();
-        hash.blobs.insert(uuid, pos);
-        qint64 size;
-        in >> size;
-
-        pos = file->pos() + size;
-        if (pos > file->size())
-            return errMessage(currentUuid);
-
-        if (!file->seek(file->pos() + size))
-            return errMessage(currentUuid);
-    }
-
-    file->close();
-    if (!file->open(QIODevice::ReadOnly))
-    {
-        error.status = QLoaderError::Access;
-        error.message = u"read error"_s;
-        return error;
-    }
-
-    return {};
-}
-
 QLoaderError QLoaderTreePrivate::readSettings()
 {
     QLoaderError error;
@@ -858,16 +741,9 @@ QLoaderError QLoaderTreePrivate::readSettings()
 
                     if (hash.settings.sections.contains(parent))
                     {
-                        if (parent.size() == 1 && d.storage.settings)
-                        {
-                            error.message = u"last direct root child not valid (please, use QLoaderStorage)"_s;
-                        }
-                        else
-                        {
-                            valid = true;
-                            item.parent = hash.settings.sections[parent];
-                            hash.data[item.parent].children.push_back(settings);
-                        }
+                        valid = true;
+                        item.parent = hash.settings.sections[parent];
+                        hash.data[item.parent].children.push_back(settings);
                     }
                 }
                 else
@@ -929,13 +805,9 @@ QLoaderError QLoaderTreePrivate::readSettings()
                     break;
                 }
 
-                bool isData{};
                 bool isShell{};
-                bool isStorage{};
                 const char *shortName = item.className.data() + qstrlen("QLoader");
-                if ((isData = !qstrcmp(shortName, "Data")) ||
-                    (isShell = !qstrcmp(shortName, "Shell")) ||
-                    (isStorage = !qstrcmp(shortName, "Storage")))
+                if ((isShell = !qstrcmp(shortName, "Shell")))
                 {
                     if (item.section.size() > 2)
                     {
@@ -945,56 +817,20 @@ QLoaderError QLoaderTreePrivate::readSettings()
                         break;
                     }
 
-                    if ((isData && d.data.settings) ||
-                        (isShell && d.shell.settings) ||
-                        (isStorage && d.storage.settings))
+                    if (isShell && d.shell.settings)
                     {
                         error.line = item.sectionLine;
                         error.status = QLoaderError::Design;
-                        error.message = (isData ? u"data"_s :
-                                         isShell ? u"shell"_s :
-                                         isStorage ? u"storage"_s : u""_s);
-                        error.message += u" object already set"_s;
+                        error.message = u"shell object already set"_s;
                         break;
                     }
 
-                    if (isData)
-                        d.data.settings = settings;
-                    else if (isShell)
+                    if (isShell)
                         d.shell.settings = settings;
-                    else if (isStorage)
-                    {
-                        d.storage.settings = settings;
-                        break;
-                    }
                 }
             }
             else if (!item.properties.contains(key))
-            {
                 item.properties[key] = value;
-
-                if (d.parser.matchBlobUuid(value, value))
-                {
-                    QUuid uuid(value);
-                    if (uuid.isNull())
-                    {
-                        error.line = item.sectionLine;
-                        error.status = QLoaderError::Format;
-                        error.message = u"blob uuid \""_s + value + u"\" not valid"_s;
-                        break;
-                    }
-
-                    if (d.blobs.contains(uuid))
-                    {
-                        error.status = QLoaderError::Design;
-                        error.message = u"blob uuid\""_s + uuid.toString() + u"\" already set"_s;
-                    }
-
-                    d.blobs.insert(uuid);
-                    item.properties[key].isBlob = true;
-                    item.properties[key].isValue = false;
-                }
-            }
             else
             {
                 error.status = QLoaderError::Design;
@@ -1005,9 +841,6 @@ QLoaderError QLoaderTreePrivate::readSettings()
     }
 
     hash.data[settings] = item;
-
-    if (d.storage.settings)
-        return seekBlobs();
 
     return error;
 }
@@ -1028,13 +861,7 @@ QLoaderError QLoaderTreePrivate::load()
         if ((error = readSettings()))
             break;
 
-        if (d.storage.settings && (error = loadRecursive(d.storage.settings, q_ptr)))
-            break;
-
         if (d.shell.settings && (error = loadRecursive(d.shell.settings, q_ptr)))
-            break;
-
-        if (d.data.settings && (error = loadRecursive(d.data.settings, q_ptr)))
             break;
 
         bool coreApp = !qobject_cast<QApplication *>(QCoreApplication::instance());
@@ -1048,12 +875,8 @@ QLoaderError QLoaderTreePrivate::load()
     if (!loaded)
     {
         file->close();
-        if (d.storage.object) delete d.storage.object;
-        if (d.data.object) delete d.data.object;
         if (d.root.object) delete d.root.object;
     }
-    else if (!d.storage.object)
-        file->close();
 
     d.loading.unlock();
 
@@ -1179,7 +1002,7 @@ void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &
     while (i.hasNext())
     {
         i.next();
-        out << i.key() << " = " << i.value().string << '\n';
+        out << i.key() << " = " << i.value() << '\n';
     }
 
     QLoaderSaveInterface *resources = qobject_cast<QLoaderSaveInterface *>(item.object);
@@ -1219,10 +1042,6 @@ QLoaderError QLoaderTreePrivate::save()
 
         saveRecursive(d.root.settings, out);
         ofile.close();
-
-        if (d.storage.object)
-            if (QLoaderError e = d.storage.d_ptr->save(&ofile, d.root.settings))
-                return e;
 
         file->close();
         if (!file->remove())
@@ -1350,9 +1169,4 @@ void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject 
 
         return;
     }
-}
-
-void QLoaderTreePrivate::setStorageData(QLoaderStoragePrivate &d_ref)
-{
-    d.storage.d_ptr = &d_ref;
 }

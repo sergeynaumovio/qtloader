@@ -48,17 +48,11 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/shell/qloadershellexit.h
             src/core/shell/qloadershellsave.cpp
             src/core/shell/qloadershellsave.h
-            src/core/qloaderdata.cpp
-            src/core/qloaderdata.h
             src/core/qloadererror.h
             src/core/qloaderplugininterface.h
             src/core/qloadersaveinterface.h
             src/core/qloadersettings.cpp
             src/core/qloadersettings.h
-            src/core/qloaderstorage.cpp
-            src/core/qloaderstorage.h
-            src/core/qloaderstorage_p.cpp
-            src/core/qloaderstorage_p.h
             src/core/qloadertree.cpp
             src/core/qloadertree.h
             src/core/qloadertree_p.cpp
@@ -83,20 +77,16 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/shell/QLoaderShell
     src/core/shell/qloadercommandinterface.h
     src/core/shell/qloadershell.h
-    src/core/QLoaderData
     src/core/QLoaderError
     src/core/QLoaderPluginInterface
     src/core/QLoaderSaveInterface
     src/core/QLoaderSettings
     src/core/QLoaderTree
-    src/core/QScopedStorage
-    src/core/qloaderdata.h
     src/core/qloadererror.h
     src/core/qloaderplugininterface.h
     src/core/qloadersaveinterface.h
     src/core/qloadersettings.h
     src/core/qloadertree.h
-    src/core/qscopedstorage.h
     src/core/qtloaderglobal.h
     src/widgets/markupcommander/QLoaderMarkupCommander
     src/widgets/markupcommander/qloadermarkupcommander.h

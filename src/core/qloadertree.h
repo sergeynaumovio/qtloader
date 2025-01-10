@@ -9,7 +9,6 @@
 #include <QObject>
 
 class QLoaderTreePrivate;
-class QLoaderData;
 class QLoaderSettings;
 class QLoaderShell;
 
@@ -37,7 +36,6 @@ public:
     QLoaderError backup();
     bool contains(const QStringList &section) const;
     QLoaderError copy(const QStringList &section, const QStringList &to);
-    QLoaderData *data() const;
     QString fileName() const;
     bool isLoaded() const;
     bool isModified() const;

@@ -39,11 +39,6 @@ QLoaderError QLoaderTree::copy(const QStringList &section, const QStringList &to
     return d_ptr->copy(section, to);
 }
 
-QLoaderData *QLoaderTree::data() const
-{
-    return d_ptr->data();
-}
-
 QString QLoaderTree::fileName() const
 {
     if (d_ptr->file)

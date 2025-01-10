@@ -17,18 +17,8 @@ class QFile;
 class QTextStream;
 class QLoaderTreePrivateData;
 class QLoaderTreeSection;
-class QLoaderData;
-class QLoaderStoragePrivate;
-class QLoaderBlob;
 
-struct QLoaderProperty
-{
-    bool isBlob{};
-    bool isValue{true};
-    QString string;
-    void operator=(const QString &s) { string = s; }
-    operator const QString &() { return string; }
-};
+using QLoaderProperty = QString;
 
 struct QLoaderSettingsData
 {
@@ -47,7 +37,7 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    std::aligned_storage_t<256, sizeof (ptrdiff_t)> d_storage;
+    std::aligned_storage_t<192, sizeof (ptrdiff_t)> d_storage;
 
     void copyRecursive(QLoaderSettings *settings,
                        const QLoaderTreeSection &src,
@@ -58,7 +48,6 @@ class QLoaderTreePrivate
     void moveRecursive(QLoaderSettings *settings,
                        const QLoaderTreeSection &src,
                        const QLoaderTreeSection &dst);
-    QLoaderError seekBlobs();
     QLoaderError readSettings();
     void removeRecursive(QLoaderSettings *settings);
     void saveItem(const QLoaderSettingsData &item, QTextStream &out);
@@ -85,18 +74,14 @@ public:
         } settings;
 
         QHash<QLoaderSettings *, QLoaderSettingsData> data;
-        QHash<QUuid, qint64> blobs;
 
     } hash;
 
     QLoaderTreePrivate(const QString &fileName, QLoaderTree *q);
     virtual ~QLoaderTreePrivate();
 
-    QLoaderBlob blob(const QUuid &uuid) const;
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
     QLoaderError copy(const QStringList &section, const QStringList &to);
-    QUuid createStorageUuid() const;
-    QLoaderData *data() const;
     void dump(QLoaderSettings *settings) const;
     void emitSettingsChanged();
     QObject *external(QLoaderError &error, QLoaderSettings *settings, QObject *parent);
@@ -106,10 +91,8 @@ public:
     QLoaderError load();
     QLoaderError move(const QStringList &section, const QStringList &to);
     QLoaderShell *newShellInstance();
-    bool removeBlob(const QUuid &id);
     QLoaderError save();
     void setProperties(const QLoaderSettingsData &item, QObject *object);
-    void setStorageData(QLoaderStoragePrivate &d);
 };
 
 #endif // QLOADERTREE_P_H
