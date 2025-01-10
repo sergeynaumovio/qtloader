@@ -1220,7 +1220,7 @@ QLoaderError QLoaderTreePrivate::save()
         QFileDevice::Permissions permissions = file->permissions();
 
         QString fileName = file->fileName();
-        QString bakFileName = fileName + ".bak"_L1;
+        QString bakFileName = fileName + u".bak"_s;
 
         QFile ofile(bakFileName);
         if (!ofile.open(QIODevice::WriteOnly))

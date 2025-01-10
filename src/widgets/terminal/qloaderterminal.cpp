@@ -79,7 +79,7 @@ public:
 
     struct
     {
-        QRegularExpression regex{"[^\\s]+"_L1};
+        QRegularExpression regex{u"[^\\s]+"_s};
         QString string;
 
     } command;
@@ -186,12 +186,12 @@ public:
                     return q_ptr->clear();
 
                 if (QLoaderError error = shell->exec(command.string, QProcess::splitCommand(cmd)))
-                    q_ptr->insertPlainText("\nshell: "_L1 + command.string + ": "_L1 + error.message);
+                    q_ptr->insertPlainText(u"\nshell: "_s + command.string + u": "_s + error.message);
             }
         }
 
         if (!q_ptr->document()->isEmpty())
-            q_ptr->insertPlainText("\n"_L1);
+            q_ptr->insertPlainText(u"\n"_s);
 
         if (shell)
             setPath(shell->section());

@@ -91,7 +91,7 @@ QLoaderError QLoaderShell::exec(const QString &name, const QStringList &argument
     if (d_ptr->commands.contains(name))
         return qobject_cast<QLoaderCommandInterface *>(d_ptr->commands[name])->exec(arguments);
 
-    return QLoaderError{.status = QLoaderError::Object, .message = "command not found"_L1};
+    return QLoaderError{.status = QLoaderError::Object, .message = u"command not found"_s};
 }
 
 QStringList QLoaderShell::section() const
