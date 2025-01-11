@@ -82,11 +82,13 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/QLoaderSaveInterface
     src/core/QLoaderSettings
     src/core/QLoaderTree
+    src/core/QScopedStorage
     src/core/qloadererror.h
     src/core/qloaderplugininterface.h
     src/core/qloadersaveinterface.h
     src/core/qloadersettings.h
     src/core/qloadertree.h
+    src/core/qscopedstorage.h
     src/core/qtloaderglobal.h
     src/widgets/markupcommander/QLoaderMarkupCommander
     src/widgets/markupcommander/qloadermarkupcommander.h
