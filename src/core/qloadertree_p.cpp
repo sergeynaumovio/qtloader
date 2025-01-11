@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadertree_p.h"
@@ -370,8 +370,8 @@ QLoaderTreePrivate::QLoaderTreePrivate(const QString &fileName, QLoaderTree *q)
     q_ptr(q),
     file(new QFile(fileName, q))
 {
-    static_assert (sizeof (d_storage) == sizeof (QLoaderTreePrivateData));
-    static_assert (sizeof (ptrdiff_t) == alignof (QLoaderTreePrivateData));
+    static_assert(sizeof(QLoaderTreePrivateData) == sizeof(d_storage));
+    static_assert(alignof(QLoaderTreePrivateData) == 8);
 }
 
 QLoaderTreePrivate::~QLoaderTreePrivate()

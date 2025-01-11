@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #ifndef QSCOPEDSTORAGE_H
@@ -6,12 +6,12 @@
 
 #include <QtCore/qglobal.h>
 
-template<typename T, int Size, int Alignment = sizeof(ptrdiff_t)>
+template<typename T, int Size, int Alignment = 8>
 class QScopedStorage
 {
     Q_DISABLE_COPY_MOVE(QScopedStorage)
 
-    std::aligned_storage_t<Size, Alignment> d_storage;
+    alignas(Alignment) std::byte d_storage[Size];
 
     template<int TSize, int TAlignment>
     static void checkSize() noexcept

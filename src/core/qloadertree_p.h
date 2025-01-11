@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #ifndef QLOADERTREE_P_H
@@ -37,7 +37,7 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    std::aligned_storage_t<192, sizeof (ptrdiff_t)> d_storage;
+    alignas(8) std::byte d_storage[192];
 
     void copyRecursive(QLoaderSettings *settings,
                        const QLoaderTreeSection &src,
