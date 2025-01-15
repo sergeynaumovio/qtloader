@@ -4,6 +4,7 @@
 #include "qloadershell.h"
 #include "qloadercommandinterface.h"
 #include "qloadertree.h"
+#include <QHash>
 #include <QPlainTextEdit>
 
 using namespace Qt::Literals::StringLiterals;

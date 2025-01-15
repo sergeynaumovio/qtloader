@@ -6,6 +6,7 @@
 
 #include "qloadersettings.h"
 #include "qloadererror.h"
+#include <QObject>
 
 class QLoaderShellPrivate;
 
