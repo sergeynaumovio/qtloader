@@ -4,19 +4,18 @@
 #ifndef QLOADERTREE_P_H
 #define QLOADERTREE_P_H
 
-#include "qloadertree.h"
-#include <QStringList>
-#include <QMap>
 #include <QHash>
+#include <QMap>
 #include <QMutex>
-#include <QUuid>
 
+class QFile;
+class QLoaderError;
 class QLoaderSettings;
 class QLoaderTree;
-class QFile;
-class QTextStream;
 class QLoaderTreePrivateData;
 class QLoaderTreeSection;
+class QLoaderShell;
+class QTextStream;
 
 using QLoaderProperty = QString;
 

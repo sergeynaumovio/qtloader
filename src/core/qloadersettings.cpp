@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadersettings.h"
+#include "qloadertree.h"
 #include "qloadertree_p.h"
 
 using namespace Qt::Literals::StringLiterals;
