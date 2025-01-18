@@ -198,7 +198,7 @@ public:
         QRegularExpressionMatch match;
         if ((match = d.className.match(QLatin1StringView(name))).hasMatch())
         {
-            libraryName += match.captured();
+            libraryName += match.capturedView();
             return true;
         }
 
@@ -233,10 +233,10 @@ public:
     {
         QRegularExpressionMatch match;
         if ((match = d.bytearray.match(value)).hasMatch())
-            return QVariant::fromValue(QByteArray::fromBase64(match.captured(u"bytearray"_s).toLocal8Bit()));
+            return QVariant::fromValue(QByteArray::fromBase64(match.capturedView(u"bytearray"_s).toLocal8Bit()));
 
         if ((match = d.chr.match(value)).hasMatch())
-            return match.captured(u"char"_s).front();
+            return match.capturedView(u"char"_s).front();
 
         if ((match = d.charlist.match(value)).hasMatch())
         {
@@ -256,18 +256,18 @@ public:
         }
 
         if ((match = d.color_rgb.match(value)).hasMatch())
-            return QColor(match.captured(u"r"_s).toInt(),
-                          match.captured(u"g"_s).toInt(),
-                          match.captured(u"b"_s).toInt());
+            return QColor(match.capturedView(u"r"_s).toInt(),
+                          match.capturedView(u"g"_s).toInt(),
+                          match.capturedView(u"b"_s).toInt());
 
         if ((match = d.color_rgba.match(value)).hasMatch())
-            return QColor(match.captured(u"r"_s).toInt(),
-                          match.captured(u"g"_s).toInt(),
-                          match.captured(u"b"_s).toInt(),
-                          match.captured(u"a"_s).toInt());
+            return QColor(match.capturedView(u"r"_s).toInt(),
+                          match.capturedView(u"g"_s).toInt(),
+                          match.capturedView(u"b"_s).toInt(),
+                          match.capturedView(u"a"_s).toInt());
 
         if ((match = d.size.match(value)).hasMatch())
-            return QSize(match.captured(u"width"_s).toInt(), match.captured(u"height"_s).toInt());
+            return QSize(match.capturedView(u"width"_s).toInt(), match.capturedView(u"height"_s).toInt());
 
         if ((match = d.stringlist.match(value)).hasMatch())
         {
