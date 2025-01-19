@@ -190,9 +190,8 @@ QVariant QLoaderSettings::value(const QString &key, const QVariant &defaultValue
 {
     d_ptr->mutex.lock();
     QVariant variant = defaultValue;
-    const QMap<QString, QLoaderProperty> &properties = d_ptr->hash.data[q_ptr].properties;
-    if (properties.contains(key))
-        variant = fromString(properties[key]);
+    if (d_ptr->hash.data[q_ptr].properties.contains(key))
+        variant = fromString(d_ptr->hash.data[q_ptr].properties.value(key));
     d_ptr->mutex.unlock();
 
     return variant;
