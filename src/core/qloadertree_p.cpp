@@ -211,8 +211,6 @@ class StringVariantConverter
     struct
     {
         const QRegularExpression bytearray{u"^QByteArray\\s*\\(\\s*(?<bytearray>.*)\\)"_s};
-        const QRegularExpression chr{u"^QChar\\s*\\(\\s*(?<char>.{1})\\s*\\)_"_s};
-        const QRegularExpression charlist{u"^QCharList\\s*\\(\\s*(?<list>.*)\\)"_s};
 
         const QRegularExpression color_rgb{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
                                                          u"\\s*(?<g>\\d+)\\s*\\,"
@@ -224,60 +222,37 @@ class StringVariantConverter
                                                           u"\\s*(?<a>\\d+)\\s*\\)"_s};
 
         const QRegularExpression size{u"^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"_s};
-        const QRegularExpression stringlist{u"^QStringList\\s*\\(\\s*(?<list>.*)\\)"_s};
 
     } d;
 
 public:
     QVariant fromString(const QString &value) const
     {
+        if (value.at(0) != u'Q')
+            return value;
+
+        QStringView view(QStringView(value).sliced(1));
         QRegularExpressionMatch match;
-        if ((match = d.bytearray.match(value)).hasMatch())
+
+        if (view.startsWith("ByteArray"_L1) && ((match = d.bytearray.match(value)).hasMatch()))
             return QVariant::fromValue(QByteArray::fromBase64(match.capturedView(u"bytearray"_s).toLocal8Bit()));
 
-        if ((match = d.chr.match(value)).hasMatch())
-            return match.capturedView(u"char"_s).front();
-
-        if ((match = d.charlist.match(value)).hasMatch())
+        if (view.startsWith("Color"_L1))
         {
-            QStringList stringlist = match.captured(u"list"_s).split(u", "_s);
-            QList<QChar> charlist;
+            if ((match = d.color_rgb.match(value)).hasMatch())
+                return QColor(match.capturedView(u"r"_s).toInt(),
+                              match.capturedView(u"g"_s).toInt(),
+                              match.capturedView(u"b"_s).toInt());
 
-            for (QString &string : stringlist)
-            {
-                string = string.trimmed();
-                if (string.size() != 1)
-                    return QVariant();
-
-                charlist.append(string.at(0));
-            }
-
-            return QVariant::fromValue(charlist);
+            if ((match = d.color_rgba.match(value)).hasMatch())
+                return QColor(match.capturedView(u"r"_s).toInt(),
+                              match.capturedView(u"g"_s).toInt(),
+                              match.capturedView(u"b"_s).toInt(),
+                              match.capturedView(u"a"_s).toInt());
         }
 
-        if ((match = d.color_rgb.match(value)).hasMatch())
-            return QColor(match.capturedView(u"r"_s).toInt(),
-                          match.capturedView(u"g"_s).toInt(),
-                          match.capturedView(u"b"_s).toInt());
-
-        if ((match = d.color_rgba.match(value)).hasMatch())
-            return QColor(match.capturedView(u"r"_s).toInt(),
-                          match.capturedView(u"g"_s).toInt(),
-                          match.capturedView(u"b"_s).toInt(),
-                          match.capturedView(u"a"_s).toInt());
-
-        if ((match = d.size.match(value)).hasMatch())
+        if (view.startsWith("Size"_L1) && (match = d.size.match(value)).hasMatch())
             return QSize(match.capturedView(u"width"_s).toInt(), match.capturedView(u"height"_s).toInt());
-
-        if ((match = d.stringlist.match(value)).hasMatch())
-        {
-            QStringList stringlist = match.captured(u"list"_s).split(u',');
-
-            for (QString &string : stringlist)
-                string = string.trimmed();
-
-            return stringlist;
-        }
 
         return value;
     }
@@ -285,18 +260,13 @@ public:
     QString fromVariant(const QVariant &variant) const
     {
         QMetaType::Type type = static_cast<QMetaType::Type>(variant.metaType().id());
+
         if (type == QMetaType::QByteArray)
             return QString(u"QByteArray("_s + QLatin1StringView(variant.toByteArray().toBase64()) + u')');
 
-        if (type == QMetaType::QChar)
-            return QString(u"QChar("_s + variant.toChar() + u')');
-
         if (type == QMetaType::QSize)
             return QString(u"QSize("_s + QString::number(variant.toSize().width()) + u", "_s
-                                    + QString::number(variant.toSize().height()) + u')');
-
-        if (type == QMetaType::QStringList)
-            return QString(u"QStringList("_s + variant.toStringList().join(u", "_s) + u')');
+                                       + QString::number(variant.toSize().height()) + u')');
 
         return variant.toString();
     }
