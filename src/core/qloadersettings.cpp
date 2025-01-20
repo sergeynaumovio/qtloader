@@ -7,10 +7,12 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-QLoaderSettings::QLoaderSettings(QObject *object, QLoaderSettings *settings)
+QLoaderSettings::QLoaderSettings(QObject *object, QLoaderSettings *settings, LoadHints loadHints)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
 {
+    Q_UNUSED(loadHints)
+
     d_ptr->mutex.lock();
     if (!d_ptr->hash.data[q_ptr].object)
     {

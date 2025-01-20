@@ -17,8 +17,18 @@ class Q_LOADER_EXPORT QLoaderSettings
     QLoaderSettings *const q_ptr;
     QLoaderTreePrivate *const d_ptr;
 
+public:
+    enum LoadHint
+    {
+        LoadThisOnly = 0x0,
+        LoadChildren = 0x1,
+    };
+    Q_DECLARE_FLAGS(LoadHints, LoadHint)
+    Q_ENUM(LoadHint)
+    Q_FLAG(LoadHints)
+
 protected:
-    QLoaderSettings(QObject *object, QLoaderSettings *settings);
+    QLoaderSettings(QObject *object, QLoaderSettings *settings, LoadHints = LoadChildren);
 
     void emitError(const QString &error) const;
     void emitInfo(const QString &info) const;
