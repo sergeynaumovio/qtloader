@@ -234,7 +234,7 @@ public:
         QStringView view(QStringView(value).sliced(1));
         QRegularExpressionMatch match;
 
-        if (view.startsWith("ByteArray"_L1) && ((match = d.bytearray.match(value)).hasMatch()))
+        if (view.startsWith("ByteArray"_L1) && (match = d.bytearray.match(value)).hasMatch())
             return QVariant::fromValue(QByteArray::fromBase64(match.capturedView(u"bytearray"_s).toLocal8Bit()));
 
         if (view.startsWith("Color"_L1))
