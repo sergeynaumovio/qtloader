@@ -7,6 +7,11 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)
+:   q_ptr(this),
+    d_ptr(&d)
+{ }
+
 QLoaderSettings::QLoaderSettings(QObject *object, QLoaderSettings *settings, LoadHints loadHints)
 :   q_ptr(settings->q_ptr),
     d_ptr(settings->d_ptr)
@@ -23,11 +28,6 @@ QLoaderSettings::QLoaderSettings(QObject *object, QLoaderSettings *settings, Loa
     d_ptr->hash.data[q_ptr].settings.append(this);
     d_ptr->mutex.unlock();
 }
-
-QLoaderSettings::QLoaderSettings(QLoaderTreePrivate &d)
-:   q_ptr(this),
-    d_ptr(&d)
-{ }
 
 QLoaderSettings::~QLoaderSettings()
 {

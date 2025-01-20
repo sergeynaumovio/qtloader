@@ -14,8 +14,12 @@ class Q_LOADER_EXPORT QLoaderSettings
 {
     Q_GADGET
 
+    friend class QLoaderTreePrivate;
+
     QLoaderSettings *const q_ptr;
     QLoaderTreePrivate *const d_ptr;
+
+    QLoaderSettings(QLoaderTreePrivate &d);
 
 public:
     enum LoadHint
@@ -38,7 +42,6 @@ protected:
     bool setValue(const QString &key, const QVariant &value);
 
 public:
-    QLoaderSettings(QLoaderTreePrivate &d);
     virtual ~QLoaderSettings();
 
     const char *className() const;
