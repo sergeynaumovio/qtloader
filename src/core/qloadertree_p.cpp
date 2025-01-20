@@ -351,10 +351,9 @@ QLoaderTreePrivate::~QLoaderTreePrivate()
 
 QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 {
-    QByteArray className = settings->className();
-    const char *shortName = className.data() + qstrlen("QLoader");
+    const char *shortName = settings->className() + std::char_traits<char>::length("QLoader");
 
-    if (!qstrcmp(shortName, "ShellCd"))
+    if (!strcmp(shortName, "ShellCd"))
     {
         QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
@@ -363,7 +362,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         return parent;
      }
 
-    if (!qstrcmp(shortName, "ShellExit"))
+    if (!strcmp(shortName, "ShellExit"))
     {
         QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
@@ -372,7 +371,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         return parent;
      }
 
-    if (!qstrcmp(shortName, "ShellSave"))
+    if (!strcmp(shortName, "ShellSave"))
     {
         QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
         if (shell)
@@ -381,7 +380,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         return parent;
      }
 
-    if (!qstrcmp(shortName, "Shell"))
+    if (!strcmp(shortName, "Shell"))
     {
         if (!d.shell.object)
             return d.shell.object = new QLoaderShell(settings);
@@ -389,7 +388,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         return nullptr;
      }
 
-    if (!qstrcmp(shortName, "Terminal"))
+    if (!strcmp(shortName, "Terminal"))
     {
         bool coreApp = !qobject_cast<QApplication *>(QCoreApplication::instance());
         if (coreApp)
@@ -763,7 +762,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
                 }
 
                 item.className = value.toLocal8Bit();
-                if (!qstrncmp(item.className, "Loader", 6))
+                if (!strncmp(item.className.data(), "Loader", 6))
                 {
                     error.line = item.sectionLine;
                     error.status = QLoaderError::Object;
@@ -772,8 +771,8 @@ QLoaderError QLoaderTreePrivate::readSettings()
                 }
 
                 bool isShell{};
-                const char *shortName = item.className.data() + qstrlen("QLoader");
-                if ((isShell = !qstrcmp(shortName, "Shell")))
+                const char *shortName = item.className.data() + std::char_traits<char>::length("QLoader");
+                if ((isShell = !strcmp(shortName, "Shell")))
                 {
                     if (item.section.size() > 2)
                     {

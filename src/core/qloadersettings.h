@@ -31,7 +31,7 @@ public:
     QLoaderSettings(QLoaderTreePrivate &d);
     virtual ~QLoaderSettings();
 
-    QByteArray className() const;
+    const char *className() const;
     bool contains(const QString &key) const;
     void dumpSettingsTree() const;
     virtual bool isCopyable(const QStringList &to) const;

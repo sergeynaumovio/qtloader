@@ -146,10 +146,10 @@ bool QLoaderSettings::contains(const QString &key) const
     return d_ptr->hash.data[q_ptr].properties.contains(key);
 }
 
-QByteArray QLoaderSettings::className() const
+const char *QLoaderSettings::className() const
 {
     d_ptr->mutex.lock();
-    QByteArray name = d_ptr->hash.data[q_ptr].className;
+    const char *name = d_ptr->hash.data[q_ptr].className.data();
     d_ptr->mutex.unlock();
 
     return name;
