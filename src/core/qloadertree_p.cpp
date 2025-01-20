@@ -42,8 +42,7 @@ class QLoaderTreeSection
         if (section.isEmpty())
             return;
 
-        parent.section = section;
-        parent.section.removeLast();
+        parent.section = section.first(section.size() - 1);
 
         valid = true;
     }
@@ -683,15 +682,12 @@ QLoaderError QLoaderTreePrivate::readSettings()
                     error.message = u"class name not set"_s;
                     break;
                 }
-                hash.data[settings] = item;
+                hash.data[settings] = std::move(item);
             }
 
             settings = new QLoaderSettings(*this);
 
             bool valid{};
-            item.clear();
-            item.section = section;
-            item.sectionLine = currentLine;
 
             if (!hash.settings.sections.contains(section))
             {
@@ -706,26 +702,26 @@ QLoaderError QLoaderTreePrivate::readSettings()
                 }
                 else if (d.root.settings && section.size() > 1 && section.back().size())
                 {
-                    QStringList parent = section;
-                    parent.removeLast();
+                    QStringList parent = section.first(section.size() - 1);
 
                     if (hash.settings.sections.contains(parent))
                     {
                         valid = true;
-                        item.parent = hash.settings.sections[parent];
+                        item.parent = hash.settings.sections.value(parent);
                         hash.data[item.parent].children.push_back(settings);
                     }
                 }
                 else
-                {
                     error.message = u"section not valid"_s;
-                }
             }
             else
             {
                 error.message = u"section already set"_s;
                 delete settings;
             }
+
+            item.section = std::move(section);
+            item.sectionLine = currentLine;
 
             if (!valid)
             {
@@ -800,7 +796,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
                 }
             }
             else if (!item.properties.contains(key))
-                item.properties[key] = value;
+                item.properties[key] = std::move(value);
             else
             {
                 error.status = QLoaderError::Design;
@@ -810,7 +806,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
         }
     }
 
-    hash.data[settings] = item;
+    hash.data[settings] = std::move(item);
 
     return error;
 }
@@ -903,8 +899,7 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
     d.copied.append(copySettings);
     hash.settings.sections[section] = copySettings;
 
-    QStringList parentSection = section;
-    parentSection.removeLast();
+    QStringList parentSection = section.first(section.size() - 1);
 
     QLoaderSettings *parentSettings = hash.settings.sections[parentSection];
 
