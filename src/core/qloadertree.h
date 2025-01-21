@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #ifndef QLOADERTREE_H
@@ -34,15 +34,15 @@ public:
     ~QLoaderTree();
 
     QLoaderError backup();
-    bool contains(const QStringList &section) const;
-    QLoaderError copy(const QStringList &section, const QStringList &to);
+    bool contains(QStringView section) const;
+    QLoaderError copy(QStringView section, QStringView to);
     QString fileName() const;
     bool isLoaded() const;
     bool isModified() const;
     QLoaderError load() const;
-    QLoaderError move(const QStringList &section, const QStringList &to);
+    QLoaderError move(QStringView section, QStringView to);
     QLoaderShell *newShellInstance() const;
-    QObject *object(const QStringList &section) const;
+    QObject *object(QStringView section) const;
     QLoaderError save() const;
     QLoaderSettings *settings(QObject *object) const;
 };

@@ -24,25 +24,25 @@
 
 using namespace Qt::Literals::StringLiterals;
 
-void QLoaderSettingsData::clear()
+static QStringView objectName(QStringView section)
 {
-    parent = nullptr;
-    section.clear();
-    className.clear();
-    object = nullptr;
-    properties.clear();
-    children.clear();
+    return section.sliced(section.lastIndexOf(u'/', -2) + 1);
+}
+
+static QStringView parentSection(QStringView section)
+{
+    int splitIndex = section.lastIndexOf(u'/', -2);
+
+    return (splitIndex == -1 ? QStringView{} : section.first(splitIndex));
 }
 
 class QLoaderTreeSection
 {
-    QLoaderTreeSection(const QStringList &section)
+    QLoaderTreeSection(QStringView section)
     :   section(section)
     {
-        if (section.isEmpty())
+        if ((parent.section = parentSection(section)).isEmpty())
             return;
-
-        parent.section = section.first(section.size() - 1);
 
         valid = true;
     }
@@ -52,16 +52,16 @@ public:
 
     struct
     {
-        QStringList section;
+        QStringView section;
         QLoaderSettings *settings{};
 
     } parent;
 
-    const QStringList &section;
+    QStringView section;
     QLoaderSettings *settings{};
     QObject *object{};
 
-    QLoaderTreeSection(const QStringList &section, QLoaderTreePrivate *d)
+    QLoaderTreeSection(QStringView section, QLoaderTreePrivate *d)
     :   QLoaderTreeSection(section)
     {
         if (!valid)
@@ -89,14 +89,14 @@ class QLoaderTreeSectionAction
     QLoaderTreePrivate *const d_ptr;
 
     QLoaderError actionError() const;
-    QString actionPath () const { return u'[' + src.section.join(u'/') + u"] -> ["_s + dst.section.join(u'/') + u']'; }
+    QString actionPath () const { return u'[' + src.section.toString()+ u"] -> ["_s + dst.section.toString()+ u']'; }
 
 public:
     QLoaderTreeSection src;
     QLoaderTreeSection dst;
 
-    QLoaderTreeSectionAction(const QStringList &srcPath,
-                             const QStringList &dstPath,
+    QLoaderTreeSectionAction(QStringView srcPath,
+                             QStringView dstPath,
                              QLoaderTreePrivate *d)
     :   d_ptr(d),
         src(srcPath, d),
@@ -123,9 +123,9 @@ public:
         return {};
     }
 
-    static QStringList section(const QStringList &itemSection,
-                               const QStringList &srcSection,
-                               const QStringList &dstSection)
+    static QString section(const QStringList &itemSection,
+                           const QStringList &srcSection,
+                           const QStringList &dstSection)
     {
         int size = itemSection.size() + (dstSection.size() - srcSection.size());
         QStringList retSection(size);
@@ -134,7 +134,7 @@ public:
                     itemSection.size() - srcSection.size(),
                     retSection.begin() + dstSection.size());
 
-        return retSection;
+        return retSection.join(u'/');
     }
 };
 
@@ -156,38 +156,78 @@ QLoaderError QLoaderTreeSectionAction<Move>::actionError() const
     return {};
 }
 
+#define REGULAR_EXPRESSION_MATCH 0
+
 class KeyValueParser
 {
     struct
     {
-        const QRegularExpression sectionName{u"^\\[(?<section>[^\\[\\]]*)\\]$"_s};
-        const QRegularExpression keyValue{u"^(?<key>[^=]*[^\\s])\\s*=\\s*(?<value>.+)"_s};
+        const QRegularExpression sectionName{u"^\\[([^\\[\\]]*)\\]$"_s};
+        const QRegularExpression keyValue{u"^([^=]*[^\\s])\\s*=\\s*(.+)"_s};
         const QRegularExpression className{u"^[A-Z]+[a-z,0-9]*"_s};
 
     } d;
 
 public:
-    bool matchSectionName(const QString &line, QStringList &section) const
+    bool matchSectionName(const QString &line, QString &section) const
     {
+
+#if REGULAR_EXPRESSION_MATCH
+
         QRegularExpressionMatch match;
         if ((match = d.sectionName.match(line)).hasMatch())
         {
-            section = match.captured(u"section"_s).split(u'/');
+            section = match.captured(1);
             return true;
         }
+
+#else
+
+        if (line.size() > 2 &&
+            line.front() == u'[' &&
+            line.back() == u']' &&
+            line.indexOf(u'[', 1) == -1 &&
+            line.lastIndexOf(u']', -2) == -1)
+        {
+            section = line.sliced(1, line.size() - 2);
+            return true;
+        }
+
+#endif // REGULAR_EXPRESSION_MATCH
 
         return false;
     }
 
     bool matchKeyValue(const QString &line, QString &key, QString &value) const
     {
+
+#if REGULAR_EXPRESSION_MATCH
+
         QRegularExpressionMatch match;
         if ((match = d.keyValue.match(line)).hasMatch())
         {
-            key = match.captured(u"key"_s);
-            value = match.captured(u"value"_s);
+            key = match.captured(1);
+            value = match.captured(2);
             return true;
         }
+
+#else
+
+        int splitIndex = line.indexOf(u'=');
+
+        if (splitIndex > 0)
+        {
+            QStringView view(line);
+
+            if ((view = view.first(splitIndex).trimmed()).size())
+            {
+                key = view.toString();
+                value = QStringView(line).sliced(splitIndex + 1).trimmed().toString();
+                return true;
+            }
+        }
+
+#endif // REGULAR_EXPRESSION_MATCH
 
         return false;
     }
@@ -209,7 +249,7 @@ class StringVariantConverter
 {
     struct
     {
-        const QRegularExpression bytearray{u"^QByteArray\\s*\\(\\s*(?<bytearray>.*)\\)"_s};
+        const QRegularExpression bytearray{u"^QByteArray\\s*\\(\\s*(.*)\\)"_s};
 
         const QRegularExpression color_rgb{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
                                                          u"\\s*(?<g>\\d+)\\s*\\,"
@@ -234,7 +274,7 @@ public:
         QRegularExpressionMatch match;
 
         if (view.startsWith("ByteArray"_L1) && (match = d.bytearray.match(value)).hasMatch())
-            return QVariant::fromValue(QByteArray::fromBase64(match.capturedView(u"bytearray"_s).toLocal8Bit()));
+            return QVariant::fromValue(QByteArray::fromBase64(match.capturedView(1).toLocal8Bit()));
 
         if (view.startsWith("Color"_L1))
         {
@@ -457,7 +497,7 @@ void QLoaderTreePrivate::emitSettingsChanged()
 
 void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
 {
-    qDebug().noquote().nospace() << u'[' << hash.data[settings].section.join(u'/') << u']';
+    qDebug().noquote().nospace() << u'[' << hash.data[settings].section << u']';
     qDebug().noquote() << u"class ="_s << hash.data[settings].className;
 
     QMapIterator<QString, QLoaderProperty> i(hash.data[settings].properties);
@@ -499,7 +539,7 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
        return error;
 
     mutex.lock();
-    int itemSectionSize = hash.data[settings].section.size();
+    int itemSectionSize = hash.data[settings].section.count(u'/') + 1;
     int itemSectionLine = hash.data[settings].sectionLine;
     mutex.unlock();
 
@@ -583,11 +623,13 @@ void QLoaderTreePrivate::moveRecursive(QLoaderSettings *settings,
 {
     QLoaderSettingsData &item = hash.data[settings];
 
-    QStringList section = QLoaderTreeSectionAction<Move>::section(item.section, src.section, dst.section);
+    QString sectionString = QLoaderTreeSectionAction<Move>::section(item.section.split(u'/'),
+                                                                    src.section.toString().split(u'/'),
+                                                                    dst.section.toString().split(u'/'));
 
     hash.settings.sections.remove(item.section);
-    hash.settings.sections[section] = settings;
-    item.section = std::move(section);
+    hash.settings.sections[sectionString] = settings;
+    item.section = std::move(sectionString);
 
     for (QLoaderSettings *child : hash.data[settings].children)
         moveRecursive(child, src, dst);
@@ -643,7 +685,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
 
     QTextStream in(file);
     QString line;
-    line.reserve (10240);
+    line.reserve(10240);
     int currentLine{};
 
     const QLatin1StringView shebang("#!"_L1);
@@ -663,15 +705,18 @@ QLoaderError QLoaderTreePrivate::readSettings()
             continue;
         }
 
-        if (line == '\n'_L1)
+        if (line.isEmpty())
             continue;
 
         if (line.startsWith(comment))
             continue;
 
-        QStringList section;
+        QString section;
         if (d.parser.matchSectionName(line, section))
         {
+            QStringView name = objectName(section);
+            int level = section.count(u'/') + 1;
+
             if (settings)
             {
                 if (item.className.isEmpty())
@@ -692,16 +737,16 @@ QLoaderError QLoaderTreePrivate::readSettings()
             {
                 hash.settings.sections[section] = settings;
 
-                if (section.size() == 1 && section.back().size())
+                if (level == 1 && name.size())
                 {
                     if (!d.root.settings)
                         valid = true;
                     else
                         error.message = u"root object already set"_s;
                 }
-                else if (d.root.settings && section.size() > 1 && section.back().size())
+                else if (d.root.settings && level > 1 && name.size())
                 {
-                    QStringList parent = section.first(section.size() - 1);
+                    QStringView parent = parentSection(section);
 
                     if (hash.settings.sections.contains(parent))
                     {
@@ -721,6 +766,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
 
             item.section = std::move(section);
             item.sectionLine = currentLine;
+            item.level = level;
 
             if (!valid)
             {
@@ -756,10 +802,8 @@ QLoaderError QLoaderTreePrivate::readSettings()
                     break;
                 }
 
-                if (!d.root.settings && item.section.size() == 1)
-                {
+                if (!d.root.settings && item.level == 1)
                     d.root.settings = settings;
-                }
 
                 item.className = value.toLocal8Bit();
                 if (!strncmp(item.className.data(), "Loader", 6))
@@ -774,7 +818,7 @@ QLoaderError QLoaderTreePrivate::readSettings()
                 const char *shortName = item.className.data() + std::char_traits<char>::length("QLoader");
                 if ((isShell = !strcmp(shortName, "Shell")))
                 {
-                    if (item.section.size() > 2)
+                    if (item.level > 2)
                     {
                         error.line = item.sectionLine;
                         error.status = QLoaderError::Design;
@@ -802,7 +846,18 @@ QLoaderError QLoaderTreePrivate::readSettings()
                 error.message = u"key \""_s + key + u"\" already set"_s;
                 break;
             }
+
+            continue;
         }
+
+        if (error.message.isEmpty())
+        {
+            error.line = currentLine;
+            error.status = QLoaderError::Format;
+            error.message = u"string not valid"_s;
+        }
+
+        break;
     }
 
     hash.data[settings] = std::move(item);
@@ -851,7 +906,7 @@ QLoaderError QLoaderTreePrivate::load()
     return error;
 }
 
-QLoaderError QLoaderTreePrivate::move(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTreePrivate::move(QStringView section, QStringView to)
 {
     QLoaderTreeSectionAction<Move> mv(section, to, this);
 
@@ -890,15 +945,17 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
                                        const QLoaderTreeSection &src,
                                        const QLoaderTreeSection &dst)
 {
-    QStringList itemSection = hash.data[settings].section;
+    QString itemSection = hash.data[settings].section;
 
-    QStringList section = QLoaderTreeSectionAction<Copy>::section(itemSection, src.section, dst.section);
+    QString section = QLoaderTreeSectionAction<Copy>::section(itemSection.split(u'/'),
+                                                              src.section.toString().split(u'/'),
+                                                              dst.section.toString().split(u'/'));
 
     QLoaderSettings *copySettings = new QLoaderSettings(*this);
     d.copied.append(copySettings);
     hash.settings.sections[section] = copySettings;
 
-    QStringList parentSection = section.first(section.size() - 1);
+    QStringView parentSection = ::parentSection(section);
 
     QLoaderSettings *parentSettings = hash.settings.sections[parentSection];
 
@@ -913,7 +970,7 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
         copyRecursive(child, src, dst);
 }
 
-QLoaderError QLoaderTreePrivate::copy(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTreePrivate::copy(QStringView section, QStringView to)
 {
     QLoaderTreeSectionAction<Copy> cp(section, to, this);
 
@@ -959,7 +1016,7 @@ void QLoaderTreePrivate::removeRecursive(QLoaderSettings */*settings*/)
 
 void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &out)
 {
-    out << "\n[" << item.section.join(u'/') << "]\n";
+    out << "\n[" << item.section << "]\n";
     out << "class = " << item.className << '\n';
 
     QMapIterator<QString, QLoaderProperty> i(item.properties);
@@ -1031,7 +1088,7 @@ QLoaderError QLoaderTreePrivate::save()
 
 void QLoaderTreePrivate::setProperties(const QLoaderSettingsData &item, QObject *object)
 {
-    object->setObjectName(item.section.last());
+    object->setObjectName(objectName(item.section));
 
     auto value = [&item, this](const QString &key, const QVariant defaultValue = QVariant())
     {

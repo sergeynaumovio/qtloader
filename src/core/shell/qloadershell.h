@@ -44,7 +44,7 @@ public:
     QLoaderError exec(const QLoaderCommand &command);
     QLoaderError exec(const QLoaderCommandList &pipeline);
     QLoaderError exec(const QString &name, const QStringList &arguments);
-    QStringList section() const;
+    QString section() const;
 };
 
 #endif // QLOADERSHELL_H

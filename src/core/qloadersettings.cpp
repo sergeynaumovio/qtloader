@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadersettings.h"
@@ -164,23 +164,23 @@ void QLoaderSettings::dumpSettingsTree() const
     d_ptr->mutex.unlock();
 }
 
-bool QLoaderSettings::isCopyable(const QStringList &) const
+bool QLoaderSettings::isCopyable(QStringView) const
 {
-    return {};
+    return false;
 }
 
-bool QLoaderSettings::isMovable(const QStringList &) const
+bool QLoaderSettings::isMovable(QStringView) const
 {
-    return {};
+    return false;
 }
 
-QStringList QLoaderSettings::section() const
+QStringView QLoaderSettings::section() const
 {
     d_ptr->mutex.lock();
-    QStringList list = d_ptr->hash.data[q_ptr].section;
+    QStringView view(d_ptr->hash.data[q_ptr].section);
     d_ptr->mutex.unlock();
 
-    return list;
+    return view;
 }
 
 QLoaderTree *QLoaderSettings::tree() const

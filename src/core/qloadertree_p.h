@@ -22,15 +22,14 @@ using QLoaderProperty = QString;
 struct QLoaderSettingsData
 {
     QLoaderSettings *parent{};
-    QStringList section;
     int sectionLine{};
+    QString section;
+    int level;
     QByteArray className;
     QObject *object{};
     QList<QLoaderSettings *> settings;
     QMap<QString, QLoaderProperty> properties;
     QList<QLoaderSettings *> children;
-
-    void clear();
 };
 
 class QLoaderTreePrivate
@@ -67,7 +66,7 @@ public:
     {
         struct
         {
-            QHash<QStringList, QLoaderSettings *> sections;
+            QHash<QStringView, QLoaderSettings *> sections;
             QHash<QObject *, QLoaderSettings *> objects;
 
         } settings;
@@ -80,7 +79,7 @@ public:
     virtual ~QLoaderTreePrivate();
 
     QObject *builtin(QLoaderSettings *settings, QObject *parent);
-    QLoaderError copy(const QStringList &section, const QStringList &to);
+    QLoaderError copy(QStringView section, QStringView to);
     void dump(QLoaderSettings *settings) const;
     void emitSettingsChanged();
     QObject *external(QLoaderError &error, QLoaderSettings *settings, QObject *parent);
@@ -88,7 +87,7 @@ public:
     QString fromVariant(const QVariant &variant) const;
     bool isSaving() const;
     QLoaderError load();
-    QLoaderError move(const QStringList &section, const QStringList &to);
+    QLoaderError move(QStringView section, QStringView to);
     QLoaderShell *newShellInstance();
     QLoaderError save();
     void setProperties(const QLoaderSettingsData &item, QObject *object);

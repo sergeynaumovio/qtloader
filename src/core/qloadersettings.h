@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #ifndef QLOADERSETTINGS_H
@@ -47,9 +47,9 @@ public:
     const char *className() const;
     bool contains(const QString &key) const;
     void dumpSettingsTree() const;
-    virtual bool isCopyable(const QStringList &to) const;
-    virtual bool isMovable(const QStringList &to) const;
-    QStringList section() const;
+    virtual bool isCopyable(QStringView to) const;
+    virtual bool isMovable(QStringView to) const;
+    QStringView section() const;
     QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 };

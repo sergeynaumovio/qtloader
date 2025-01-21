@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadertree.h"
@@ -25,7 +25,7 @@ QLoaderError QLoaderTree::backup()
     return {};
 }
 
-bool QLoaderTree::contains(const QStringList &section) const
+bool QLoaderTree::contains(QStringView section) const
 {
     d_ptr->mutex.lock();
     bool containsSection = d_ptr->hash.settings.sections.contains(section);
@@ -34,7 +34,7 @@ bool QLoaderTree::contains(const QStringList &section) const
     return containsSection;
 }
 
-QLoaderError QLoaderTree::copy(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTree::copy(QStringView section, QStringView to)
 {
     return d_ptr->copy(section, to);
 }
@@ -62,7 +62,7 @@ QLoaderError QLoaderTree::load() const
     return d_ptr->load();
 }
 
-QLoaderError QLoaderTree::move(const QStringList &section, const QStringList &to)
+QLoaderError QLoaderTree::move(QStringView section, QStringView to)
 {
     return d_ptr->move(section, to);
 }
@@ -72,12 +72,12 @@ QLoaderShell *QLoaderTree::newShellInstance() const
     return d_ptr->newShellInstance();
 }
 
-QObject *QLoaderTree::object(const QStringList &section) const
+QObject *QLoaderTree::object(QStringView section) const
 {
     QObject *object{};
     d_ptr->mutex.lock();
     if (d_ptr->hash.settings.sections.contains(section))
-        object = d_ptr->hash.data[d_ptr->hash.settings.sections[section]].object;
+        object = d_ptr->hash.data.value(d_ptr->hash.settings.sections.value(section)).object;
     d_ptr->mutex.unlock();
 
     return object;
