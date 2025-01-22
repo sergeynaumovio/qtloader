@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadertree_p.h"
+#include "qloadermarkupeditor.h"
 #include "qloadertree.h"
 #include "qloaderplugininterface.h"
 #include "qloadersaveinterface.h"
@@ -387,15 +388,27 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
         return nullptr;
      }
 
+    bool coreApp = !qobject_cast<QApplication *>(QCoreApplication::instance());
+    QWidget *widget = qobject_cast<QWidget *>(parent);
+
     if (!strcmp(shortName, "Terminal"))
     {
-        bool coreApp = !qobject_cast<QApplication *>(QCoreApplication::instance());
         if (coreApp)
             return nullptr;
 
-        QWidget *widget = qobject_cast<QWidget *>(parent);
         if (!parent || (parent && widget))
             return new QLoaderTerminal(settings, widget);
+
+        return parent;
+    }
+
+    if (!strcmp(shortName, "MarkupEditor"))
+    {
+        if (coreApp)
+            return nullptr;
+
+        if (!parent || (parent && widget))
+            return new QLoaderMarkupEditor(settings, widget);
 
         return parent;
     }

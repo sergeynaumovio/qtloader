@@ -1,0 +1,5 @@
+#!/usr/bin/env qtloader6
+
+[editor]
+class = QLoaderMarkupEditor
+visible = true

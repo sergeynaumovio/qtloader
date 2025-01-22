@@ -62,6 +62,8 @@ target_sources(${QT_LOADER_LIBRARY}
             src/core/qtloaderglobal.h
             src/widgets/qloadermarkupcommander.cpp
             src/widgets/qloadermarkupcommander.h
+            src/widgets/qloadermarkupeditor.cpp
+            src/widgets/qloadermarkupeditor.h
             src/widgets/qloaderterminal.cpp
             src/widgets/qloaderterminal.h
 )
@@ -91,8 +93,10 @@ set(QT_LOADER_PUBLIC_HEADERS
     src/core/qscopedstorage.h
     src/core/qtloaderglobal.h
     src/widgets/QLoaderMarkupCommander
+    src/widgets/QLoaderMarkupEditor
     src/widgets/QLoaderTerminal
     src/widgets/qloadermarkupcommander.h
+    src/widgets/qloadermarkupeditor.h
     src/widgets/qloaderterminal.h
 )
 
