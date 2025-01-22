@@ -35,7 +35,7 @@ struct QLoaderSettingsData
 class QLoaderTreePrivate
 {
     QLoaderTreePrivateData &d;
-    alignas(8) std::byte d_storage[168];
+    alignas(8) std::byte d_storage[184];
 
     void copyRecursive(QLoaderSettings *settings,
                        const QLoaderTreeSection &src,
@@ -66,7 +66,7 @@ public:
     {
         struct
         {
-            QHash<QStringView, QLoaderSettings *> sections;
+            QHash<QString, QLoaderSettings *> sections;
             QHash<QObject *, QLoaderSettings *> objects;
 
         } settings;

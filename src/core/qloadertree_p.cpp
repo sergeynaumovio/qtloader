@@ -156,33 +156,13 @@ QLoaderError QLoaderTreeSectionAction<Move>::actionError() const
     return {};
 }
 
-#define REGULAR_EXPRESSION_MATCH 0
-
 class KeyValueParser
 {
-    struct
-    {
-        const QRegularExpression sectionName{u"^\\[([^\\[\\]]*)\\]$"_s};
-        const QRegularExpression keyValue{u"^([^=]*[^\\s])\\s*=\\s*(.+)"_s};
-        const QRegularExpression className{u"^[A-Z]+[a-z,0-9]*"_s};
-
-    } d;
+    const QRegularExpression className{u"^[A-Z]+[a-z,0-9]*"_s};
 
 public:
     bool matchSectionName(const QString &line, QString &section) const
     {
-
-#if REGULAR_EXPRESSION_MATCH
-
-        QRegularExpressionMatch match;
-        if ((match = d.sectionName.match(line)).hasMatch())
-        {
-            section = match.captured(1);
-            return true;
-        }
-
-#else
-
         if (line.size() > 2 &&
             line.front() == u'[' &&
             line.back() == u']' &&
@@ -193,26 +173,11 @@ public:
             return true;
         }
 
-#endif // REGULAR_EXPRESSION_MATCH
-
         return false;
     }
 
     bool matchKeyValue(const QString &line, QString &key, QString &value) const
     {
-
-#if REGULAR_EXPRESSION_MATCH
-
-        QRegularExpressionMatch match;
-        if ((match = d.keyValue.match(line)).hasMatch())
-        {
-            key = match.captured(1);
-            value = match.captured(2);
-            return true;
-        }
-
-#else
-
         int splitIndex = line.indexOf(u'=');
 
         if (splitIndex > 0)
@@ -227,15 +192,13 @@ public:
             }
         }
 
-#endif // REGULAR_EXPRESSION_MATCH
-
         return false;
     }
 
     bool matchClassName(const char *name, QString &libraryName) const
     {
         QRegularExpressionMatch match;
-        if ((match = d.className.match(QLatin1StringView(name))).hasMatch())
+        if ((match = className.match(QString::fromLocal8Bit(name))).hasMatch())
         {
             libraryName += match.capturedView();
             return true;
@@ -247,22 +210,18 @@ public:
 
 class StringVariantConverter
 {
-    struct
-    {
-        const QRegularExpression bytearray{u"^QByteArray\\s*\\(\\s*(.*)\\)"_s};
+    const QRegularExpression bytearray{u"^QByteArray\\s*\\(\\s*(.*)\\)"_s};
 
-        const QRegularExpression color_rgb{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
-                                                         u"\\s*(?<g>\\d+)\\s*\\,"
-                                                         u"\\s*(?<b>\\d+)\\s*\\)"_s};
+    const QRegularExpression color_rgb{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
+                                       u"\\s*(?<g>\\d+)\\s*\\,"
+                                       u"\\s*(?<b>\\d+)\\s*\\)"_s};
 
-        const QRegularExpression color_rgba{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
-                                                          u"\\s*(?<g>\\d+)\\s*\\,"
-                                                          u"\\s*(?<b>\\d+)\\s*\\,"
-                                                          u"\\s*(?<a>\\d+)\\s*\\)"_s};
+    const QRegularExpression color_rgba{u"^QColor\\s*\\(\\s*(?<r>\\d+)\\s*\\,"
+                                        u"\\s*(?<g>\\d+)\\s*\\,"
+                                        u"\\s*(?<b>\\d+)\\s*\\,"
+                                        u"\\s*(?<a>\\d+)\\s*\\)"_s};
 
-        const QRegularExpression size{u"^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"_s};
-
-    } d;
+    const QRegularExpression size{u"^QSize\\s*\\(\\s*(?<width>\\d+)\\s*\\,\\s*(?<height>\\d+)\\s*\\)"_s};
 
 public:
     QVariant fromString(const QString &value) const
@@ -273,24 +232,24 @@ public:
         QStringView view(QStringView(value).sliced(1));
         QRegularExpressionMatch match;
 
-        if (view.startsWith("ByteArray"_L1) && (match = d.bytearray.match(value)).hasMatch())
+        if (view.startsWith("ByteArray"_L1) && (match = bytearray.match(value)).hasMatch())
             return QVariant::fromValue(QByteArray::fromBase64(match.capturedView(1).toLocal8Bit()));
 
         if (view.startsWith("Color"_L1))
         {
-            if ((match = d.color_rgb.match(value)).hasMatch())
+            if ((match = color_rgb.match(value)).hasMatch())
                 return QColor(match.capturedView(u"r"_s).toInt(),
                               match.capturedView(u"g"_s).toInt(),
                               match.capturedView(u"b"_s).toInt());
 
-            if ((match = d.color_rgba.match(value)).hasMatch())
+            if ((match = color_rgba.match(value)).hasMatch())
                 return QColor(match.capturedView(u"r"_s).toInt(),
                               match.capturedView(u"g"_s).toInt(),
                               match.capturedView(u"b"_s).toInt(),
                               match.capturedView(u"a"_s).toInt());
         }
 
-        if (view.startsWith("Size"_L1) && (match = d.size.match(value)).hasMatch())
+        if (view.startsWith("Size"_L1) && (match = size.match(value)).hasMatch())
             return QSize(match.capturedView(u"width"_s).toInt(), match.capturedView(u"height"_s).toInt());
 
         return value;
@@ -358,6 +317,9 @@ public:
 class QLoaderTreePrivateData
 {
 public:
+    const QString libraryPrefix{u"Qt"_s + QString::number(QT_VERSION_MAJOR)};
+    QHash<QString, QLoaderPluginInterface *> plugins;
+
     SettingsObject root;
     SettingsObject shell;
 
@@ -365,7 +327,7 @@ public:
     StringVariantConverter converter;
     QMutex loading;
     QString shebang;
-    QList<QLoaderSettings*> copied;
+    QList<QLoaderSettings *> copied;
     Saving saving;
 
     ~QLoaderTreePrivateData()
@@ -395,8 +357,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!strcmp(shortName, "ShellCd"))
     {
-        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
-        if (shell)
+        if (QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent))
             return new QLoaderShellCd(settings, shell);
 
         return parent;
@@ -404,8 +365,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!strcmp(shortName, "ShellExit"))
     {
-        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
-        if (shell)
+        if (QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent))
             return new QLoaderShellExit(settings, shell);
 
         return parent;
@@ -413,8 +373,7 @@ QObject *QLoaderTreePrivate::builtin(QLoaderSettings *settings, QObject *parent)
 
     if (!strcmp(shortName, "ShellSave"))
     {
-        QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent);
-        if (shell)
+        if (QLoaderShell *shell = qobject_cast<QLoaderShell *>(parent))
             return new QLoaderShellSave(settings, shell);
 
         return parent;
@@ -448,12 +407,17 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
                                       QLoaderSettings *settings,
                                       QObject *parent)
 {
-    QString libraryName(u"Qt"_s + QString::number(QT_VERSION_MAJOR));
+    QString libraryName = d.libraryPrefix;
 
     if (d.parser.matchClassName(settings->className(), libraryName))
     {
-        QPluginLoader loader(libraryName);
-        if (!loader.instance())
+        QLoaderPluginInterface *plugin = d.plugins.value(libraryName);
+
+        if (plugin)
+            return plugin->object(settings, parent);
+
+        QPluginLoader *loader = new QPluginLoader(libraryName, q_ptr);
+        if (!loader->instance())
         {
             mutex.lock();
             error.line = hash.data[settings].sectionLine;
@@ -463,8 +427,7 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
             return nullptr;
         }
 
-        QLoaderPluginInterface *plugin = qobject_cast<QLoaderPluginInterface *>(loader.instance());
-        if (!plugin)
+        if (!(plugin = qobject_cast<QLoaderPluginInterface *>(loader->instance())))
         {
             mutex.lock();
             error.line = hash.data[settings].sectionLine;
@@ -473,6 +436,8 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
             mutex.unlock();
             return nullptr;
         }
+
+        d.plugins[libraryName] = plugin;
 
         return plugin->object(settings, parent);
     }
@@ -526,11 +491,11 @@ QLoaderError QLoaderTreePrivate::loadRecursive(QLoaderSettings *settings, QObjec
     QLoaderError error;
 
     mutex.lock();
-    QByteArray itemClassName = hash.data[settings].className;
+    const char *itemClassName = hash.data[settings].className;
     mutex.unlock();
 
     QObject *object;
-    if (!qstrncmp(itemClassName, "QLoader", 7))
+    if (!strncmp(itemClassName, "QLoader", 7))
         object = builtin(settings, parent);
     else
         object = external(error, settings, parent);
