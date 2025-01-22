@@ -51,9 +51,7 @@ public:
     QLoaderTerminal *const q_ptr;
     QTextCursor cursor;
 
-
     QPointer<QLoaderShell> shell;
-    QThread thread;
 
     struct
     {
@@ -89,15 +87,8 @@ public:
         shell(q->tree()->newShellInstance())
     {
         setPath(shell->section());
-        shell->moveToThread(&thread);
-        thread.start();
 
-        QObject::connect(shell, &QObject::destroyed, q, [=, this]
-        {
-            thread.quit();
-            thread.wait();
-            q->deleteLater();
-        });
+        QObject::connect(shell, &QObject::destroyed, q, [=]{ q->deleteLater(); });
     }
 
     ~QLoaderTerminalPrivate()
