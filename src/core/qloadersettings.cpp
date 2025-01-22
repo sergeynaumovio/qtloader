@@ -174,13 +174,10 @@ bool QLoaderSettings::isMovable(QStringView) const
     return false;
 }
 
-QStringView QLoaderSettings::section() const
+QString QLoaderSettings::section() const
 {
-    d_ptr->mutex.lock();
-    QStringView view(d_ptr->hash.data[q_ptr].section);
-    d_ptr->mutex.unlock();
-
-    return view;
+    QMutexLocker locker(&d_ptr->mutex);
+    return d_ptr->hash.data[q_ptr].section;
 }
 
 QLoaderTree *QLoaderSettings::tree() const

@@ -49,7 +49,7 @@ public:
     void dumpSettingsTree() const;
     virtual bool isCopyable(QStringView to) const;
     virtual bool isMovable(QStringView to) const;
-    QStringView section() const;
+    QString section() const;
     QLoaderTree *tree() const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
 };
