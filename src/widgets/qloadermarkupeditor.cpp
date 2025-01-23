@@ -84,16 +84,16 @@ public:
 class QLoaderMarkupEditorPrivate
 {
     Highlighter *const highlighter;
-    QFile *const file;
 
 public:
     QLoaderMarkupEditorPrivate(QLoaderMarkupEditor *q)
-    :   highlighter(new Highlighter(q->document())),
-        file(new QFile(q->tree()->fileName(), q))
+    :   highlighter(new Highlighter(q->document()))
     {
-        if (file->open(QFile::ReadWrite | QFile::Text))
+        QFile file(q->tree()->fileName());
+
+        if (file.open(QFile::ReadOnly | QFile::Text))
         {
-            QTextStream stream(file);
+            QTextStream stream(&file);
             q->setPlainText(stream.readAll());
         }
     }
