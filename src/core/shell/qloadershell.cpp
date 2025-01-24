@@ -52,7 +52,7 @@ bool QLoaderShell::cd(const QString &relative)
 {
     QString absolute = d_ptr->section;
     for (QStringView name : QStringTokenizer{relative, u'/'})
-        absolute.append(name);
+        absolute.append(u'/' + name.toString());
 
     if (tree()->contains(absolute))
     {
@@ -71,9 +71,11 @@ void QLoaderShell::cdHome()
 
 bool QLoaderShell::cdUp()
 {
-    if (d_ptr->section.size() > 1)
+    int level = d_ptr->section.count(u'/') + 1;
+    if (level > 1)
     {
-        d_ptr->section.removeLast();
+        int splitIndex = d_ptr->section.lastIndexOf(u'/', -2);
+        d_ptr->section = d_ptr->section.first(splitIndex);
 
         return true;
     }
