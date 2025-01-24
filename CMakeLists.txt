@@ -16,8 +16,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
-find_package(QT NAMES Qt6 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} 6.9 COMPONENTS Widgets REQUIRED)
+find_package(QT NAMES Qt6)
+find_package(Qt${QT_VERSION_MAJOR} 6.9 REQUIRED COMPONENTS Widgets)
 
 if(NOT APPLE)
     set(CMAKE_INSTALL_RPATH $ORIGIN)
@@ -108,7 +108,7 @@ set_target_properties(${QT_LOADER_LIBRARY} PROPERTIES
 )
 
 target_link_libraries(${QT_LOADER_LIBRARY}
-    PUBLIC Qt${QT_VERSION_MAJOR}::Widgets
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
 )
 
 target_compile_definitions(${QT_LOADER_LIBRARY}
@@ -187,6 +187,7 @@ target_include_directories(${QT_LOADER_EXECUTABLE}
 )
 
 target_link_libraries(${QT_LOADER_EXECUTABLE}
+    PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
     PRIVATE ${QT_LOADER_LIBRARY}
 )
 
