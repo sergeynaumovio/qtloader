@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.15)
+# Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
+# SPDX-License-Identifier: 0BSD
+
+cmake_minimum_required(VERSION 3.18)
 
 project(QtLoader LANGUAGES CXX)
 
