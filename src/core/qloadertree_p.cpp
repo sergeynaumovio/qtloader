@@ -422,7 +422,14 @@ QObject *QLoaderTreePrivate::external(QLoaderError &error,
 {
     QString libraryName = d.libraryPrefix;
 
-    if (d.parser.matchClassName(settings->className(), libraryName))
+    mutex.lock();
+    QString pluginName = hash.data[settings].pluginName;
+    mutex.unlock();
+
+    if (pluginName.size())
+        libraryName += pluginName;
+
+    if (pluginName.size() || d.parser.matchClassName(settings->className(), libraryName))
     {
         QLoaderPluginInterface *plugin = d.plugins.value(libraryName);
 
@@ -477,6 +484,9 @@ void QLoaderTreePrivate::dumpRecursive(QLoaderSettings *settings) const
 {
     qDebug().noquote().nospace() << u'[' << hash.data[settings].section << u']';
     qDebug().noquote() << u"class ="_s << hash.data[settings].className;
+
+    if (hash.data[settings].pluginName.size())
+        qDebug().noquote() << u"plugin ="_s << hash.data[settings].pluginName;
 
     QMapIterator<QString, QLoaderProperty> i(hash.data[settings].properties);
     while (i.hasNext())
@@ -816,6 +826,18 @@ QLoaderError QLoaderTreePrivate::readSettings()
                         d.shell.settings = settings;
                 }
             }
+            else if (key == "plugin"_L1)
+            {
+                if (item.pluginName.size())
+                {
+                    error.line = item.sectionLine;
+                    error.status = QLoaderError::Format;
+                    error.message = u"plugin already set"_s;
+                    break;
+                }
+
+                item.pluginName = value;
+            }
             else if (!item.properties.contains(key))
                 item.properties[key] = std::move(value);
             else
@@ -942,6 +964,7 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
     hash.data[copySettings].parent = parentSettings;
     hash.data[copySettings].section = std::move(section);
     hash.data[copySettings].className = hash.data[settings].className;
+    hash.data[copySettings].pluginName = hash.data[settings].pluginName;
     hash.data[copySettings].properties = hash.data[settings].properties;
 
     for (QLoaderSettings *child : hash.data[settings].children)
@@ -996,6 +1019,9 @@ void QLoaderTreePrivate::saveItem(const QLoaderSettingsData &item, QTextStream &
 {
     out << "\n[" << item.section << "]\n";
     out << "class = " << item.className << '\n';
+
+    if (item.pluginName.size())
+        out << "plugin = " << item.pluginName << '\n';
 
     QMapIterator<QString, QLoaderProperty> i(item.properties);
     while (i.hasNext())

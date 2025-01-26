@@ -174,6 +174,12 @@ bool QLoaderSettings::isMovable(QStringView) const
     return false;
 }
 
+QString QLoaderSettings::pluginName() const
+{
+    QMutexLocker locker(&d_ptr->mutex);
+    return  d_ptr->hash.data[q_ptr].pluginName;
+}
+
 QString QLoaderSettings::section() const
 {
     QMutexLocker locker(&d_ptr->mutex);

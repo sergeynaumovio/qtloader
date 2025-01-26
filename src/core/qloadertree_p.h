@@ -26,6 +26,7 @@ struct QLoaderSettingsData
     QString section;
     int level;
     QByteArray className;
+    QString pluginName;
     QObject *object{};
     QList<QLoaderSettings *> settings;
     QMap<QString, QLoaderProperty> properties;
