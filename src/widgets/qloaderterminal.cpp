@@ -210,7 +210,7 @@ public:
     {
         if (!section.isEmpty() && !q_ptr->tree()->contains(section))
         {
-            q_ptr->emitError(u"section \""_s + section + u"\" not found"_s);
+            q_ptr->emitError(u"section \""_s + section.toString() + u"\" not found"_s);
             return;
         }
 
@@ -219,7 +219,7 @@ public:
         else if (q_ptr->tree()->contains(section))
             path.section = section;
 
-        path.string = u'[' + path.section.toString()+ u"] "_s;
+        path.string = u'[' + path.section.toString() + u"] "_s;
     }
 };
 
