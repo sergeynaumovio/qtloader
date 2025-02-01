@@ -37,7 +37,7 @@ protected:
     {
         QRegularExpressionMatch match;
 
-        for (const HighlightingRule &rule : highlightingRules)
+        for (const HighlightingRule &rule : std::as_const(highlightingRules))
         {
             QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
             while (matchIterator.hasNext())

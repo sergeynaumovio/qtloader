@@ -619,7 +619,7 @@ void QLoaderTreePrivate::moveRecursive(QLoaderSettings *settings,
     hash.settings.sections[sectionString] = settings;
     item.section = std::move(sectionString);
 
-    for (QLoaderSettings *child : hash.data[settings].children)
+    for (QLoaderSettings *child : std::as_const(hash.data[settings].children))
         moveRecursive(child, src, dst);
 }
 
@@ -967,7 +967,7 @@ void QLoaderTreePrivate::copyRecursive(QLoaderSettings *settings,
     hash.data[copySettings].pluginName = hash.data[settings].pluginName;
     hash.data[copySettings].properties = hash.data[settings].properties;
 
-    for (QLoaderSettings *child : hash.data[settings].children)
+    for (QLoaderSettings *child : std::as_const(hash.data[settings].children))
         copyRecursive(child, src, dst);
 }
 
