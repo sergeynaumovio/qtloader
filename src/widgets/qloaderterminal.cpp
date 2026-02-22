@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2026 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloaderterminal.h"
@@ -51,7 +51,7 @@ public:
     QLoaderTerminal *const q_ptr;
     QTextCursor cursor;
 
-    QPointer<QLoaderShell> shell;
+    QLoaderShell *shell;
 
     struct
     {
@@ -88,7 +88,11 @@ public:
     {
         setPath(shell->section());
 
-        QObject::connect(shell, &QObject::destroyed, q, [=]{ q->deleteLater(); });
+        QObject::connect(shell, &QObject::destroyed, q_ptr, [this]
+        {
+            shell = nullptr;
+            q_ptr->deleteLater();
+        });
     }
 
     ~QLoaderTerminalPrivate()
@@ -184,8 +188,7 @@ public:
         if (!q_ptr->document()->isEmpty())
             q_ptr->insertPlainText(u"\n"_s);
 
-        if (shell)
-            setPath(shell->section());
+        setPath(shell->section());
 
         q_ptr->insertPlainText(path.string);
         q_ptr->ensureCursorVisible();
