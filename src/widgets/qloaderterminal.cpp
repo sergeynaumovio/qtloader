@@ -476,6 +476,8 @@ QLoaderTerminal::QLoaderTerminal(QLoaderSettings *settings, QWidget *parent)
 
     if (parent)
         parent->layout()->addWidget(this);
+    else
+        setAttribute(Qt::WA_DeleteOnClose);
 
     setFocus();
 }

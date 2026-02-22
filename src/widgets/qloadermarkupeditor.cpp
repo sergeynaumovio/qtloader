@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Sergey Naumov <sergey@naumov.io>
+// Copyright (C) 2026 Sergey Naumov <sergey@naumov.io>
 // SPDX-License-Identifier: 0BSD
 
 #include "qloadermarkupeditor.h"
@@ -109,6 +109,9 @@ QLoaderMarkupEditor::QLoaderMarkupEditor(QLoaderSettings *settings, QWidget *par
     font.setFixedPitch(true);
     font.setPointSize(10);
     setFont(font);
+
+    if (!parent)
+        setAttribute(Qt::WA_DeleteOnClose);
 }
 
 QLoaderMarkupEditor::~QLoaderMarkupEditor()
